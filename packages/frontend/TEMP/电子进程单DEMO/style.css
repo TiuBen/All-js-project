@@ -1,0 +1,84 @@
+body {
+    background: #2b2f36;
+    font-family: "Microsoft YaHei", Arial;
+    color: #dcdcdc;
+}
+
+.container {
+    width: 1200px;
+    margin: 20px ;
+    background: #323742;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.top-bar {
+    display: grid;
+    grid-template-columns: 220px 240px 240px 220px 220px;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+}
+
+.field label {
+    width: 70px;
+    font-size: 13px;
+    color: #b0b6c0;
+}
+
+.field input,
+.field select {
+    flex: 1;
+    height: 28px;
+    background: #3a3f4b;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 0 6px;
+}
+
+.flight-no {
+    color: #7CFF00;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.section {
+    margin-top: 12px;
+}
+
+.section-row {
+    display: grid;
+    grid-template-columns: 280px 280px 280px 280px;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.footer {
+    margin-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.warning {
+    color: #ff4d4d;
+    font-weight: bold;
+}
+
+button {
+    width: 110px;
+    height: 34px;
+    background: #505866;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+button.primary {
+    background: #d9b27c;
+    color: #000;
+}

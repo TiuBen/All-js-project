@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
+      <style>
+            canvas {
+
+                  cursor: crosshair
+            }
+      </style>
+      <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+
+      <script type="module"
+            src="main.js"></script>
+
+</head>
+
+<body style="padding: 0px;margin: 0px;">
+      <!-- <canvas id="canvas"
+            style="border: 1px red solid;padding: 0px;margin: 6px;"
+            width="1200"
+            height="600"></canvas> -->
+      <div id="container"></div>
+</body>
+<script>
+      // const canvas = document.getElementById("canvas");
+      // const ctx = canvas.getContext("2d");
+
+      // ctx.fillStyle = "green";
+      // canvas.addEventListener("mousemove", function (e) {
+      //       console.log(e.clientX);
+      //       ctx.clearRect(0, 0, 1200, 600);
+      //       ctx.fillRect(e.pageX, e.clientY, 150, 100);
+      // })
+
+      // setInterval(function () {
+      //       ctx.clearRect(0, 0, 1200, 600);
+      //       console.log("clear");
+      //       [{ x: 100, y: 200 }, { x: 150, y: 250 }].forEach((item) => {
+      //             ctx.fillRect(item.x, item.y, 150, 100);
+
+      //       });
+
+      // }, 5000)
+
+      var width = window.innerWidth;
+      var height = window.innerHeight;
+
+      var stage = new Konva.Stage({
+        container: 'container',
+        width: width,
+        height: height,
+      });
+
+      var layer = new Konva.Layer();
+
+
+      
+
+      var circle = new Konva.Circle({
+        x: stage.width() / 2,
+        y: stage.height() / 2,
+        radius: 70,
+        fill: 'red',
+        stroke: 'black',
+        strokeWidth: 4,
+      });
+
+      // add the shape to the layer
+      layer.add(circle);
+
+      // add the layer to the stage
+      stage.add(layer);
+</script>
+
+</html>

@@ -1,0 +1,9 @@
+packages:
+  - packages/**
+  - "apps/*"
+catalogs:
+  prisma:
+    prisma: 7.3.0
+
+onlyBuiltDependencies:
+  - better-sqlite3

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航线图</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        canvas {
+            display: block;
+            background-color: white;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="flightCanvas" width="500" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('flightCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 定义坐标点
+        const point1 = { x: 200, y: 200 };
+        const point2 = { x: 300, y: 140 };
+        
+        function draw() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制从点1到点2的航线
+            ctx.beginPath();
+            ctx.moveTo(point1.x, point1.y);
+            ctx.lineTo(point2.x, point2.y);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制从点2回到点1的水滴形状路径（使用贝塞尔曲线）
+            ctx.beginPath();
+            ctx.moveTo(point2.x, point2.y);
+            
+            // 添加虚拟控制点，让下半部分更水平
+            const midY = (point1.y + point2.y) / 2 + 50; // 虚拟点Y坐标，让曲线底部更平
+            const controlPoint1 = { x: 320, y: 160 };  // 第一个控制点
+            const controlPoint2 = { x: 320, y: 240 };  // 第二个控制点
+            
+            // 贝塞尔曲线形成水滴形状
+            ctx.bezierCurveTo(
+                controlPoint1.x, controlPoint1.y,
+                controlPoint2.x, controlPoint2.y,
+                point1.x, point1.y
+            );
+            
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制控制点（虚拟点） - 可选，用于可视化控制点
+            ctx.beginPath();
+            ctx.arc(controlPoint1.x, controlPoint1.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(controlPoint2.x, controlPoint2.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.5)';
+            ctx.fill();
+            
+            // 绘制主要点
+            ctx.beginPath();
+            ctx.arc(point1.x, point1.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(point2.x, point2.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+        }
+        
+        draw();
+    </script>
+</body>
+</html>

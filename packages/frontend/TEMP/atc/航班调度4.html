@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>44</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin: 10px;
+        }
+
+        td,
+        th {
+            border: 1px solid black;
+            padding: 0px 5px 0px 5px;
+
+        }
+
+        @media print {
+            .print-page-table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+
+                page-break-before: always;
+                break-before: page;
+
+                page-break-after: always;
+                break-after: page;
+
+                width: 90%;
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            table.keep-together {
+                page-break-inside: avoid;
+                /* 防止表格内部分页 */
+                break-inside: avoid !important;
+                /* 现代浏览器标准属性 */
+
+                page-break-before: always;
+                /* 在表格前强制分页 */
+                break-before: page !important;
+                /* 现代浏览器标准属性 */
+
+                page-break-after: always;
+                /* 在表格后强制分页 */
+                break-after: page !important;
+                /* 现代浏览器标准属性 */
+            }
+
+           
+        }
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+    </style>
+
+</head>
+
+<body>
+    <table class="print-page-table keep-together">
+        <tbody>
+            <tr>
+                <td>序号</td>
+                <td>视频监管重点</td>
+                <td>完成情况</td>
+                <td>备注</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>视频监管检查重点（入位前检查）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>人员、车辆、设备、货物、行李在指定区域等待。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="6">4</td>
+                <td>保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>廊桥活动端应处于廊桥回位点。（客运）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>桥载设备处于复位状态。（客运）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>安全停泊后，接机人员向靠机操作人员给靠机指令。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>视频监管检查重点（靠机作业）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="4">8</td>
+                <td>液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+                <td>红色廊桥活动区，禁止任何车辆和设备进入。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>在停机位或作业等待区内挂托盘的车辆不得倒车。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="2">10</th>
+                <td>保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>机务人员在航空器周围设置红色反光锥形标志物。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="3">11</th>
+                <td>保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>未熄火的车辆，驾驶员应当随车等候。</td>
+                <td>
+                    </<td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+                <td>人员佩带工作证件，穿着工作服，并配有反光标识。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="4">12</th>
+                <td>监装监卸人员对航班的装卸过程进行监控。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>行李的装卸和保管应有防雨措施。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+
+                <td>装卸人员按规定要求实施装卸（注：遇有危品运输，轻拿轻放，严格按标签操作）。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>对已装舱的行李、货物及锁扣、挡板应进行固定，并确认已关闭、锁牢货舱门。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+
+    </table>
+    <table class="print-page-table keep-together">
+        <tbody>
+            <tr>
+                <td>序号</td>
+                <td>视频监管重点</td>
+                <td>完成情况</td>
+                <td>备注</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>视频监管检查重点（入位前检查）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>人员、车辆、设备、货物、行李在指定区域等待。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="6">4</td>
+                <td>保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>廊桥活动端应处于廊桥回位点。（客运）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>桥载设备处于复位状态。（客运）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>安全停泊后，接机人员向靠机操作人员给靠机指令。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>视频监管检查重点（靠机作业）</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="4">8</td>
+                <td>液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+                <td>红色廊桥活动区，禁止任何车辆和设备进入。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>在停机位或作业等待区内挂托盘的车辆不得倒车。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="2">10</th>
+                <td>保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>机务人员在航空器周围设置红色反光锥形标志物。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="3">11</th>
+                <td>保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>未熄火的车辆，驾驶员应当随车等候。</td>
+                <td>
+                    </<td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+                <td>人员佩带工作证件，穿着工作服，并配有反光标识。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th rowspan="4">12</th>
+                <td>监装监卸人员对航班的装卸过程进行监控。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>行李的装卸和保管应有防雨措施。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+
+
+                <td>装卸人员按规定要求实施装卸（注：遇有危品运输，轻拿轻放，严格按标签操作）。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="display: none;"></td>
+                <td>对已装舱的行李、货物及锁扣、挡板应进行固定，并确认已关闭、锁牢货舱门。</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</body>
+
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>航班信息/放行许可</title>
+    <link rel="stylesheet"
+        href="style2.css">
+    <style>
+        /* 针对下拉框的微调，使其更符合截图风格 */
+        .select-transparent {
+            background: #222;
+            color: #ffff00;
+            /* 跑道用黄色 */
+            border: 1px solid #444;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .select-corridor {
+            color: #fff;
+            font-size: 16px;
+            min-width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>TOMS进程单</h1>
+    <div class="container">
+        <div class="btn-close">× 关闭</div>
+        <div class="header">
+            <span class="flight-id">TEST2222</span>
+            <span style="margin-right: 20px;">PRE</span>
+            <span class="label">目的地:</span> <span id="dest_val">ZYCY</span> 朝阳
+            <span style="margin-left: 30px;"
+                class="label">EOBT:</span> 0735
+        </div>
+
+        <div class="info-row">
+            <div><span class="label">呼号:</span> --- / ---</div>
+            <div><span class="label">停机位:</span> <span class="value-box">212</span></div>
+            <div><span class="label">CTOT:</span> <span class="value-box"> 00:00</span></div>
+            <div><span class="label">任务:</span> /</div>
+            <div><span class="label">机型:</span> /</div>
+        </div>
+
+        <div style="margin: 10px 0; font-weight: bold;">FPL 航路:</div>
+
+        <div class="info-row"
+            style="align-items: center;">
+            <span class="label">起飞跑道:</span>
+            <select id="rw_select"
+                class="select-transparent">
+                <option value="01R">01R</option>
+                <option value="01L">01L</option>
+                <option value="19L">19L</option>
+                <option value="19R">19R</option>
+            </select>
+
+            <span class="label"
+                style="margin-left: 20px;">离场程序:</span>
+            <select id="corridor_select"
+                class="select-transparent select-corridor"></select>
+
+            <select id="sid_suffix"
+                class="select-transparent select-corridor"></select>
+
+            <span class="label"
+                style="margin-left: 20px;">运行模式:</span>
+            <select id="op_mode">
+                <option value="RNAV">RNAV运行模式</option>
+                <option value="TRAN">TRAN运行模式</option>
+            </select>
+            <span class="label"
+            style="margin-left: 20px;">起始高度:</span> <span class="value-box">900</span> m
+            <span class="label"
+            style="margin-left: 20px;">应答机:</span> A <span class="value-box">2000</span>
+        </div>
+
+
+        <div class="info-row">
+            <span class="label">离场频率:</span> <span class="value-box">121.2</span>
+            <span class="label"
+                style="margin-left: 20px;">放行频率:</span> <span class="value-box">118.375</span>
+                <span class="label"
+                style="margin-left: 10px;">通播号:</span>
+            <span class="value-box"
+                style="min-width: 20px;">G</span>
+         
+        </div>
+
+
+        <div class="info-row"
+            style="align-items: center;">
+            <span class="label">自由文本:</span>
+            <select id="op_mode" style="width: 800px;">
+                <option value="RNAV"></option>
+                <option value="TRAN">WHEN AIRBORN RUNWAY HEADING</option>
+            </select>
+
+
+
+        </div>
+        <div class="warning-text">
+            不具备RNAV能力，请使用传统离场程序！ &nbsp;&nbsp; 不具备RVSM能力！ &nbsp;&nbsp; 无领航计划报文，请核实！
+        </div>
+        <div class="btn-group">
+            <button>⊹ 数字放行</button>
+            <button>👤 人工放行</button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+
+    <script>
+        const rwSelect = document.getElementById('rw_select');
+        const corridorSelect = document.getElementById('corridor_select');
+        const sidSuffixSelect = document.getElementById('sid_suffix');
+        const opModeSelect = document.getElementById('op_mode');
+        const destName = document.getElementById('dest_val').innerText;
+
+        // 1. 初始化走廊口下拉菜单 (从 config.js 的 FIX_ORDER 获取)
+        function initCorridors() {
+            corridorSelect.innerHTML = "";
+            FIX_ORDER.forEach(corridor => {
+                let opt = document.createElement('option');
+                opt.value = corridor;
+                opt.innerText = corridor;
+                // 自动选中匹配目的地的走廊口
+                if (corridor === DEST_CONFIG[destName]) {
+                    opt.selected = true;
+                }
+                corridorSelect.appendChild(opt);
+            });
+        }
+
+        // 2. 根据 跑道 + 模式 + 走廊口，更新后缀下拉菜单
+        function updateSIDOptions() {
+            const currentRW = rwSelect.value;
+            const currentMode = opModeSelect.value;
+            const currentCorridor = corridorSelect.value;
+
+            // 获取对应的后缀数组
+            const suffixes = SID_TABLE[currentMode][currentRW][currentCorridor] || [];
+
+            sidSuffixSelect.innerHTML = "";
+            suffixes.forEach(s => {
+                let opt = document.createElement('option');
+                // 拼接显示，如 URGEB + 9X (根据习惯这里可以只显示后缀或全称)
+                opt.value = currentCorridor + s;
+                opt.innerText = currentCorridor + "-" + s;
+                sidSuffixSelect.appendChild(opt);
+            });
+        }
+
+        // 事件监听
+        rwSelect.onchange = updateSIDOptions;
+        corridorSelect.onchange = updateSIDOptions;
+        opModeSelect.onchange = updateSIDOptions;
+
+        // 页面加载执行
+        window.onload = () => {
+            initCorridors();
+            updateSIDOptions();
+        };
+    </script>
+
+</body>
+
+</html>

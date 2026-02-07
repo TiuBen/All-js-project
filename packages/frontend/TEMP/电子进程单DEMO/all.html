@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>双系统进程单</title>
+    <style>
+        /* 通用重置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #2c2e3a;
+            color: #fff;
+            font-family: "Microsoft YaHei", sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-align: center;
+            color: #eee;
+        }
+
+        /* 为TOMS系统添加前缀 */
+        .toms-wrapper {
+            position: relative;
+        }
+
+        .toms-wrapper h1 {
+            color: #7CFF00;
+        }
+
+        .toms-container {
+            background: #3d414d;
+            border: 1px solid #555;
+            padding: 15px;
+            width: 1200px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .toms-header {
+            border-bottom: 2px solid #555;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .toms-flight-id {
+            color: #00ff66;
+            font-size: 32px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+
+        .toms-info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .toms-label {
+            color: #ccc;
+            margin-right: 5px;
+        }
+
+        .toms-value-box {
+            background: #222;
+            border: 1px solid #666;
+            padding: 3px 8px;
+            min-width: 60px;
+            display: inline-block;
+        }
+
+        /* TOMS下拉菜单与交互样式 */
+        .toms-select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #666;
+            padding: 4px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .toms-select-transparent {
+            background: #222;
+            color: #ffff00;
+            /* 跑道用黄色 */
+            border: 1px solid #444;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .toms-select-corridor {
+            color: #fff;
+            font-size: 16px;
+            min-width: 80px;
+        }
+
+        .toms-runway-box {
+            color: #ffff00;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toms-warning-text {
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .toms-btn-group {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .toms-btn {
+            background: #444;
+            color: #eee;
+            border: none;
+            padding: 8px 25px;
+            margin: 0 10px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .toms-btn:hover {
+            background: #555;
+        }
+
+        .toms-btn-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: #aaa;
+            cursor: pointer;
+        }
+
+        /* 为莱斯系统添加前缀 */
+        .lais-wrapper {
+            position: relative;
+        }
+
+        .lais-wrapper h1 {
+            color: #d9b27c;
+        }
+
+        .lais-container {
+            width: 1200px;
+            margin: 0 auto;
+            background: #323742;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .lais-top-bar {
+            display: grid;
+            grid-template-columns: 220px 240px 240px 220px 220px;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .lais-field {
+            display: flex;
+            align-items: center;
+        }
+
+        .lais-field label {
+            width: 70px;
+            font-size: 13px;
+            color: #b0b6c0;
+        }
+
+        .lais-field input,
+        .lais-field select {
+            flex: 1;
+            height: 28px;
+            background: #3a3f4b;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 0 6px;
+        }
+
+        .lais-flight-no {
+            color: #7CFF00;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .lais-section {
+            margin-top: 12px;
+        }
+
+        .lais-section-row {
+            display: grid;
+            grid-template-columns: 280px 280px 280px 280px;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .lais-footer {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lais-warning {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .lais-btn {
+            width: 110px;
+            height: 34px;
+            background: #505866;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .lais-btn.primary {
+            background: #d9b27c;
+            color: #000;
+        }
+
+        /* 分隔线样式 */
+        .separator {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #555, transparent);
+            margin: 20px auto;
+            width: 90%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOMS系统部分 -->
+    <div class="toms-wrapper">
+        <h1>TOMS进程单</h1>
+        <div class="toms-container">
+            <div class="toms-btn-close">× 关闭</div>
+            <div class="toms-header">
+                <span class="toms-flight-id">TEST2222</span>
+                <span style="margin-right: 20px;">PRE</span>
+                <span class="toms-label">目的地:</span> <span id="toms-dest_val">ZYCY</span> 朝阳
+                <span style="margin-left: 30px;"
+                    class="toms-label">EOBT:</span> 0735
+            </div>
+
+            <div class="toms-info-row">
+                <div><span class="toms-label">呼号:</span> --- / ---</div>
+                <div><span class="toms-label">停机位:</span> <span class="toms-value-box">212</span></div>
+                <div><span class="toms-label">CTOT:</span> <span class="toms-value-box"> 00:00</span></div>
+                <div><span class="toms-label">任务:</span> /</div>
+                <div><span class="toms-label">机型:</span> /</div>
+            </div>
+
+            <div style="margin: 10px 0; font-weight: bold;">FPL 航路:</div>
+
+            <div class="toms-info-row"
+                style="align-items: center;">
+                <span class="toms-label">起飞跑道:</span>
+                <select id="toms-rw_select"
+                    class="toms-select-transparent">
+                    <option value="01R">01R</option>
+                    <option value="01L">01L</option>
+                    <option value="19L">19L</option>
+                    <option value="19R">19R</option>
+                </select>
+
+                <span class="toms-label"
+                    style="margin-left: 20px;">离场程序:</span>
+                <select id="toms-corridor_select"
+                    class="toms-select-transparent toms-select-corridor"></select>
+
+                <select id="toms-sid_suffix"
+                    class="toms-select-transparent toms-select-corridor"></select>
+
+                <span class="toms-label"
+                    style="margin-left: 20px;">运行模式:</span>
+                <select id="toms-op_mode"
+                    class="toms-select-transparent toms-select-corridor">
+                    <option value="RNAV">RNAV运行模式</option>
+                    <option value="TRAN">TRAN运行模式</option>
+                </select>
+                <span class="toms-label"
+                    style="margin-left: 20px;">起始高度:</span> <span class="toms-value-box">900</span> m
+                <span class="toms-label"
+                    style="margin-left: 20px;">应答机:</span> A <span class="toms-value-box">2000</span>
+            </div>
+
+            <div class="toms-info-row">
+                <span class="toms-label">离场频率:</span> <span class="toms-value-box">121.2</span>
+                <span class="toms-label"
+                    style="margin-left: 20px;">放行频率:</span> <span class="toms-value-box">118.375</span>
+                <span class="toms-label"
+                    style="margin-left: 10px;">通播号:</span>
+                <span class="toms-value-box"
+                    style="min-width: 20px;">G</span>
+            </div>
+
+            <div class="toms-info-row"
+                style="align-items: center;">
+                <span class="toms-label">自由文本:</span>
+                <select id="toms-op_mode2"
+                    class="toms-select-transparent toms-select-corridor"
+                    style="width: 800px;">
+                    <option value="RNAV"></option>
+                    <option value="TRAN">WHEN AIRBORN RUNWAY HEADING</option>
+                </select>
+            </div>
+
+            <div class="toms-warning-text">
+                不具备RNAV能力，请使用传统离场程序！ &nbsp;&nbsp; 不具备RVSM能力！ &nbsp;&nbsp; 无领航计划报文，请核实！
+            </div>
+
+            <div class="toms-btn-group">
+                <button class="toms-btn">⊹ 数字放行</button>
+                <button class="toms-btn">👤 人工放行</button>
+            </div>
+
+
+        </div>
+        <h2 style="text-align: center;margin-top: 20px;">按照现有逻辑，TOMS进程单已经确定走廊口的还可以更改走廊口</h2>
+    </div>
+
+    <!-- 分隔线 -->
+    <div class="separator"></div>
+
+    <!-- 莱斯系统部分 -->
+    <div class="lais-wrapper">
+        <h1>莱斯进程单</h1>
+        <div class="lais-container">
+            <!-- 顶部 -->
+            <div class="lais-top-bar">
+                <div class="lais-field"
+                    style="grid-row-start: 0;grid-row-end: 2;">
+                    <label>航班号</label>
+                    <span class="lais-flight-no">TEST1111</span>
+                </div>
+
+                <div class="lais-field">
+                    <label>目的地</label>
+                    <select id="lais-destSelect"></select>
+                </div>
+
+                <div class="lais-field">
+                    <label>EOBT:</label>
+                    <span>07:40</span>
+                </div>
+
+                <div class="lais-field">
+                    <label>任务</label>
+                    <span></span>
+                </div>
+                <div class="lais-field">
+                    <label>机型</label>
+                    <span>A320/M</span>
+                </div>
+                <div> </div>
+
+                <div class="lais-field">
+                    <label>停机位</label>
+                    <input value="" />
+                </div>
+                <div class="lais-field">
+                    <label>CTOT:</label>
+                    <span></span>
+                </div>
+                <div class="lais-field">
+                    <label>注册号：</label>
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- 中部 -->
+            <div class="lais-section">
+                <div>FPL 航路</div>
+                <div class="lais-section-row">
+                    <div class="lais-field">
+                        <label>起飞跑道：</label>
+                        <select id="lais-runwaySelect">
+                            <option>01L</option>
+                            <option>01R</option>
+                            <option>19L</option>
+                            <option>19R</option>
+                        </select>
+                    </div>
+
+                    <div class="lais-field">
+                        <label>离场程序</label>
+                        <select id="lais-sidSelect"></select>
+                        <select id="lais-typeSelect">
+                            <option>RNAV</option>
+                            <option>TRAN</option>
+                        </select>
+                    </div>
+
+                    <div class="lais-field">
+                        <label>起始高度</label>
+                        <input value="S0090">
+                    </div>
+
+                    <div class="lais-field">
+                        <label>应答机</label>
+                        <input value="A0601">
+                    </div>
+                </div>
+
+                <div class="lais-section-row">
+                    <div class="lais-field">
+                        <label>离场频率：</label>
+                        <input value="121.2">
+                    </div>
+
+                    <div class="lais-field">
+                        <label>放行频率</label>
+                        <input>
+                    </div>
+
+                    <div class="lais-field">
+                        <label>通波号</label>
+                        <input value="G">
+                    </div>
+                </div>
+
+                <div class="lais-field">
+                    <label>自由文本</label>
+                    <select id="lais-typeSelect">
+                        <option></option>
+                        <option>WHEN AIRBORN RUNWAY HEADING</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 底部 -->
+            <div class="lais-footer"
+                style="justify-content: center; gap: 80px;">
+                <div>
+                    <button class="lais-btn primary">数字放行</button>
+                    <button class="lais-btn">人工放行</button>
+                </div>
+                <div>
+                    <button class="lais-btn">保存</button>
+                </div>
+            </div>
+            
+        </div>
+        <h2 style="text-align: center;margin-top: 20px;">莱斯电子进程单已经确定走廊口的不可以修改走廊口</h2>
+    </div>
+
+    <!-- 模拟的config.js数据 -->
+    <script>
+        /* =====================
+        目的地 → 唯一走廊口
+     ===================== */
+
+        const DEST_CONFIG = {
+            "机场1": "URGEB",
+            "机场2": "P36",
+            "机场3": "TULMU",
+            "机场4": "OLMIB",
+            "机场5": "GUGAM",
+            "机场6": "BENBI"
+        };
+
+        /* =====================
+           表头固定顺序
+        ===================== */
+
+        const FIX_ORDER = ["URGEB", "P36", "TULMU", "OLMIB", "GUGAM", "BENBI"];
+
+        /* =====================
+           能力配置（与你截图一致）
+        ===================== */
+
+        const SID_TABLE = {
+            RNAV: {
+                "01L": {
+                    URGEB: ["9", "7"],
+                    P36: ["X"],
+                    TULMU: ["5"],
+                    OLMIB: ["9", "7", "5"],
+                    GUGAM: ["9", "7", "5"],
+                    BENBI: ["9", "7"]
+                },
+                "01R": {
+                    URGEB: ["9", "7"],
+                    P36: ["X"],
+                    TULMU: ["5", "3"],
+                    OLMIB: ["9", "7", "5"],
+                    GUGAM: ["9", "7", "5"],
+                    BENBI: ["9", "7"]
+                },
+                "19L": {
+                    URGEB: ["9"],
+                    P36: ["X"],
+                    TULMU: ["5", "3"],
+                    OLMIB: ["9", "5"],
+                    GUGAM: ["9", "5"],
+                    BENBI: ["9"]
+                },
+                "19R": {
+                    URGEB: ["9"],
+                    P36: ["X"],
+                    TULMU: ["5", "3"],
+                    OLMIB: ["9", "5"],
+                    GUGAM: ["9", "5"],
+                    BENBI: ["9"]
+                }
+            },
+
+            TRAN: {
+                "01L": {
+                    URGEB: ["8", "6", "RV"],
+                    P36: ["W", "RV"],
+                    TULMU: ["4", "RV"],
+                    OLMIB: ["8", "6", "4", "RV"],
+                    GUGAM: ["8", "6", "4", "RV"],
+                    BENBI: ["8", "6", "RV"]
+                },
+                "01R": {
+                    URGEB: ["8", "6", "RV"],
+                    P36: ["W", "RV"],
+                    TULMU: ["4", "RV"],
+                    OLMIB: ["8", "6", "4", "RV"],
+                    GUGAM: ["8", "6", "4", "RV"],
+                    BENBI: ["8", "6", "RV"]
+                },
+                "19L": {
+                    URGEB: ["8", "RV"],
+                    P36: ["W", "RV"],
+                    TULMU: ["4", "2", "RV"],
+                    OLMIB: ["8", "4", "RV"],
+                    GUGAM: ["8", "4", "RV"],
+                    BENBI: ["8", "RV"]
+                },
+                "19R": {
+                    URGEB: ["8", "RV"],
+                    P36: ["W", "RV"],
+                    TULMU: ["4", "2", "RV"],
+                    OLMIB: ["8", "4", "RV"],
+                    GUGAM: ["8", "4", "RV"],
+                    BENBI: ["8", "RV"]
+                }
+            }
+        };
+
+    </script>
+
+    <script>
+        // TOMS系统JavaScript
+        const tomsRwSelect = document.getElementById('toms-rw_select');
+        const tomsCorridorSelect = document.getElementById('toms-corridor_select');
+        const tomsSidSuffixSelect = document.getElementById('toms-sid_suffix');
+        const tomsOpModeSelect = document.getElementById('toms-op_mode');
+        const tomsDestName = document.getElementById('toms-dest_val').innerText;
+
+        // 1. 初始化走廊口下拉菜单 (从 config.js 的 FIX_ORDER 获取)
+        function tomsInitCorridors() {
+            tomsCorridorSelect.innerHTML = "";
+            FIX_ORDER.forEach(corridor => {
+                let opt = document.createElement('option');
+                opt.value = corridor;
+                opt.innerText = corridor;
+                // 自动选中匹配目的地的走廊口
+                if (corridor === DEST_CONFIG[tomsDestName]) {
+                    opt.selected = true;
+                }
+                tomsCorridorSelect.appendChild(opt);
+            });
+        }
+
+        // 2. 根据 跑道 + 模式 + 走廊口，更新后缀下拉菜单
+        function tomsUpdateSIDOptions() {
+            const currentRW = tomsRwSelect.value;
+            const currentMode = tomsOpModeSelect.value;
+            const currentCorridor = tomsCorridorSelect.value;
+
+            // 获取对应的后缀数组
+            const suffixes = SID_TABLE[currentMode][currentRW][currentCorridor] || [];
+
+            tomsSidSuffixSelect.innerHTML = "";
+            suffixes.forEach(s => {
+                let opt = document.createElement('option');
+                // 拼接显示，如 URGEB + 9X (根据习惯这里可以只显示后缀或全称)
+                opt.value = currentCorridor + s;
+                if (s !== "RV") {
+                    opt.innerText = currentCorridor + "-" + s;
+                    tomsSidSuffixSelect.appendChild(opt);
+                } else {
+                    opt.innerText = s;
+                    tomsSidSuffixSelect.appendChild(opt);
+                }
+
+            });
+        }
+
+        // 事件监听
+        tomsRwSelect.onchange = tomsUpdateSIDOptions;
+        tomsCorridorSelect.onchange = tomsUpdateSIDOptions;
+        tomsOpModeSelect.onchange = tomsUpdateSIDOptions;
+
+        // 页面加载执行
+        window.onload = () => {
+            tomsInitCorridors();
+            tomsUpdateSIDOptions();
+            laisUpdateSIDOptions(); // 初始化莱斯系统
+        };
+
+        // 莱斯系统JavaScript
+        const laisDestSelect = document.getElementById("lais-destSelect");
+        const laisRunwaySelect = document.getElementById("lais-runwaySelect");
+        const laisTypeSelect = document.getElementById("lais-typeSelect"); // RNAV / TRAD
+        const laisSidSelect = document.getElementById("lais-sidSelect");
+
+        /* ===== 初始化目的地下拉 ===== */
+        Object.keys(DEST_CONFIG).forEach(dest => {
+            const opt = document.createElement("option");
+            opt.value = dest;
+            opt.textContent = dest;
+            laisDestSelect.appendChild(opt);
+        });
+
+        /* ===== 核心：更新 SID 下拉 ===== */
+        function laisUpdateSIDOptions() {
+            laisSidSelect.innerHTML = "";
+
+            const dest = laisDestSelect.value;
+            const runway = laisRunwaySelect.value;
+            const type = laisTypeSelect.value; // RNAV / TRAD
+
+            if (!dest || !runway || !type) return;
+
+            // ① 目的地 → 唯一走廊口
+            const fix = DEST_CONFIG[dest];
+            if (!fix) return;
+
+            // ② 查能力数组
+            const caps =
+                SID_TABLE[type] &&
+                SID_TABLE[type][runway] &&
+                SID_TABLE[type][runway][fix];
+
+            if (!caps || caps.length === 0) return;
+
+            // ③ 生成 SID 名称（走廊口 + 能力）
+            caps.forEach(cap => {
+                const opt = document.createElement("option");
+                if (cap !== "RV") {
+                    opt.value = `${fix}-${cap}`;
+                    opt.innerText = `${fix}-${cap}`;
+                } else {
+                    opt.value = `${fix}-${cap}`;
+                    opt.innerText = `${cap}`;
+                }
+
+                laisSidSelect.appendChild(opt);
+            });
+        }
+
+        /* ===== 监听联动 ===== */
+        laisDestSelect.addEventListener("change", laisUpdateSIDOptions);
+        laisRunwaySelect.addEventListener("change", laisUpdateSIDOptions);
+        laisTypeSelect.addEventListener("change", laisUpdateSIDOptions);
+    </script>
+</body>
+
+</html>

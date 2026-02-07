@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Airway Canvas Demo</title>
+    <style>
+        body {
+            margin: 0;
+            background: #f5f5f5;
+            font-family: "Consolas",
+                "Microsoft YaHei Mono",
+                "PingFang SC",
+                monospace;
+        }
+
+        canvas {
+            display: block;
+            /* margin: 20px auto; */
+            background: #ffffff;
+            border: 1px solid #ccc;
+        }
+
+        #sidPanel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: white;
+        }
+
+        #depTranPanel {
+            position: absolute;
+            top: 130px;
+            left: 10px;
+            z-index: 110;
+            background: white;
+        }
+
+        #arrRNAVPanel {
+            position: absolute;
+            top: 255px;
+            left: 10px;
+            z-index: 110;
+            background: white;
+        }
+
+        #arrTranPanel {
+            position: absolute;
+            top: 375px;
+            left: 10px;
+            z-index: 110;
+            background: white;
+        }
+
+        #ilsRNAVPanel {
+            position: absolute;
+            top: 500px;
+            left: 10px;
+            z-index: 110;
+            background: white;
+        }
+
+        #ilsTranPanel {
+            position: absolute;
+            top: 620px;
+            left: 10px;
+            z-index: 110;
+            background: white;
+        }
+
+
+        #map {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 0;
+        }
+
+        .sid-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+
+        }
+
+        .sid-table th,
+        .sid-table td {
+            border: 1px solid #ccc;
+            padding: 2px 4px;
+            text-align: left;
+            vertical-align: middle;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
+        .sid-table th {
+            background: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .sid-table td.rwy {
+            font-weight: bold;
+            background: #fafafa;
+            white-space: nowrap;
+        }
+
+        .sid-table td label {
+            margin-right: 6px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14PX;
+        }
+
+        .sid-table input {
+            margin-right: 2px;
+        }
+
+
+        #routeNoticeContainer {
+            position: fixed;
+            left: 16px;
+            bottom: 16px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .route-notice {
+            min-width: 220px;
+            max-width: 320px;
+            padding: 10px 14px;
+            background: rgba(20, 20, 20, 0.85);
+            color: #fff;
+            font-size: 13px;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+            backdrop-filter: blur(6px);
+
+            animation: slideIn .25s ease-out;
+        }
+
+        .route-notice .title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #ffd166;
+        }
+
+        .route-notice .comment {
+            line-height: 1.4;
+            opacity: .9;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="map"></canvas>
+    <div id="sidPanel"></div>
+    <div id="depTranPanel"></div>
+    <div id="arrRNAVPanel"></div>
+    <div id="arrTranPanel"></div>
+    <div id="ilsRNAVPanel"></div>
+    <div id="ilsTranPanel"></div>
+    <div id="routeNoticeContainer"></div>
+
+    <script type="module"
+        src="./app.js"></script>
+</body>
+
+</html>

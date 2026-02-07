@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Text Effect</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: transparent;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .loading-text {
+            color: aqua;
+            font-size: 2em;
+            animation: fade 1.2s infinite;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0.1;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+            }
+            100% {
+                opacity: 0.1;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-text">Loading...</div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>航班信息 / 放行许可</title>
+    <link rel="stylesheet"
+        href="style.css">
+</head>
+
+<body>
+    <h1>莱斯进程单</h1>
+    <div class="container">
+
+        <!-- 顶部 -->
+        <div class="top-bar">
+            <div class="field"
+                style="grid-row-start: 0;grid-row-end: 2;">
+                <label>航班号</label>
+                <span class="flight-no">TEST1111</span>
+            </div>
+
+            <div class="field">
+                <label>目的地</label>
+                <select id="destSelect"></select>
+            </div>
+
+            <div class="field">
+                <label>EOBT:</label>
+                <span>07:40</span>
+            </div>
+
+            <div class="field">
+                <label>任务</label>
+                <span></span>
+            </div>
+            <div class="field">
+                <label>机型</label>
+                <span>A320/M</span>
+            </div>
+            <div> </div>
+
+            <div class="field">
+                <label>停机位</label>
+                <input value="" />
+            </div>
+            <div class="field">
+                <label>CTOT:</label>
+                <span></span>
+            </div>
+            <div class="field">
+                <label>注册号：</label>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- 中部 -->
+        <div class="section">
+            <div>FPL 航路</div>
+            <div class="section-row">
+                <div class="field">
+                    <label>起飞跑道：</label>
+                    <select id="runwaySelect">
+                        <option>01L</option>
+                        <option>01R</option>
+                        <option>19L</option>
+                        <option>19R</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>离场程序</label>
+                    <select id="sidSelect"></select>
+                    <select id="typeSelect">
+                        <option>RNAV</option>
+                        <option>TRAN</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>起始高度</label>
+                    <input value="S0090">
+                </div>
+
+                <div class="field">
+                    <label>应答机</label>
+                    <input value="A0601">
+                </div>
+            </div>
+
+            <div class="section-row">
+                <div class="field">
+                    <label>离场频率：</label>
+                    <input value="121.2">
+                </div>
+
+                <div class="field">
+                    <label>放行频率</label>
+                    <input>
+                </div>
+
+                <div class="field">
+                    <label>通波号</label>
+                    <input value="G">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>自由文本</label>
+                <input style="width:100%">
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer"
+            style="justify-content: center; gap: 80px;">
+
+
+            <div>
+                <button class="primary">数字放行</button>
+                <button>人工放行</button>
+            </div>
+            <div>
+                <button>保存</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const destSelect = document.getElementById("destSelect");
+        const runwaySelect = document.getElementById("runwaySelect");
+        const typeSelect = document.getElementById("typeSelect"); // RNAV / TRAD
+        const sidSelect = document.getElementById("sidSelect");
+
+        /* ===== 初始化目的地下拉 ===== */
+        Object.keys(DEST_CONFIG).forEach(dest => {
+            const opt = document.createElement("option");
+            opt.value = dest;
+            opt.textContent = dest;
+            destSelect.appendChild(opt);
+        });
+
+        /* ===== 核心：更新 SID 下拉 ===== */
+        function updateSIDOptions() {
+            sidSelect.innerHTML = "";
+
+            const dest = destSelect.value;
+            const runway = runwaySelect.value;
+            const type = typeSelect.value; // RNAV / TRAD
+
+            if (!dest || !runway || !type) return;
+
+            // ① 目的地 → 唯一走廊口
+            const fix = DEST_CONFIG[dest];
+            if (!fix) return;
+
+            // ② 查能力数组
+            const caps =
+                SID_TABLE[type] &&
+                SID_TABLE[type][runway] &&
+                SID_TABLE[type][runway][fix];
+
+            if (!caps || caps.length === 0) return;
+
+            // ③ 生成 SID 名称（走廊口 + 能力）
+            caps.forEach(cap => {
+                const opt = document.createElement("option");
+                opt.value = `${fix}-${cap}`;
+                opt.textContent = `${fix}-${cap}`;
+                sidSelect.appendChild(opt);
+            });
+        }
+
+        /* ===== 监听联动 ===== */
+        destSelect.addEventListener("change", updateSIDOptions);
+        runwaySelect.addEventListener("change", updateSIDOptions);
+        typeSelect.addEventListener("change", updateSIDOptions);
+
+        /* ===== 初始执行一次 ===== */
+        updateSIDOptions();
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "atc-duty-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "pnpm prisma generate",
+    "migrate": "pnpm prisma migrate dev",
+    "run": "tsx watch test-db.ts"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.2",
+  "dependencies": {
+    "@prisma/adapter-libsql": "^7.3.0",
+    "dotenv": "^16.6.1",
+    "prisma": "catalog:prisma"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.1",
+    "@types/pg": "^8.16.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

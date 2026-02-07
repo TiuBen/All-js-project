@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>React单文件示例 - 国内CDN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            /* background: linear-gradient(135deg, #cac7ce 0%, #bebebe 100%); */
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        header {
+            background: #1890ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* ========== 可调参数 ========== */
+        :root {
+            --sw-h: 24px;
+            /* 高度 */
+            --sw-w: 44px;
+            /* 宽度 */
+            --sw-pad: 2px;
+            /* 内边距（影响圆点边距） */
+            --sw-off: #cbd5e1;
+            /* 关闭底色 */
+            --sw-on: #22c55e;
+            /* 开启底色 */
+            --sw-dot: #fff;
+            /* 圆点颜色 */
+            --sw-focus: 0 0 0 3px rgba(34, 197, 94, .35);
+            /* 焦点环 */
+            --sw-duration: .2s;
+            /* 动画时长 */
+            --sw-disabled: #e5e7eb;
+            /* 禁用底色 */
+        }
+
+        /* ========== 基础结构 ========== */
+        .switch {
+            position: relative;
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            vertical-align: middle;
+            line-height: 1;
+            width: 8rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: larger;
+            font-weight: bold;
+        }
+
+        /* 隐藏原生复选框，但保留可访问性 */
+        .switch input[type="checkbox"] {
+            position: absolute;
+            inline-size: var(--sw-w);
+            block-size: var(--sw-h);
+            opacity: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* 视觉轨道 */
+        .switch .track {
+            inline-size: var(--sw-w);
+            block-size: var(--sw-h);
+            background: var(--sw-off);
+            border-radius: 9999px;
+            position: relative;
+            transition: background var(--sw-duration) ease;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
+        }
+
+        /* 圆点 */
+        .switch .thumb {
+            position: absolute;
+            inset-block-start: var(--sw-pad);
+            inset-inline-start: var(--sw-pad);
+            inline-size: calc(var(--sw-h) - var(--sw-pad) * 2);
+            block-size: calc(var(--sw-h) - var(--sw-pad) * 2);
+            background: var(--sw-dot);
+            border-radius: 50%;
+            transition: transform var(--sw-duration) ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 2px 6px rgba(0, 0, 0, .08);
+        }
+
+        /* 选中状态：轨道变色、圆点右移 */
+        .switch input[type="checkbox"]:checked+.track {
+            background: var(--sw-on);
+        }
+
+        .switch input[type="checkbox"]:checked+.track .thumb {
+            transform: translateX(calc(var(--sw-w) - var(--sw-h)));
+        }
+
+        /* 焦点可视化（键盘 Tab 时） */
+        .switch input[type="checkbox"]:focus-visible+.track {
+            outline: none;
+            box-shadow: var(--sw-focus);
+        }
+
+        /* 禁用态 */
+        .switch input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+
+        .switch input[type="checkbox"]:disabled+.track {
+            background: var(--sw-disabled);
+            opacity: .75;
+        }
+
+        .switch input[type="checkbox"]:disabled+.track .thumb {
+            box-shadow: none;
+        }
+
+        /* 尺寸变体（可选） */
+        .switch.sm {
+            --sw-h: 18px;
+            --sw-w: 34px;
+            --sw-pad: 2px;
+        }
+
+        .switch.lg {
+            --sw-h: 32px;
+            --sw-w: 56px;
+            --sw-pad: 3px;
+        }
+    </style>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid black;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body style="display: flex;flex-direction: row; align-items: start; gap:0.5rem;">
+    <table>
+        <tr>
+            <td rowspan="38"
+                style="text-orientation: upright;writing-mode: vertical-rl;text-align: center;">
+                空中
+            </td>
+            <td>
+                EN 英文缩写
+            </td>
+            <td>
+                CN 中文含义
+            </td>
+
+            <td>
+                TWR 是否开启
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>STCA</td>
+            <td>短期冲突告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>STCA</td>
+            <td>短期冲突预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>MSAW</td>
+            <td>低高度告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>MSAW</td>
+            <td>低高度预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>DAIW</td>
+            <td>危险区告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DAIW</td>
+            <td>危险区预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>RA</td>
+            <td>RA告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RA</td>
+            <td>RA预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>MIL</td>
+            <td>告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>MIL</td>
+            <td>预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>NTZ</td>
+            <td>NTZ非侵入区告警</td>
+            <td>&#10004;<label style="background-color: red;">关闭告警</label></td>
+        </tr>
+        <tr>
+            <td>NTZ</td>
+            <td>NTZ非侵入区预警<label style="background-color: red;">关闭告警</label></td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DNTZ</td>
+            <td>DNTZ起飞非侵入区告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DNTZ</td>
+            <td>DNTZ起飞非侵入区预警<label style="background-color: yellow;">只有声音</label></td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD</td>
+            <td>APM切入高度告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>AUD</td>
+            <td>APM上限高度告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD</td>
+            <td>APM下限高度告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>AHD</td>
+            <td>APM航向道告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>CLAM</td>
+            <td>CFL指令不一致<label style="background-color: yellow;">只有声音</label></td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>FSSA</td>
+            <td>选择高度不一致告警<label style="background-color: yellow;">只有声音</label></td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RWU</td>
+            <td>落地跑道不一致</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DUPE</td>
+            <td>二次代码里复告警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>DUPE</td>
+            <td>24位地址码里复告警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>DUPE</td>
+            <td>呼号重复告警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>TUB</td>
+            <td>尾流告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD-AHD</td>
+            <td>APM切入高+航向道告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>AUD-AHD</td>
+            <td>APM高高度+航向道告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD-AHD</td>
+            <td>APM低高度+航向道告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>QNH</td>
+            <td>QNH</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ALD</td>
+            <td>APM偏移告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>AUD-ALD</td>
+            <td>APM高高度+偏移告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD-ALD</td>
+            <td>APM低高度+偏移告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ADD-ALD</td>
+            <td>APM切入高度+偏移告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TUB</td>
+            <td>尾流预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ECA</td>
+            <td>五边冲突告警</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ECA</td>
+            <td>五边冲突预警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+
+
+
+
+    </table>
+    <table>
+        <tr>
+            <td rowspan="58"
+                style="text-orientation: upright;writing-mode: vertical-rl;text-align: center;">
+                地面
+            </td>
+            <td>
+                EN 英文缩写
+            </td>
+            <td>
+                CN 中文含义
+            </td>
+
+            <td>
+                TWR 是否开启
+            </td>
+        </tr>
+        <tr>
+            <td>STATIONARY_CRI</td>
+            <td>穿跑道指令发出保持静止</td>
+            <td>&#10004;<label style="background-color: red;">关闭告警</label></td>
+        </tr>
+        <tr>
+            <td>RIW</td>
+            <td>跑道运行状态不符</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RIW</td>
+            <td>跑道临时状态不符</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TWY_CLSD</td>
+            <td>滑行道关闭</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TWY_WINGSPAN</td>
+            <td>滑行道翼展限制</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TWY_WHEELTRACK</td>
+            <td>滑行道主轮距限制</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TWY_PCN</td>
+            <td>滑行道PCN限制</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>TWY_SPEED</td>
+            <td>滑行道超速</td>
+            <td>&#10004;<label style="background-color: red;">关闭告警</label></td>
+        </tr>
+        <tr>
+            <td>TWY_WRONG_DIR</td>
+            <td>单行道方向错误</td>
+            <td>&#10004;<label style="background-color: red;">关闭告警</label></td>
+        </tr>
+        <tr>
+            <td>TWY_OPPOSING</td>
+            <td>滑行道死锁</td>
+            <td>&#10004;<label style="background-color: red;">关闭告警</label></td>
+        </tr>
+        <tr>
+            <td>TWY_SEP</td>
+            <td>滑行道间隔冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ROUTE_DEV</td>
+            <td>滑行道路由偏离</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>NO_PUSH</td>
+            <td>无推出许可</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>NO_TAXI</td>
+            <td>无滑行许可</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>NO_LIN/ENTER/CRI</td>
+            <td>无进入跑道的许可</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>NO_TKF</td>
+            <td>无起飞许可</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>NO_LND</td>
+            <td>无着陆许可</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>NO_CONTACT</td>
+            <td>未管制目标</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>UNKNOWN</td>
+            <td>跑道来知目标</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>GO_AROUND</td>
+            <td>航迹复飞</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>GO_AROUND</td>
+            <td>指令复飞</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ABORT TFK</td>
+            <td>航迹中断起飞</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>ABORT TFK</td>
+            <td>指令中断起飞</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>STATIONARY PB</td>
+            <td>推出指令后保持静止</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>STATIONARY TAXI</td>
+            <td>滑行指令发出保持静止</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>STATIONARY LIN</td>
+            <td>进跑道指令后保持静止</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>STATIONARY TKF</td>
+            <td>起飞指令后保持静止</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>STAT AFTER LND</td>
+            <td>着陆后在跑道上静止</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>DUPE</td>
+            <td>重复二次代码</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>WRONG STAND</td>
+            <td>进入错误机位</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>GFS</td>
+            <td>路由:禁区、限制区冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>GTC</td>
+            <td>路由:滑行道关闭</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>GE</td>
+            <td>路由:冀展限制</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>GM</td>
+            <td>路由:主轮距限制</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>GP</td>
+            <td>路由:道面强度</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_VS_ARR</td>
+            <td>进港与进港目标冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_VS_RWY</td>
+            <td>进港与地面目标中突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_VS_LIN</td>
+            <td>进港与检测区LIN指令目标冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_VS_TKF</td>
+            <td>进港与检测区TKF指令目标冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_VS_CRI</td>
+            <td>进港与检测区CR指令目标冲突</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>ARR_OPP_RWY</td>
+            <td>同跑道对头进近</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RWY_THR</td>
+            <td>跑道不匹配</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>LIN_CLR_VS_ARR</td>
+            <td>LIN进跑道指令与进港目标冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>LND_CLR_VS_RWY</td>
+            <td>LND着陆指令与地面目标中突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>LND_CLR_VS_ARR</td>
+            <td>LND着陆指令与前方未着陆进港目标冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>SBX</td>
+            <td>Stopbar穿越告警</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+        <tr>
+            <td>DEP</td>
+            <td>出港冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DEP_OPP_ARR</td>
+            <td>离港跑道对头进近</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DEP_VS_LIN</td>
+            <td>出港与检测区LIN指令目标冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DEP_VS_TKF</td>
+            <td>出港与检测区TKF指令目标冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>DEP_VS_CRI</td>
+            <td>出港与检测区LN指令目标冲突</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RESTRICTED</td>
+            <td>限制区侵入</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>FORBIDDEN</td>
+            <td>禁区傻入</td>
+            <td>&#10004;</td>
+        </tr>
+        <tr>
+            <td>RWY_X</td>
+            <td>交叉跑道冲案</td>
+            <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+        </tr>
+
+    </table>
+    <div style="display: flex;flex-direction: column; gap: 0.5rem;">
+
+        <table>
+            <tr>
+                <td rowspan="58"
+                    style="text-orientation: upright;writing-mode: vertical-rl;text-align: center;">
+                    计划
+                </td>
+                <td>
+                    EN 英文缩写
+                </td>
+                <td>
+                    CN 中文含义
+                </td>
+
+                <td>
+                    TWR 是否开启
+                </td>
+            </tr>
+            <tr>
+                <td>CSD</td>
+                <td>航班号不一致</td>
+                <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+            </tr>
+            <tr>
+                <td>SSR</td>
+                <td>二次代码不一致</td>
+                <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+            </tr>
+            <tr>
+                <td>ADR</td>
+                <td>24地址码不一致</td>
+                <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+            </tr>
+            <tr>
+                <td>EXTAD</td>
+                <td>外部系统相关不一致</td>
+                <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+            </tr>
+            <tr>
+                <td>SC</td>
+                <td>相似航班号告警</td>
+                <td>&#10004;<label style="background-color: yellow;">只有声音</label></td>
+            </tr>
+
+        </table>
+        <table>
+            <tr>
+                <td rowspan="58"
+                    style="text-orientation: upright;writing-mode: vertical-rl;text-align: center;">
+                    紧急告警
+                </td>
+                <td>
+                    EN 英文缩写
+                </td>
+                <td>
+                    CN 中文含义
+                </td>
+
+                <td>
+                    TWR 是否开启
+                </td>
+            </tr>
+            <tr>
+                <td>EM</td>
+                <td>紧急告警</td>
+                <td>&#10004;</td>
+            </tr>
+            <tr>
+                <td>OIL</td>
+                <td>燃油告警</td>
+                <td>&#10004;</td>
+            </tr>
+            <tr>
+                <td>EMD</td>
+                <td>医疗告警</td>
+                <td>&#10004;</td>
+            </tr>
+            <tr>
+                <td>EM</td>
+                <td>坠机告警</td>
+                <td>&#10004;</td>
+            </tr>
+            <tr>
+                <td>HJ</td>
+                <td>劫机</td>
+                <td>&#10004;</td>
+            </tr>
+            <tr>
+                <td>RF</td>
+                <td>通讯故障</td>
+                <td>&#10004;</td>
+            </tr>
+
+        </table>
+        <table>
+            <tr>
+                <td rowspan="58"
+                    style="text-orientation: upright;writing-mode: vertical-rl;text-align: center;">
+                    低能见度切换
+                </td>
+            </tr>
+            <tr>
+                <td>WEST</td>
+            </tr>
+            <tr>
+                <td>EAST</td>
+            </tr>
+        </table>
+        <h1 style="background-color: yellow;">
+            只有声音
+        </h1>
+        <h1 style="background-color: red; color: white;">
+            关闭告警
+        </h1>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>React单文件示例 - 国内CDN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #edecee 0%, #b6b7b9 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px;
+        }
+
+        header {
+            background: #1890ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* ========== 可调参数 ========== */
+        :root {
+            --sw-h: 24px;
+            /* 高度 */
+            --sw-w: 44px;
+            /* 宽度 */
+            --sw-pad: 2px;
+            /* 内边距（影响圆点边距） */
+            --sw-off: #cbd5e1;
+            /* 关闭底色 */
+            --sw-on: #22c55e;
+            /* 开启底色 */
+            --sw-dot: #fff;
+            /* 圆点颜色 */
+            --sw-focus: 0 0 0 3px rgba(34, 197, 94, .35);
+            /* 焦点环 */
+            --sw-duration: .2s;
+            /* 动画时长 */
+            --sw-disabled: #e5e7eb;
+            /* 禁用底色 */
+        }
+
+        /* ========== 基础结构 ========== */
+        .switch {
+            position: relative;
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            vertical-align: middle;
+            line-height: 1;
+            width: 8rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: larger;
+            font-weight: bold;
+        }
+
+        /* 隐藏原生复选框，但保留可访问性 */
+        .switch input[type="checkbox"] {
+            position: absolute;
+            inline-size: var(--sw-w);
+            block-size: var(--sw-h);
+            opacity: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        /* 视觉轨道 */
+        .switch .track {
+            inline-size: var(--sw-w);
+            block-size: var(--sw-h);
+            background: var(--sw-off);
+            border-radius: 9999px;
+            position: relative;
+            transition: background var(--sw-duration) ease;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .05);
+        }
+
+        /* 圆点 */
+        .switch .thumb {
+            position: absolute;
+            inset-block-start: var(--sw-pad);
+            inset-inline-start: var(--sw-pad);
+            inline-size: calc(var(--sw-h) - var(--sw-pad) * 2);
+            block-size: calc(var(--sw-h) - var(--sw-pad) * 2);
+            background: var(--sw-dot);
+            border-radius: 50%;
+            transition: transform var(--sw-duration) ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .15), 0 2px 6px rgba(0, 0, 0, .08);
+        }
+
+        /* 选中状态：轨道变色、圆点右移 */
+        .switch input[type="checkbox"]:checked+.track {
+            background: var(--sw-on);
+        }
+
+        .switch input[type="checkbox"]:checked+.track .thumb {
+            transform: translateX(calc(var(--sw-w) - var(--sw-h)));
+        }
+
+        /* 焦点可视化（键盘 Tab 时） */
+        .switch input[type="checkbox"]:focus-visible+.track {
+            outline: none;
+            box-shadow: var(--sw-focus);
+        }
+
+        /* 禁用态 */
+        .switch input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+
+        .switch input[type="checkbox"]:disabled+.track {
+            background: var(--sw-disabled);
+            opacity: .75;
+        }
+
+        .switch input[type="checkbox"]:disabled+.track .thumb {
+            box-shadow: none;
+        }
+
+        /* 尺寸变体（可选） */
+        .switch.sm {
+            --sw-h: 18px;
+            --sw-w: 34px;
+            --sw-pad: 2px;
+        }
+
+        .switch.lg {
+            --sw-h: 32px;
+            --sw-w: 56px;
+            --sw-pad: 3px;
+        }
+    </style>
+    <style>
+        .button-container {
+            padding: 1rem;
+            width: 800px;
+            display: grid;
+            gap: 0.25rem;
+            grid-template-columns: repeat(2, minmax(200px, 1fr));
+            justify-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <!-- 你的应用代码（JSX 可直接写在这里） -->
+    <script type="text/babel">
+
+        function Switch({ checked, onChange, disabled, label, size }) {
+            return (
+                <label className={`switch ${size || ''}`} aria-label={label}>
+                    {label}
+                    <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={e => onChange?.(e.target.checked)}
+                        disabled={disabled}
+                        value={label}
+                    />
+                    <span className="track"><span className="thumb" /></span>
+                </label>
+            );
+        }
+        const laisiAlert =
+            [{ alertEN: "RSI", alertCN: "限制区侵入告警", alert: true },
+            { alertEN: "RWU", alertCN: "跑道状态不符告警", alert: true },
+            { alertEN: "APM", alertCN: "进近下滑道偏离告警", alert: true, },
+            { alertEN: "TUB", alertCN: "尾流告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "RED", alertCN: "闯停止排灯告警", alert: true },
+            { alertEN: "RIW", alertCN: "跑道保护区侵入告警", alert: true , onlyAudio: "Audio"},
+            { alertEN: "CNA ", alertCN: "穿越与落地冲突告警", alert: false },
+            { alertEN: "ADS", alertCN: "落地与起飞冲突告警", alert: true },
+            { alertEN: "DUS", alertCN: "起飞与未脱离冲突告警", alert: true },
+            { alertEN: "CND", alertCN: "穿越与起飞冲突告警", alert: false },
+            { alertEN: "SEN", alertCN: "敏感区侵入告警", alert: true ,onlyAudio: "Audio"},
+            { alertEN: "NTZ", alertCN: "非侵入区告警", alert: false },
+            { alertEN: "CLAM", alertCN: "指令高度不一致告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "DUPS", alertCN: "二次代码重复告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "TCW", alertCN: "滑行道冲突告警", alert: false },
+            { alertEN: "RTW", alertCN: "偏离路由告警", alert: false },
+            { alertEN: "LND ", alertCN: "LND 指令不符告警", alert: true },
+            { alertEN: "LIN", alertCN: "LIN 指令不符告警", alert: true },
+            { alertEN: "DEP", alertCN: "DEP 指令不符告警", alert: true },
+            { alertEN: "ADR", alertCN: "地址码不符告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "BRK", alertCN: "起飞中断告警", alert: true },
+            { alertEN: "MIS", alertCN: "复飞告警", alert: true },
+            { alertEN: "DIF", alertCN: "相关不一致告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "DUPC", alertCN: "航班号重复告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "DUPA", alertCN: "地址码重复告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: " DTZ", alertCN: "起飞偏航告警", alert: true },
+            { alertEN: "SSR", alertCN: "二次代码不符告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "CSD", alertCN: "航班号不一致", alert: true , onlyAudio: "Audio"},
+            { alertEN: "OVS", alertCN: "超速告警", alert: false },
+            { alertEN: "FSSA", alertCN: "FSSA 意图高度不一致告警", alert: true, onlyAudio: "Audio" },
+            { alertEN: "BPM", alertCN: "QNH 不一致告警", alert: true , onlyAudio: "Audio"},
+            { alertEN: "PBN", alertCN: "PBN 许可告警", alert: true , onlyAudio: "Audio"},
+            { alertEN: "ADSB", alertCN: "ADSB 许可告警", alert: true, onlyAudio: "Audio" }];
+
+
+        function AddAlertButton() {
+            return (
+                < >
+                    {
+                        laisiAlert.map((alert, index) => {
+                            // 检查是否有 onlyAudio 属性
+                            const hasOnlyAudio = alert.onlyAudio !== undefined;
+                            // 检查 alert 是否为 false
+                            const isAlertFalse = alert.alert === false;
+
+                            // 根据条件确定背景色
+                            let labelStyle = {};
+                            if (hasOnlyAudio) {
+                                labelStyle = {
+                                    backgroundColor: "#ffff00", // 黄色背景
+                                    color: "#000000",
+                                    fontWeight: "bold",
+                                    cursor: "not-allowed",
+                                    textAlign: "center",
+                                    display:"flex",
+                                    alignItems:"center"
+                                };
+                            } else if (isAlertFalse) {
+                                labelStyle = {
+                                    backgroundColor: "#ff0000", // 红色背景
+                                    color: "#ffffff",
+                                    display:"flex",
+                                    alignItems:"center"
+                                };
+                            } else {
+                                labelStyle = {
+                                    display:"flex",
+                                    alignItems:"center"
+                                };
+                            }
+
+                            return <div style={{ display: 'flex', flexDirection: 'row', flexWrap: "none", width: "300px", textWrap: "nowrap", gap: "0.5rem" }}>
+                                <Switch size="lg" key={index} label={alert.alertEN} checked={alert.alert} />
+                                <label style={labelStyle} >
+                                    {alert.alertCN}
+                                </label>
+                            </div>
+                        })
+                    }
+                </>
+
+            );
+
+        }
+
+        function App() {
+            return (
+                <main className="container">
+                    <header>
+                        <h1>莱斯告警</h1>
+                    </header>
+                    <h1 style={{ background: "red" }}> 红色底色表示关闭 </h1>
+                    <h1 style={{ background: "yellow" }}> 黄色底色表示只开启声音 </h1>
+                    <h1 > 默认声光都打开 </h1>
+                    <div className="button-container">
+                        <AddAlertButton />
+
+                    </div>
+                </main>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <!-- 在 HTML 尾部引入库（推荐 jsDelivr；下方注释有可替换镜像） -->
+    <!-- React 18 & ReactDOM 18（UMD 生产版） -->
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel Standalone（仅开发用，允许直接在浏览器里编译 JSX） -->
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+
+    <!-- 如果上面的 jsDelivr 在你网络不稳，可替换为下列镜像（任选其一），保持版本一致即可：
+       BootCDN/baomitu：
+       https://lib.baomitu.com/react/18.2.0/umd/react.production.min.js
+       https://lib.baomitu.com/react-dom/18.2.0/umd/react-dom.production.min.js
+       https://lib.baomitu.com/babel-standalone/7.25.6/babel.min.js
+
+       Staticfile（七牛）：
+       https://cdn.staticfile.org/react/18.2.0/umd/react.production.min.js
+       https://cdn.staticfile.org/react-dom/18.2.0/umd/react-dom.production.min.js
+       https://cdn.staticfile.org/babel-standalone/7.25.6/babel.min.js
+  -->
+
+</body>
+
+</html>

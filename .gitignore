@@ -13,12 +13,30 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# dotenv environment variable files
-.env
-.env.development
-.env.test
-.env.production
 
 # temp directory
 .temp
 .tmp
+
+node_modules/
+
+# =========================
+# Monorepo-specific (optional but safe)
+# =========================
+# Ignore all node_modules anywhere in the repo
+**/node_modules/
+
+# Ignore build folders in any package
+**/dist/
+**/build/
+**/out/
+**/.next/
+**/.nuxt/
+**/coverage/
+
+# Ignore logs everywhere
+**/*.log
+
+# Ignore OS-generated files
+**/.DS_Store
+**/Thumbs.db

@@ -1,0 +1,688 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title> My Toys </title>
+    <style>
+        table {
+            border-collapse: collapse;
+            /* 边框合并，使边框连在一起 */
+            width: 100%;
+            text-wrap: none;
+            text-align: center;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            /* 单元格边框 */
+            /* padding: 8px; */
+            /* 内边距 */
+            text-wrap-mode: auto;
+            text-overflow: ellipsis;
+        }
+
+        /* 设置第一列宽度为30px */
+        th:nth-child(1) {
+            width: 2rem;
+        }
+
+        td:nth-child(2) {
+            width: 6rem;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        td:nth-child(3) {
+            width: 9rem;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        td:nth-child(4) {
+            width: 9rem;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        td:nth-child(5) {
+            width: 9rem;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        td:nth-child(6) {
+            width: 9rem;
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            margin-right: 5px;
+        }
+
+        .tab-button.active {
+            background-color: #ffffff;
+            border-bottom: 2px solid #000;
+        }
+
+        .tab-content {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #999;
+            padding: 5px;
+        }
+    </style>
+    </style>
+
+
+    <style>
+        /* 打印时隐藏的元素 */
+        @page {
+            size: landscape;
+            /* 横向打印 */
+            margin: 1cm;
+            /* 可选：调整页边距 */
+        }
+
+        @media print {
+            page {
+                padding: 20px;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                color: brown;
+                font-size: 12px;
+            }
+
+            table caption {
+                font-size: 20px;
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <table style="display: xx;">
+        <caption style="font-weight: 400; font-size: x-large; caption-side: top;">
+            始发航班
+        </caption>
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>主要监控指标</th>
+                <th>标准依据</th>
+                <th>标准完成时间</th>
+                <th>辅助监控指标</th>
+                <th>标准描述</th>
+                <th>标准完成时间</th>
+                <th>完成情况</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td rowspan="8">开驾驶舱门</td>
+                <td rowspan="8">COBT-机型标准装机作业时长-30分钟</td>
+                <td rowspan="8"></td>
+                <td>机务到位</td>
+                <td>开驾驶舱门-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>代办到位</td>
+                <td>开驾驶舱门-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>海关/边检到位</td>
+                <td>开驾驶舱门+0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>登机梯/客梯车到位</td>
+                <td>开驾驶舱门-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>开始加油</td>
+                <td>COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>开始加清水/排污水</td>
+                <td>需求申请时间+15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>接地面电源</td>
+                <td>需求申请时间+15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>平台车到位</td>
+                <td>开驾驶舱门-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>开货舱门</td>
+                <td>COBT-机型标准装机作业时长-30分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td rowspan="4">开始装机</td>
+                <td rowspan="4">COBT-机型标准装机作业时长-20分钟</td>
+                <td rowspan="4"></td>
+                <td>出港货物交接</td>
+                <td>窄体机CTOT-4小时；宽体机CTOT-6小时</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>第一板出港货物到达机坪待装区</td>
+                <td>开驾驶舱门-90分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>全部出港货物到达待装区/机坪</td>
+                <td>开驾驶舱门-60分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>13</td>
+
+                <td>装机单接收</td>
+                <td>开驾驶舱门-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>装机完成</td>
+                <td>开始装机+机型标准装机作业时长（或COBT-20分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td>关货舱门</td>
+                <td>装机完成+15分钟（或COBT-5分钟）</td>
+                <td></td>
+                <td>出港登临检查开始</td>
+                <td>装机完成（或COBT-20分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td rowspan="4">关驾驶舱门</td>
+                <td rowspan="4">关货舱门+0分钟</td>
+                <td rowspan="4"></td>
+                <td>完成加油</td>
+                <td>COBT-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td>结束加清水/排污水</td>
+                <td>COBT-15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td>出港登临检查结束</td>
+                <td>装机完成+15分钟（或COBT-5分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>出港机组到机下</td>
+                <td>COBT-60分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>20</td>
+                <td rowspan="4">推出</td>
+                <td rowspan="4">"关驾驶舱门+5分钟（或COBT+0分钟）"</td>
+                <td rowspan="4"></td>
+                <td>牵引车到位</td>
+                <td>COBT-10分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>21</td>
+                <td>接气源车</td>
+                <td>COBT-30分钟 </td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>22</td>
+                <td>撤气源车/撤地面电源</td>
+                <td>COBT-0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>23</td>
+                <td>撤轮档</td>
+                <td>COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>25</td>
+                <td>滑出</td>
+                <td>推出+5分钟（或COBT+5分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>26</td>
+                <td>起飞</td>
+                <td>滑出+10分钟（或COBT+15分钟）</td>
+                <td></td>
+                <td>代办离场</td>
+                <td>起飞时间+0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+
+
+    <table>
+        <caption style="font-weight: 400; font-size: x-large; caption-side: top;">
+            过站航班
+        </caption>
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>主要监控指标</th>
+                <th>标准依据</th>
+                <th>标准完成时间</th>
+                <th>辅助监控指标</th>
+                <th>标准描述</th>
+                <th>标准完成时间</th>
+                <th>完成情况</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>预排班</td>
+                <td>预排班</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>到位</td>
+                <td>实际到位时间+10分钟</td>
+                <td></td>
+                <td>备到位</td>
+                <td>备位时间-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>开始检单</td>
+                <td>备位时间+0分钟</td>
+                <td></td>
+                <td>接电源车</td>
+                <td>勤务到位时间+15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="6">4</td>
+                <td rowspan="6">开始驶入</td>
+                <td rowspan="6">开始检单+10分钟</td>
+                <td rowspan="6"></td>
+                <td>登机梯/客梯车到位</td>
+                <td rowspan="2">入位时间-5分钟 </td>
+                <td rowspan="2"></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>代办到位</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+
+                <td>海关/边检到位</td>
+                <td>入位时间+0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>开始加油</td>
+                <td>COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>开始加清水/排污水</td>
+                <td>需求申请时间+15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>平台车到位</td>
+                <td>入位时间-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 5开始 -->
+            <tr>
+                <td>5</td>
+                <td>开驾驶舱门+5分钟</td>
+                <td>开始驶入+5分钟</td>
+                <td></td>
+                <td>海关/边检进港登临检查结束</td>
+                <td>开驾驶舱门+15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 5结束 -->
+            <!-- 6开始 -->
+            <tr>
+                <td>6</td>
+                <td>开始卸机</td>
+                <td>开始卸货+10分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 6结束 -->
+            <!-- 7开始    -->
+            <tr>
+                <td>7</td>
+                <td>卸机完毕</td>
+                <td>开始卸机+货站标准卸机作业时间</td>
+                <td></td>
+                <td>进港货物交接</td>
+                <td>入位时间+80分钟 </td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 7结束 -->
+            <!-- 8开始 -->
+            <tr>
+                <td rowspan="4">8</td>
+                <td rowspan="4">开始装机</td>
+                <td rowspan="4">卸机完毕+0分钟（或COBT-货站标准装机作业时间-20分钟）</td>
+                <td rowspan="4"></td>
+                <td>出港货物交接</td>
+                <td>窄体机CTOT-4小时；宽体机CTOT-6小时</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+
+                <td>第一板出港货物到达机坪待装区</td>
+                <td>预排班时间-90分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+
+                <td>全部出港货物到达待装区/机坪</td>
+                <td>预计落地时间-60分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+
+                <td>装机单接收</td>
+                <td>预计落地时间-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 8结束 -->
+            <!-- 9开始 -->
+            <tr>
+                <td>9</td>
+                <td>装机完毕</td>
+                <td>开始装机+货站标准装机作业时间</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 9结束 -->
+            <!-- 10开始 -->
+            <tr>
+                <td>10</td>
+                <td>货舱关闭</td>
+                <td>装机完毕+15分钟</td>
+                <td></td>
+                <td>出港登临检查开始</td>
+                <td>装机完成（或COBT-20分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 10 结束 -->
+            <!-- 11开始 -->
+            <tr>
+                <td rowspan="4">11</td>
+                <td rowspan="4">关驾驶舱门
+                </td>
+                <td rowspan="4">关货舱门+0分钟 </td>
+                <td rowspan="4"></td>
+                <td>完成加油</td>
+                <td>COBT-5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>结束加清水/排污水</td>
+                <td>COBT-15分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>出港登临检查结束</td>
+                <td>装机完成+15分钟（或COBT-5分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>出港机组到机下 </td>
+                <td>COBT-60分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 11结束 -->
+            <!-- 12开始 -->
+            <tr>
+                <td rowspan="4">12</td>
+                <td rowspan="4">推出</td>
+                <td rowspan="4">关驾驶舱门+5分钟（或COBT+0分钟） </td>
+                <td rowspan="4"></td>
+                <td>牵引车到位</td>
+                <td>COBT-10分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td> 接气源车</td>
+                <td>COBT-30分钟 </td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td> 撤气源车/撤地面电源</td>
+                <td>COBT-0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td> 撤轮档</td>
+                <td>COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <!-- 12结束 -->
+            <tr>
+                <td>13</td>
+                <td>滑出
+                </td>
+                <td>推出+5分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>起飞</td>
+                <td>滑出+10分钟 </td>
+                <td></td>
+                <td>代办离场
+                </td>
+                <td>起飞时间+0分钟</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>
