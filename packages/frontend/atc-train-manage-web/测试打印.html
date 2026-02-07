@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>HTML 转 PDF 示例</title>
+    <!-- 引入 html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* 可打印区域的样式 */
+        #printable {
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 打印按钮样式 */
+        #print-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #print-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* 非打印时的页面样式 */
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* 在打印时隐藏的元素 */
+        @media print {
+            #print-btn {
+                display: none;
+            }
+        }
+    </style>
+    <style>
+        /* 确保表格不会跨页 */
+        table {
+          page-break-inside: avoid;
+        }
+        
+        /* 或者对整个行控制 */
+        tr {
+          page-break-inside: avoid;
+        }
+        
+        /* 如果表格很大，可以缩小字体或调整布局 */
+        #printable table {
+          font-size: 12px;
+          width: 100%;
+        }
+      </style>
+</head>
+
+<body>
+    <!-- 打印按钮 -->
+    <button id="print-btn">打印为PDF</button>
+
+    <!-- 可打印内容区域 -->
+    <div id="printable">
+        <h1>这是要打印的内容</h1>
+        <p>这是一个使用 html2pdf.js 将 HTML 内容转换为 PDF 的示例。</p>
+
+        <h2>表格示例</h2>
+        <table border="1"
+            cellspacing="0"
+            cellpadding="5"
+            width="100%"
+            style="page-break-before: always;">
+            <tr>
+                <th>项目</th>
+                <th>数量</th>
+                <th>价格</th>
+            </tr>
+            <tr>
+                <td>商品A</td>
+                <td>2</td>
+                <td>¥100</td>
+            </tr>
+            <tr>
+                <td>商品B</td>
+                <td>1</td>
+                <td>¥200</td>
+            </tr>
+            <tr>
+                <td colspan="2">总计</td>
+                <td>¥300</td>
+            </tr>
+        </table>
+        <table id="table1"
+            class="tab-content  "
+            style="flex:1; overflow-y: auto; border: 1px solid red; page-break-before: always;page-break-inside: avoid;page-break-after: always;">
+            <caption style="font-weight: 400; font-size: x-large; caption-side: top; display: none;">
+                过站航班
+            </caption>
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>主要监控指标</th>
+                    <th>标准描述</th>
+                    <th>标准完成时间</th>
+                    <th>辅助监控指标</th>
+                    <th>标准描述</th>
+                    <th>标准完成时间</th>
+                    <th>完成情况</th>
+                    <th>备注</th>
+                    <th class="belong-table2">视频监管重点</th>
+                    <th class="belong-table2">完成情况</th>
+                    <th class="belong-table2">备注</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>1</td>
+                    <td>预计落地</td>
+                    <td>预计落地</td>
+                    <td id="1"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">视频监管检查重点（入位前检查）</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>入位</td>
+                    <td>实际落地时间+10分钟</td>
+                    <td></td>
+                    <td>机务到位</td>
+                    <td>入位时间-5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>开始挡轮挡</td>
+                    <td>入位时间+0分钟</td>
+                    <td></td>
+                    <td>接地面电源</td>
+                    <td>需求申请时间+15分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">人员、车辆、设备、货物、行李在指定区域等待。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td rowspan="6">4</td>
+                    <td rowspan="6">开驾驶舱门</td>
+                    <td rowspan="6">开始挡轮挡+10分钟</td>
+                    <td rowspan="6"></td>
+                    <td>登机梯/客梯车到位</td>
+                    <td rowspan="2">入位时间-5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>代办到位</td>
+                    <td style="display: none;"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">廊桥活动端应处于廊桥回位点。（客运）</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>海关/边检到位</td>
+                    <td>入位时间+0分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>开始加油</td>
+                    <td>COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>开始加清水/排污水</td>
+                    <td>需求申请时间+15分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">桥载设备处于复位状态。（客运）</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>平台车到位</td>
+                    <td>入位时间-5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>开货舱门</td>
+                    <td>开驾驶舱门+5分钟</td>
+                    <td></td>
+                    <td>海关/边检进港登临检查结束</td>
+                    <td>开驾驶舱门+15分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>开始卸机</td>
+                    <td>开货舱门+10分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">安全停泊后，接机人员向靠机操作人员给靠机指令。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>卸机完成</td>
+                    <td>开始卸机+机型标准卸机作业时长</td>
+                    <td></td>
+                    <td>进港货物交接</td>
+                    <td>入位时间+80分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">视频监管检查重点（靠机作业）</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td rowspan="4">8</td>
+                    <td rowspan="4">开始装机</td>
+                    <td rowspan="4">卸机完成+0分钟（或COBT-机型标准装机作业时长-20分钟）</td>
+                    <td rowspan="4"></td>
+                    <td>出港货物交接</td>
+                    <td>窄体机CTOT-4小时；宽体机CTOT-6小时</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>第一板出港货物到达机坪待装区</td>
+                    <td>预计落地时间-90分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>全部出港货物到达待装区/机坪</td>
+                    <td>预计落地时间-60分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">红色廊桥活动区，禁止任何车辆和设备进入。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>装机单接收</td>
+                    <td>预计落地时间-5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">在停机位或作业等待区内挂托盘的车辆不得倒车。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>装机完成</td>
+                    <td>开始装机+机型标准装机作业时长</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">
+                        在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>关货舱门</td>
+                    <td>装机完成+15分钟</td>
+                    <td></td>
+                    <td>出港登临检查开始</td>
+                    <td>装机完成（或COBT-20分钟）</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">
+                        保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。
+                    </td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td rowspan="4">11</td>
+                    <td rowspan="4">关驾驶舱门</td>
+                    <td rowspan="4">关货舱门+0分钟</td>
+                    <td rowspan="4"></td>
+                    <td>完成加油</td>
+                    <td>COBT-5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <!-- <td>机务人员在航空器周围设置红色反光锥形标志物。</td>
+                    <td></td>
+                    <td></td> -->
+                    <td class="belong-table2">保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。</td>
+                    <td class="belong-table2"></td>
+                    <td class="belong-table2"></td>
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>结束加清水/排污水</td>
+                    <td>COBT-15分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="belong-table2">未熄火的车辆，驾驶员应当随车等候。</td>
+                    <td class="belong-table2">
+                        </<td>
+                    <td class="belong-table2"></td>
+
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>出港登临检查结束</td>
+                    <td>装机完成+15分钟（或COBT-5分钟）</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+
+                </tr>
+                <tr>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td style="display: none;"></td>
+                    <td>出港机组到机下</td>
+                    <td>COBT-60分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td>推出</td>
+                    <td>关驾驶舱门+5分钟（或COBT+0分钟）</td>
+                    <td></td>
+                    <td>牵引车到位</td>
+                    <td>COBT-10分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>接气源车</td>
+                    <td>COBT-30分钟 </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td data-tooltip="We are Pennstate!"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>撤气源车/撤地面电源</td>
+                    <td>COBT-0分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>撤轮档</td>
+                    <td>COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>13</td>
+                    <td>滑出</td>
+                    <td>推出+5分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>14</td>
+                    <td>起飞</td>
+                    <td>滑出+10分钟</td>
+                    <td></td>
+                    <td>代办离场</td>
+                    <td>起飞时间+0分钟</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+
+
+            </tbody>
+        </table>
+
+        <h2 style="page-break-before: always;">图片示例</h2>
+        <img src="https://placehold.co/600x400"
+            alt="示例图片"
+            style="max-width: 100%;">
+
+        <p style="page-break-after: always;">分页示例 - 这段文字后会分页</p>
+
+        <h1>第二页内容</h1>
+        <p>这是 PDF 的第二页内容。</p>
+    </div>
+
+    <script>
+        document.getElementById('print-btn').addEventListener('click', function () {
+            // 获取要打印的元素
+            const element = document.getElementById('printable');
+
+            // 配置选项
+            const opt = {
+                margin: 0,
+                filename: '我的文档.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 1 ,windowWidth: 1920,windowHeight:1080 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // 使用 html2pdf.js 生成 PDF
+            html2pdf().set(opt).from(element).save();
+
+            // 也可以使用以下方式打开在新窗口而不是直接下载
+            // html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+            //     window.open(pdf.output('bloburl'), '_blank');
+            // });
+        });
+    </script>
+</body>
+
+</html>

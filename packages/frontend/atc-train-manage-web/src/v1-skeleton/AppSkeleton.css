@@ -1,0 +1,13 @@
+body {
+    margin: 0;
+    height: 100vh;
+  
+  }
+  
+  * {
+    box-sizing: border-box;
+    /* outline:1px solid green ; */
+    /* inset: 2px; */
+  }
+  
+  
