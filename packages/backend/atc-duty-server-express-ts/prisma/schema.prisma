@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../db/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+} 
+
+enum DutyType {
+  主班
+  副班
+}
+
+enum RoleType {
+  教员
+  见习
+  管制
+  领班
+}
+
+// 新增 Team 模型
+model Team {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique  // 班组名称，如 "班组A", "班组B"
+  description String?           // 班组描述
+  order       Int      @unique // 班组排序
+  users       User[]           // 关联用户
+  
+  @@map("teams")
+}
+
+
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String
+  password String?
+
+  /**
+   * 该用户在不同席位允许的角色
+   * 结构示例：
+   * [
+   *   {
+   *     "positionId": 1,
+   *     "roleTypes": ["教员", "管制"]
+   *   }
+   * ]
+   */
+  availablePositionAndRoleType Json
+
+  dutyRecords DutyRecord[]
+
+  // 新增字段：关联班组和用户排序
+  teamId   Int?   // 可为 null，表示用户未分配班组
+  teamOrder Int?  // 在班组内的排序，可为 null
+
+  // 新增关联
+  team Team? @relation(fields: [teamId], references: [id])
+  
+  @@index([teamId, teamOrder]) // 添加索引，提高查询效率
+
+}
+
+
+
+model Position {
+  id           Int    @id @default(autoincrement())
+  positionName String @unique
+  order        Int?
+
+  /**
+   * 是否在前端显示该席位
+   */
+  isDisplay    Boolean @default(true)
+
+  /**
+   * 席位支持的执勤类型
+   * null = 不区分主副班，但仍可考勤
+   * 示例：
+   * ["主班", "副班"]
+   */
+  availableDutyType Json?
+
+  /**
+   * 席位本身允许的角色
+   * 示例：
+   * ["教员", "见习", "管制"]
+   */
+  availableRoleType Json
+
+  dutyRecords DutyRecord[]
+}
+
+
+
+
+model DutyRecord {
+  id         Int       @id @default(autoincrement())
+
+  userId     Int
+  positionId Int
+
+  /**
+   * 实际执勤时选择的值班类型
+   * 如果席位未配置主副班，可为 null
+   */
+  dutyType   DutyType?
+
+  roleType   RoleType
+
+  inTime     DateTime
+  outTime    DateTime?
+
+  user       User     @relation(fields: [userId], references: [id])
+  position   Position @relation(fields: [positionId], references: [id])
+}
