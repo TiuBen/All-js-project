@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { PrismaClient } from "./db/generated/client.ts"
-import { UserModel } from "./db/generated/models.ts"
+import { UserModel, PositionModel } from "./db/generated/models.ts"
+import { Position } from "./db/generated/client.ts"
 import { PrismaLibSql } from "@prisma/adapter-libsql"
 
 const app = express();
@@ -11,25 +12,37 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 const adapter = new PrismaLibSql({
-  url: 'file:../dbn/db.sqlite',
+  url: 'file:./db.sqlite',
 })
 const prisma = new PrismaClient({ adapter });
 
-prisma.user.findMany().then((users:UserModel[]) => {
+prisma.user.findMany().then((users: UserModel[]) => {
   console.log('Users:', users);
 });
 
 
 
+// prisma.position.createMany(
+//   {
+//     data: [{
+//       positionName: "test0",
+//       order: 0,
+//       isDisplay: true,
+//       availableDutyType: {},
+//       availableRoleType: {},
+//     },
+//     {
+//       positionName: "test1",
+//       order: 2,
+//       isDisplay: true,
+//       availableDutyType: {},
+//       availableRoleType: {},
+//     }]
+//   }
+// ).then(
+//   () => console.log('Created Positions:')
 
-
-
-
-
-
-
-
-
+// )
 
 
 

@@ -14,18 +14,21 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.2",
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.4.0",
     "@prisma/adapter-libsql": "^7.3.0",
+    "@prisma/client": "^7.4.0",
     "@types/cors": "^2.8.19",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "5.1.0",
     "nodemo": "^1.0.0",
-    "prisma": "catalog:prisma",
     "tsx": "^4.21.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.1",
+    "prisma": "catalog:prisma",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

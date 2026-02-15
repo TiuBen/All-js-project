@@ -1,8 +1,8 @@
 // stores/app.store.ts
 import { create } from 'zustand'
 import { Pages, type PageKey } from '../app/router/routes'
-import { type Position } from '@/util/models/generated/browser'
-
+import type {  PositionModel as Position } from '@/util/models/generated/models.ts'
+import { positionService } from '@/service/position.service'
 
 function setUrl(page: PageKey) {
   const url = new URL(window.location.href)
@@ -20,7 +20,8 @@ interface AppState {
   toggleLeftBar: () => void
 
   positions: Position[]
-
+  positionsLoading: boolean
+  fetchPositions: () => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -37,5 +38,15 @@ export const useAppStore = create<AppState>((set) => ({
 
 
   positions: [],
+  positionsLoading: false,
+  async fetchPositions() {
+    set({ positionsLoading: true })
+    try {
+      const data = await positionService.list()
+      set({ positions: data, positionsLoading: false })
+    } catch {
+      set({ positionsLoading: false })
+    }
+  },
 
 }))

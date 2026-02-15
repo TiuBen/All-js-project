@@ -1,6 +1,7 @@
 packages:
   - packages/**
-  - "apps/*"
+  - apps/*
+
 catalogs:
   prisma:
     prisma: 7.3.0
