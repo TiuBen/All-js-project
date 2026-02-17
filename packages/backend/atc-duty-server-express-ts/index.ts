@@ -1,8 +1,9 @@
-import express, { Request, Response } from 'express';
-import { PrismaClient } from "./db/generated/client.ts"
-import { UserModel, PositionModel } from "./db/generated/models.ts"
-import { Position } from "./db/generated/client.ts"
-import { PrismaLibSql } from "@prisma/adapter-libsql"
+import express, { Request, Response,NextFunction } from 'express';
+import cors from 'cors';
+import teamsRoutes from './routes/team.route';
+import usersRoutes from './routes/user.route';
+import positionsRoutes from './routes/position.route';
+import dutyRecordsRoutes from './routes/dutyRecord.route';
 
 const app = express();
 const PORT = 3600;
@@ -11,15 +12,31 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello World with TypeScript and Express!');
 });
 
-const adapter = new PrismaLibSql({
-  url: 'file:./db.sqlite',
-})
-const prisma = new PrismaClient({ adapter });
 
-prisma.user.findMany().then((users: UserModel[]) => {
-  console.log('Users:', users);
+
+
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+
+// Routes
+app.use('/api/teams', teamsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/positions', positionsRoutes);
+app.use('/api/duty', dutyRecordsRoutes);
+
+// Basic Error Handling Middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
+// 404 Handler
+app.use( (req: Request, res: Response) => {
+  res.status(404).json({ error: 'Route not Found' });
+});
 
 
 // prisma.position.createMany(

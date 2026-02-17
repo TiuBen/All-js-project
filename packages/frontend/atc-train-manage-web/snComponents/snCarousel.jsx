@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import "./snCarousel.css";
 const ContentSlider = ({ children, showDots = true, showArrows = true }) => {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -52,10 +51,6 @@ const ContentSlider = ({ children, showDots = true, showArrows = true }) => {
     );
 };
 
-ContentSlider.propTypes = {
-    children: PropTypes.node.isRequired,
-    showDots: PropTypes.bool,
-    showArrows: PropTypes.bool,
-};
+
 
 export default ContentSlider;

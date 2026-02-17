@@ -66,32 +66,32 @@ app.use((error, req, res, next) => {
     });
 });
  
-const { PrismaBetterSQLite3 } =require("@prisma/adapter-better-sqlite3") ;
+// const { PrismaBetterSQLite3 } =require("@prisma/adapter-better-sqlite3") ;
 
-const {PrismaClient} = require("./generated/prisma/client")
+// const {PrismaClient} = require("./generated/prisma/client")
 
-const adapter = new PrismaBetterSQLite3({
-    url: "file:./src/test.db"
-  }, {
-    timestampFormat: 'unixepoch-ms'
-  });
+// const adapter = new PrismaBetterSQLite3({
+//     url: "file:./src/test.db"
+//   }, {
+//     timestampFormat: 'unixepoch-ms'
+//   });
 
-const prisma = new PrismaClient({adapter})
+// const prisma = new PrismaClient({adapter})
 
-async function test() {
-    return  prisma.Duty.findUnique({
-        where: {
-          id: 99,
-        },
-      })
-}
+// async function test() {
+//     return  prisma.Duty.findUnique({
+//         where: {
+//           id: 99,
+//         },
+//       })
+// }
 
-async function main() {
-    const data = await test();
-    console.log(data);
-  }
+// async function main() {
+//     const data = await test();
+//     console.log(data);
+//   }
   
-  main();
+//   main();
 
 
 module.exports = app;

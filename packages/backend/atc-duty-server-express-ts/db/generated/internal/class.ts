@@ -12,7 +12,7 @@
  */
 
 import * as runtime from "@prisma/client/runtime/client"
-import type * as Prisma from "./prismaNamespace.js"
+import type * as Prisma from "./prismaNamespace"
 
 
 const config: runtime.GetPrismaClientConfig = {
@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.3.0",
   "engineVersion": "9d6ad21cbbceab97458517b147a6a09ff43aa735",
   "activeProvider": "sqlite",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../db/generated\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n\nenum DutyType {\n  主班\n  副班\n}\n\nenum RoleType {\n  教员\n  见习\n  管制\n  领班\n}\n\nmodel User {\n  id       Int     @id @default(autoincrement())\n  username String\n  password String?\n\n  /**\n   * 该用户在不同席位允许的角色\n   * 结构示例：\n   * [\n   * {\n   * \"positionId\": 1,\n   * \"roleTypes\": [\"教员\", \"管制\"]\n   * }\n   * ]\n   */\n  availablePositionAndRoleType Json\n\n  dutyRecords DutyRecord[]\n}\n\nmodel Position {\n  id           Int    @id @default(autoincrement())\n  positionName String @unique\n  order        Int?\n\n  /**\n   * 是否在前端显示该席位\n   */\n  isDisplay Boolean @default(true)\n\n  /**\n   * 席位支持的执勤类型\n   * null = 不区分主副班，但仍可考勤\n   * 示例：\n   * [\"主班\", \"副班\"]\n   */\n  availableDutyType Json?\n\n  /**\n   * 席位本身允许的角色\n   * 示例：\n   * [\"教员\", \"见习\", \"管制\"]\n   */\n  availableRoleType Json\n\n  dutyRecords DutyRecord[]\n}\n\nmodel DutyRecord {\n  id Int @id @default(autoincrement())\n\n  userId     Int\n  positionId Int\n\n  /**\n   * 实际执勤时选择的值班类型\n   * 如果席位未配置主副班，可为 null\n   */\n  dutyType DutyType?\n\n  roleType RoleType\n\n  inTime  DateTime\n  outTime DateTime?\n\n  user     User     @relation(fields: [userId], references: [id])\n  position Position @relation(fields: [positionId], references: [id])\n}\n",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../db/generated\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n\nenum DutyType {\n  主班\n  副班\n}\n\nenum RoleType {\n  教员\n  见习\n  管制\n  领班\n}\n\n// 新增 Team 模型\nmodel Team {\n  id          Int     @id @default(autoincrement())\n  name        String  @unique // 班组名称，如 \"班组A\", \"班组B\"\n  description String? // 班组描述\n  order       Int     @unique // 班组排序\n  users       User[] // 关联用户\n\n  @@map(\"teams\")\n}\n\nmodel User {\n  id       Int     @id @default(autoincrement())\n  username String\n  password String?\n\n  /**\n   * 该用户在不同席位允许的角色\n   * 结构示例：\n   * [\n   * {\n   * \"positionId\": 1,\n   * \"roleTypes\": [\"教员\", \"管制\"]\n   * }\n   * ]\n   */\n  availablePositionAndRoleType Json\n\n  dutyRecords DutyRecord[]\n\n  // 新增字段：关联班组和用户排序\n  teamId    Int? // 可为 null，表示用户未分配班组\n  teamOrder Int? // 在班组内的排序，可为 null\n\n  // 新增关联\n  team Team? @relation(fields: [teamId], references: [id])\n\n  @@index([teamId, teamOrder]) // 添加索引，提高查询效率\n}\n\nmodel Position {\n  id           Int    @id @default(autoincrement())\n  positionName String @unique\n  order        Int?\n\n  /**\n   * 是否在前端显示该席位\n   */\n  isDisplay Boolean @default(true)\n\n  /**\n   * 席位支持的执勤类型\n   * null = 不区分主副班，但仍可考勤\n   * 示例：\n   * [\"主班\", \"副班\"]\n   */\n  availableDutyType Json?\n\n  /**\n   * 席位本身允许的角色\n   * 示例：\n   * [\"教员\", \"见习\", \"管制\"]\n   */\n  availableRoleType Json\n\n  dutyRecords DutyRecord[]\n}\n\nmodel DutyRecord {\n  id Int @id @default(autoincrement())\n\n  userId     Int\n  positionId Int\n\n  /**\n   * 实际执勤时选择的值班类型\n   * 如果席位未配置主副班，可为 null\n   */\n  dutyType DutyType?\n\n  roleType RoleType\n\n  inTime  DateTime\n  outTime DateTime?\n\n  user     User     @relation(fields: [userId], references: [id])\n  position Position @relation(fields: [positionId], references: [id])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"availablePositionAndRoleType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"dutyRecords\",\"kind\":\"object\",\"type\":\"DutyRecord\",\"relationName\":\"DutyRecordToUser\"}],\"dbName\":null},\"Position\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"positionName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"order\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isDisplay\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"availableDutyType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"availableRoleType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"dutyRecords\",\"kind\":\"object\",\"type\":\"DutyRecord\",\"relationName\":\"DutyRecordToPosition\"}],\"dbName\":null},\"DutyRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"positionId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"dutyType\",\"kind\":\"enum\",\"type\":\"DutyType\"},{\"name\":\"roleType\",\"kind\":\"enum\",\"type\":\"RoleType\"},{\"name\":\"inTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"outTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DutyRecordToUser\"},{\"name\":\"position\",\"kind\":\"object\",\"type\":\"Position\",\"relationName\":\"DutyRecordToPosition\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Team\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"order\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"users\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TeamToUser\"}],\"dbName\":\"teams\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"availablePositionAndRoleType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"dutyRecords\",\"kind\":\"object\",\"type\":\"DutyRecord\",\"relationName\":\"DutyRecordToUser\"},{\"name\":\"teamId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"teamOrder\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"team\",\"kind\":\"object\",\"type\":\"Team\",\"relationName\":\"TeamToUser\"}],\"dbName\":null},\"Position\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"positionName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"order\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"isDisplay\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"availableDutyType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"availableRoleType\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"dutyRecords\",\"kind\":\"object\",\"type\":\"DutyRecord\",\"relationName\":\"DutyRecordToPosition\"}],\"dbName\":null},\"DutyRecord\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"positionId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"dutyType\",\"kind\":\"enum\",\"type\":\"DutyType\"},{\"name\":\"roleType\",\"kind\":\"enum\",\"type\":\"RoleType\"},{\"name\":\"inTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"outTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DutyRecordToUser\"},{\"name\":\"position\",\"kind\":\"object\",\"type\":\"Position\",\"relationName\":\"DutyRecordToPosition\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -37,10 +37,10 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.js"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.js")
     return await decodeBase64AsWasm(wasm)
   },
 
@@ -60,8 +60,8 @@ export interface PrismaClientConstructor {
    * @example
    * ```
    * const prisma = new PrismaClient()
-   * // Fetch zero or more Users
-   * const users = await prisma.user.findMany()
+   * // Fetch zero or more Teams
+   * const teams = await prisma.team.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -82,8 +82,8 @@ export interface PrismaClientConstructor {
  * @example
  * ```
  * const prisma = new PrismaClient()
- * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * // Fetch zero or more Teams
+ * const teams = await prisma.team.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -177,6 +177,16 @@ export interface PrismaClient<
   }>>
 
       /**
+   * `prisma.team`: Exposes CRUD operations for the **Team** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Teams
+    * const teams = await prisma.team.findMany()
+    * ```
+    */
+  get team(): Prisma.TeamDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
     * Example usage:
     * ```ts
