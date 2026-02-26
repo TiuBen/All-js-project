@@ -1,8 +1,8 @@
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const { exec, spawn } = require("child_process");
-const facebody20191230 = require("@alicloud/facebody20191230");
-const OpenApi = require("@alicloud/openapi-client");
-const Util = require("@alicloud/tea-util");
+// const facebody20191230 = require("@alicloud/facebody20191230");
+// const OpenApi = require("@alicloud/openapi-client");
+// const Util = require("@alicloud/tea-util");
 
 async function PostFaceImageToCompareFace(req, res) {
     console.log("compare face");
@@ -188,10 +188,9 @@ async function aliyunFaceCompare(req, res) {
     let runtime = new Util.RuntimeOptions({});
     try {
         // 复制代码运行请自行打印 API 的返回值
-       const result=  await client.compareFaceWithOptions(compareFaceRequest, runtime);
-    //    console.log(JSON.stringify(result));
-       res.send(result);
-       
+        const result = await client.compareFaceWithOptions(compareFaceRequest, runtime);
+        //    console.log(JSON.stringify(result));
+        res.send(result);
     } catch (error) {
         // 此处仅做打印展示，请谨慎对待异常处理，在工程项目中切勿直接忽略异常。
         // 错误 message
