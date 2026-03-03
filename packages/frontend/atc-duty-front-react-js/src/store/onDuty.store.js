@@ -7,12 +7,15 @@ export const useOnDutyStore = create((set, get) => ({
     list: [], //  all duty records outTime ==null
     loading: false,
 
-    async fetch() {
+    async fetchOnDuty() {
         set({ loading: true });
         try {
             const data = await onDutyService.listOnDuty();
+            console.log("duty records", data);
             set({ list: data, loading: false });
         } catch (err) {
+            console.log(err);
+
             set({ loading: false });
         }
     },

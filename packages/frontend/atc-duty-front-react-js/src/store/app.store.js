@@ -13,11 +13,11 @@ function getInitialPage() {
     return PAGE_KEYS.DASHBOARD;
 }
 
-export const useAppStore = create((set) => ({
+export const useAppStore = create((set, get) => ({
     page: getInitialPage(),
     setPage: (page) => {
         set({ page });
-        const url = new URL(window.location.href);
+        // const url = new URL(window.location.href);
         window.history.pushState({}, "", String(page).toLowerCase());
     },
 

@@ -5,11 +5,11 @@ import Position from "./Position.jsx";
 
 function Page() {
     const { positions, positionsLoading } = useAppStore();
-    const { list, fetch } = useOnDutyStore();
+    const { list, fetchOnDuty } = useOnDutyStore();
 
     useEffect(() => {
-        fetch();
-    }, [fetch]);
+        fetchOnDuty();
+    }, [fetchOnDuty]);
 
     if (positionsLoading) return <div>ffff Loading...</div>;
     return (
@@ -20,6 +20,8 @@ function Page() {
                     <Position key={item.id} position={item.position} dutyType={item.dutyType} />
                     // <div key={item.id}>{JSON.stringify(item)}</div>
                 ))}
+
+            {JSON.stringify(list)}
         </div>
     );
 }

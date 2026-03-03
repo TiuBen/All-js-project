@@ -1,5 +1,7 @@
 import { Button } from "@radix-ui/themes";
 import React, { useState, useEffect } from "react";
+import { useOnDutyStore } from "../../store/onDuty.store";
+// import Staff from "./Staff";
 //*     Position
 //*         |
 //*    Seat    Seat
@@ -12,6 +14,9 @@ function Seat(props) {
     const { position, dutyType } = props;
     // const { setDialogPayload } = useDialog();
     // const { onDutyUsers, setSelectedPosition, putDutyRecord } = useStore();
+    const { list, loading } = useOnDutyStore();
+
+    if (loading) return <div>loading</div>;
 
     return (
         <div className="flex flex-col items-center border border-gray-200 rounded-lg p-1 gap-1 text-center self-stretch">
@@ -21,13 +26,16 @@ function Seat(props) {
                     接班
                 </Button>
             </div>
-            {/* {onDutyUsers
-                .filter((duty) => duty.position === position && duty.dutyType === dutyType)
+
+            {list
+                .filter((duty) => {
+                    if (duty.position === position && duty.dutyType === dutyType) {
+                        return duty;
+                    }
+                })
                 .map((duty, index) => (
-                    <div key={index}>
-                        <Staff {...duty} key={index} />
-                    </div>
-                ))} */}
+                    <div key={index}>{/* <Staff {...duty} key={index} /> */}</div>
+                ))}
         </div>
     );
 }

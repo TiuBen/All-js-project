@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import "./App.css";
 import { useAppStore } from "./store/app.store";
 import { AdminLayout } from "./app/layout/MainLayout";
@@ -20,9 +20,7 @@ function App() {
 
     return (
         <Theme>
-            <AdminLayout>
-                <PageComponent />
-            </AdminLayout>
+            <AdminLayout>{PageComponent()}</AdminLayout>
         </Theme>
     );
 }
