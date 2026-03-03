@@ -1,18 +1,24 @@
 import { create } from "zustand";
-import { Pages } from "../app/router/routes";
 import { positionService } from "../service/position.service";
 
-function setUrl(page) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", page);
-    window.history.pushState({}, "", url);
+import { PAGE_KEYS, pageRegistry } from "../app/pageRegistry";
+
+function getInitialPage() {
+    const page = new URLSearchParams(window.location.search).get("page");
+
+    if (page && pageRegistry[page]) {
+        return page;
+    }
+
+    return PAGE_KEYS.DASHBOARD;
 }
 
 export const useAppStore = create((set) => ({
-    page: Pages.DASHBOARD,
+    page: getInitialPage(),
     setPage: (page) => {
         set({ page });
-        setUrl(page);
+        const url = new URL(window.location.href);
+        window.history.pushState({}, "", String(page).toLowerCase());
     },
 
     isLeftBarOpen: true,

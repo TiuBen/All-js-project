@@ -13,7 +13,6 @@ import useStore from "../../utils/store/userStore";
 //*    Staff   Staff
 //*
 
- 
 function Seat(props) {
     const { position, dutyType } = props;
     const { setDialogPayload } = useDialog();
@@ -43,7 +42,6 @@ function Seat(props) {
 
     return (
         <div className="flex flex-col items-center border rounded-lg p-1 gap-1 text-center self-stretch">
-            
             <div className="flex flex-row items-center gap-2">
                 {dutyType && <h3 className="font-black text-blue-600 text-lg">{dutyType}</h3>}
                 <Button

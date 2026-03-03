@@ -20,8 +20,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // const { serverActions } = require("./utils/CONST");
 
 app.use(express.static("public"));
-const path = require('path');
-app.use('/api', express.static(path.join(__dirname, 'public')));
+const path = require("path");
+app.use("/api", express.static(path.join(__dirname, "public")));
 app.use("/public", express.static(__dirname + +"/" + "public"));
 // app.use("/public/日常照片", express.static(__dirname + +"/"+"public/日常照片"));
 // console.log(`${__dirname}/assert/`);
@@ -57,21 +57,21 @@ const duty = require("./routes/duty.route");
 app.use("/api", duty);
 const statistics = require("./routes/statistics.route");
 app.use("/api/statistics", statistics);
-const auth=require("./routes/auth.route");
+const auth = require("./routes/auth.route");
 app.use("/api/auth", auth);
 // const upload=require("./routes/upload.route");
 // app.use("/upload", upload);
 const query = require("./routes/query.route");
 app.use("/api/query", query);
 
-// 
-const position=require("./routes/position.route");
+//
+const position = require("./routes/position.route");
 app.use("/api", position);
-const user=require("./routes/user.route");
+const user = require("./routes/user.route");
 app.use("/api", user);
 
 const page = require("./routes/page.route");
-app.use("/api" ,page);
+app.use("/api", page);
 
 app.use("/test", (req, res) => {
     console.log("test");

@@ -1,6 +1,6 @@
 import React from "react";
-import { useOnDuty } from "@/hooks/useOnDuty";
-function dashboard() {
+import { useOnDuty } from "../../hooks/useOnDuty";
+function Dashboard() {
     const { list, loading, leave } = useOnDuty();
     if (loading) {
         return <div className="text-sm text-gray-500">加载中…</div>;
@@ -28,4 +28,4 @@ function dashboard() {
     );
 }
 
-export default dashboard;
+export default Dashboard;

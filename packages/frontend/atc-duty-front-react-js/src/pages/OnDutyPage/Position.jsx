@@ -1,5 +1,4 @@
 import React from "react";
-import { Button } from "@radix-ui/themes";
 import Seat from "./Seat";
 
 //*     Position
@@ -14,7 +13,7 @@ function Position(props) {
 
     return (
         <>
-            <div className="border rounded-lg flex  flex-col items-center gap-2 p-1 self-stretch">
+            <div className="border border-gray-200 rounded-lg flex  flex-col items-center gap-2 p-1 self-stretch">
                 <h2 className="font-black text-xl">{position}</h2>
                 <div className="flex flex-row gap-2 p-1">
                     {dutyType ? (

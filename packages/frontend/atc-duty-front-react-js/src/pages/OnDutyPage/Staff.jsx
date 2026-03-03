@@ -3,24 +3,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@radix-ui/themes";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import type { StaffProps } from "../types";
 
 dayjs.extend(duration);
 
-const Staff: React.FC<StaffProps> = (props) => {
-  const {
-    id,
-    username,
-    position,
-    dutyType,
-    inTime,
-    outTime,
-    roleType,
-    relatedDutyTableRowId,
-    roleStartTime,
-    roleEndTime,
-    status,
-  } = props;
 
   // 执勤时间计算
   const date1 = dayjs(inTime);

@@ -1,17 +1,30 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import { useAppStore } from "./store/app.store";
+import { AdminLayout } from "./app/layout/MainLayout";
+import { resolvePage } from "./app/resolvePage";
+import { Theme } from "@radix-ui/themes";
 
 function App() {
-    const [count, setCount] = useState(0);
-    const { positions, positionsLoading, fetchPositions } = useAppStore();
+    const { fetchPositions } = useAppStore();
+    const { page } = useAppStore();
+    const PageComponent = resolvePage(page);
 
     useEffect(() => {
         fetchPositions();
     }, [fetchPositions]);
 
-    if (positionsLoading) return <div>Loading...</div>;
-    return <>{JSON.stringify(positions)}</>;
+    useEffect(() => {
+        console.log("page", page);
+    }, [page]);
+
+    return (
+        <Theme>
+            <AdminLayout>
+                <PageComponent />
+            </AdminLayout>
+        </Theme>
+    );
 }
 
 export default App;

@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import {
     MessageCircle,
     ClipboardPenLine,
@@ -9,10 +9,9 @@ import {
     Settings,
     FileDown,
 } from "lucide-react";
-import { Pages, PageKey } from "@/app/router/routes";
-import { useAppStore } from "@/store/app.store";
+import { useAppStore } from "../../store/app.store";
 
-const LeftNavItem = ({ title, page, Icon, isExpanded, subNav }) => {
+const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
     const setPage = useAppStore((s) => s.setPage);
 
     if (isExpanded) {
@@ -63,46 +62,46 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav }) => {
 const items = [
     {
         title: "执勤",
-        page: Pages.DASHBOARD,
-        Icon: () => <MessageCircle {...props} strokeWidth={1.5} />,
+        page: "DASHBOARD",
+        Icon: () => <MessageCircle strokeWidth={1.5} />,
         active: true,
         subNav: [
             {
                 title: "岗位状态",
-                page: Pages.DUTY,
-                Icon: () => <BicepsFlexed {...props} strokeWidth={1.5} />,
+                page: "DUTY",
+                Icon: () => <BicepsFlexed strokeWidth={1.5} />,
             },
             {
                 title: "日历",
-                page: Pages.CALENDAR,
-                Icon: () => <CalendarDays {...props} strokeWidth={1.5} />,
+                page: "CALENDAR",
+                Icon: () => <CalendarDays strokeWidth={1.5} />,
             },
             {
                 title: "统计",
-                page: Pages.STATS,
-                Icon: () => <ChartLine {...props} size={"1.5em"} strokeWidth={1.5} />,
+                page: "STATS",
+                Icon: () => <ChartLine size={"1.5em"} strokeWidth={1.5} />,
             },
         ],
     },
     {
         title: "后台",
-        page: Pages.ADMIN_SHEET,
-        Icon: () => <ClipboardPenLine {...props} strokeWidth={1.5} />,
+        page: "ADMIN_SHEET",
+        Icon: () => <ClipboardPenLine strokeWidth={1.5} />,
         subNav: [
             {
                 title: "执勤表格",
-                page: Pages.ADMIN_SHEET,
-                Icon: () => <Sheet {...props} size={"1.5em"} strokeWidth={1.5} />,
+                page: "ADMIN_SHEET",
+                Icon: () => <Sheet size={"1.5em"} strokeWidth={1.5} />,
             },
             {
                 title: "设置",
-                page: Pages.ADMIN_SETTING,
-                Icon: () => <Settings {...props} size={"1.5em"} strokeWidth={1.5} />,
+                page: "ADMIN_SETTING",
+                Icon: () => <Settings size={"1.5em"} strokeWidth={1.5} />,
             },
             {
                 title: "导出",
-                page: Pages.ADMIN_EXPORT,
-                Icon: () => <FileDown {...props} size={"1.5em"} strokeWidth={1.5} />,
+                page: "ADMIN_EXPORT",
+                Icon: () => <FileDown size={"1.5em"} strokeWidth={1.5} />,
             },
         ],
     },
@@ -122,7 +121,7 @@ function SideBar() {
                             key={index}
                             title={item.title}
                             page={item.page}
-                            Icon={(props) => item.Icon()}
+                            Icon={() => item.Icon()}
                             active={item.active}
                             isExpanded={isLeftBarOpen}
                             subNav={item.subNav}
