@@ -38,4 +38,6 @@ export const useAppStore = create((set, get) => ({
             set({ positionsLoading: false });
         }
     },
+
+    detailUsers: [],
 }));

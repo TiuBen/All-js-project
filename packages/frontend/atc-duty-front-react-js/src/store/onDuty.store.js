@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { onDutyService } from "../service/onDuty.service";
 
+export const onDutyStore = create((set, get) => ({
     list: [], //  all duty records outTime ==null
     loading: false,
 
@@ -17,6 +18,9 @@ import { onDutyService } from "../service/onDuty.service";
             set({ loading: false });
         }
     },
+
+    selectedDutyRecord: null,
+    setSelectedDutyRecord: (dutyRecord) => set({ selectedDutyRecord: dutyRecord }),
 
     async leaveDuty(dutyId) {
         set({ loading: true });
