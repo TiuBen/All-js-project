@@ -20,8 +20,6 @@ function Page() {
                     <Position key={item.id} position={item.position} dutyType={item.dutyType} />
                     // <div key={item.id}>{JSON.stringify(item)}</div>
                 ))}
-
-            {JSON.stringify(list)}
         </div>
     );
 }

@@ -17,6 +17,8 @@ dayjs.extend(duration);
 //*    Staff   Staff
 //*
 
+const SERVER_URL = import.meta.env.VITE_API_FILE_URL;
+
 function formatDuration(date1) {
     const diff = dayjs.duration(dayjs().diff(date1));
     const totalMinutes = diff.asMinutes();
@@ -148,7 +150,7 @@ function Staff(props) {
 
                     <img
                         className={`max-w-[5rem] max-h-[4rem]  aspect-auto `}
-                        src={`${SERVER_URL}/images/${username}.jpg`}
+                        src={`${SERVER_URL}/images/${decodeURIComponent(username)}.jpg`}
                         alt={username}
                     />
                 </div>
