@@ -33,10 +33,11 @@ export const useAppStore = create((set, get) => ({
         set({ positionsLoading: true });
         try {
             const data = await positionService.list();
-            console.log("positions", data);
             set({ positions: data, positionsLoading: false });
         } catch {
             set({ positionsLoading: false });
         }
     },
+
+    detailUsers: [],
 }));

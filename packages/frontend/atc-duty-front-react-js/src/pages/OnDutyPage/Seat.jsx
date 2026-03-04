@@ -1,7 +1,7 @@
 import { Button } from "@radix-ui/themes";
 import React, { useState, useEffect } from "react";
-import { useOnDutyStore } from "../../store/onDuty.store";
-// import Staff from "./Staff";
+import { onDutyStore } from "../../store/onDuty.store";
+import Staff from "./Staff";
 //*     Position
 //*         |
 //*    Seat    Seat
@@ -14,7 +14,7 @@ function Seat(props) {
     const { position, dutyType } = props;
     // const { setDialogPayload } = useDialog();
     // const { onDutyUsers, setSelectedPosition, putDutyRecord } = useStore();
-    const { list, loading } = useOnDutyStore();
+    const { list, loading } = onDutyStore();
 
     if (loading) return <div>loading</div>;
 
@@ -34,7 +34,9 @@ function Seat(props) {
                     }
                 })
                 .map((duty, index) => (
-                    <div key={index}>{/* <Staff {...duty} key={index} /> */}</div>
+                    <div key={index}>
+                        <Staff {...duty} key={index} />
+                    </div>
                 ))}
         </div>
     );

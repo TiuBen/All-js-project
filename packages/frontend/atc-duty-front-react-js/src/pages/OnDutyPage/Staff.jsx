@@ -1,10 +1,11 @@
 import { useRef, useState, useEffect } from "react";
-import { useDialog, SERVER_URL } from "@utils";
 import { useLongPress } from "ahooks";
 import { Button, Avatar } from "@radix-ui/themes";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import useStore from "../../utils/store/userStore";
+import { userStore } from "../../store/user.store";
+import { onDutyStore } from "../../store/onDuty.store";
+import { dialogStore } from "../../store/dialog.store";
 
 dayjs.extend(duration);
 
@@ -48,10 +49,11 @@ function Staff(props) {
         status,
     } = props;
 
-    const { setDialogPayload } = useDialog();
+    const { setDialogPayload } = dialogStore();
 
     //! 减少后端请求 在这里检测 长按的效果
-    const { detailUsers, setSelectedDutyRecord, selectedDutyRecord } = useStore();
+    const { allDetailUsers } = userStore();
+    const { setSelectedDutyRecord, selectedDutyRecord } = onDutyStore();
     const [canLongPress, setCanLongPress] = useState(false);
 
     // 执勤时间
@@ -107,7 +109,7 @@ function Staff(props) {
         if (roleType === "教员") {
             setCanLongPress(false);
         } else {
-            const user = detailUsers.find((user) => user.id === userId);
+            const user = allDetailUsers.find((user) => user.id === userId);
             // console.log(user);
             const uP = user.position || [];
             const foundP = uP.find((x) => x?.position === position) || {};
@@ -118,7 +120,7 @@ function Staff(props) {
                 setCanLongPress(false);
             }
         }
-    }, [detailUsers, roleType, userId, position]);
+    }, [allDetailUsers, roleType, userId, position]);
 
     return (
         <>
