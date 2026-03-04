@@ -3,7 +3,6 @@
 import { create } from "zustand";
 import { onDutyService } from "../service/onDuty.service";
 
-export const useOnDutyStore = create((set, get) => ({
     list: [], //  all duty records outTime ==null
     loading: false,
 
@@ -11,7 +10,6 @@ export const useOnDutyStore = create((set, get) => ({
         set({ loading: true });
         try {
             const data = await onDutyService.listOnDuty();
-            console.log("duty records", data);
             set({ list: data, loading: false });
         } catch (err) {
             console.log(err);
