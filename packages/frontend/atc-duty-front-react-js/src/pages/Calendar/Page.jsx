@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from "react";
-import useSWR from "swr";
-import { SERVER_URL } from "@utils";
-
 import { MonthCalender } from "@sn/MonthCalender";
 import { useCalendar } from "@sn/useCalender";
 import { Button } from "@radix-ui/themes";
@@ -9,7 +6,6 @@ import dayjs from "dayjs";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { API_URL } from "../../../utils/const/Const";
 import RightBarSelectDayDetail from "./RightBarSelectDayDetail";
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 function DayCellElement({ date, onClick }) {
     const startDate = dayjs(date, "YYYY-MM-DD").format("YYYY-MM-DD");
@@ -58,7 +54,7 @@ function TimeLineSidebar({ date }) {
     );
 }
 
-function MainMonth() {
+function Page() {
     const { year, month, addOneMonth, subOneMonth } = useCalendar();
 
     // useEffect(() => {
@@ -130,4 +126,4 @@ function MainMonth() {
     );
 }
 
-export default MainMonth;
+export default Page;

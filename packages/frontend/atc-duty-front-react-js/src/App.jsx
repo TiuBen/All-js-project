@@ -23,7 +23,9 @@ function App() {
 
     return (
         <Theme>
-            <AdminLayout>{PageComponent()}</AdminLayout>
+            <AdminLayout>
+                <PageComponent />
+            </AdminLayout>
         </Theme>
     );
 }
