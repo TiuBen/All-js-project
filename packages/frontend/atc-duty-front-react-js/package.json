@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@radix-ui/themes": "^3.3.0",
+    "@sn/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "ahooks": "^3.9.6",
     "axios": "^1.13.5",
