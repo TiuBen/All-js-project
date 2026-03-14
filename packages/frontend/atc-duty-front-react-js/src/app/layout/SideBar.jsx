@@ -78,7 +78,7 @@ const items = [
             },
             {
                 title: "统计",
-                page: "STATS",
+                page: "Statistics",
                 Icon: () => <ChartLine size={"1.5em"} strokeWidth={1.5} />,
             },
         ],
@@ -90,7 +90,7 @@ const items = [
         subNav: [
             {
                 title: "执勤表格",
-                page: "ADMIN_SHEET",
+                page: "DUTY_RECORD",
                 Icon: () => <Sheet size={"1.5em"} strokeWidth={1.5} />,
             },
             {

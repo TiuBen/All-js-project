@@ -24,15 +24,9 @@ router.post("/logout", AuthController.logout);
 router.post("/refresh", AuthController.refreshToken);
 
 const LogController = require("../controllers/Log.Controller");
-router.get("/log",LogController.getAll);
+router.get("/log", LogController.getAll);
 
-
-
-
-const { authenticateToken, optionalAuth, requireAdmin } = require('../middlewares/auth');
-
-
-
+const { authenticateToken, optionalAuth, requireAdmin } = require("../middlewares/auth");
 
 //#region 关于user部分的Router
 const StatisticsController = require("../controllers/Statistics.Controller");
@@ -41,6 +35,12 @@ router.get("/users/:id/nightCount", StatisticsController.getNightShiftCountStati
 router.get("/users/:id/dutyStatistics", StatisticsController.getDurationStatisticsByUser);
 const UserRouter = generateCRUDRoutes(express.Router(), userController);
 router.use("/users", UserRouter);
+//#endregion
+
+//#region 关于Statistics部分的Router
+router.get("/Statistics", StatisticsController.getNightShiftCountStatisticsByUser);
+const StatisticsRouter = generateCRUDRoutes(express.Router(), StatisticsController);
+router.use("/Statistics", StatisticsRouter);
 //#endregion
 
 //#region 关于考勤du的部分在这里
@@ -60,8 +60,6 @@ const PositionRouter = generateCRUDRoutes(express.Router(), PositionController);
 router.use("/positions", PositionRouter);
 //#region 关于席位的部分在这里
 
-
-
 //##region 文件的部分在这里
 const FileController = require("../controllers/File.Controller");
 
@@ -69,11 +67,9 @@ router.get("/files/exists", FileController.checkExcelStatus);
 router.post("/files/regenerate", FileController.forceRegenerateExcel);
 router.post("/files/download", FileController.downloadExcel);
 
-// SEE 
-const {initSSE}=require("../utils/see")
+// SEE
+const { initSSE } = require("../utils/see");
 router.get("/events", initSSE);
-
-
 
 //##region 导出EXCEL的部分在这里
 //! 示例：从数据库中查询数据、计算后导出为 Excel
@@ -81,9 +77,9 @@ const { exportAsExcel } = require("../utils/exportAsExcel");
 router.get("/download-excel", async (req, res) => {
     try {
         console.log("download-excel");
-        const {startDate,startTime,endDate,endTime}=req.query;
+        const { startDate, startTime, endDate, endTime } = req.query;
 
-        const filePath = await exportAsExcel(startDate,startTime,endDate,endTime);
+        const filePath = await exportAsExcel(startDate, startTime, endDate, endTime);
         res.download(filePath, "小时数统计.xlsx", (err) => {
             if (err) {
                 console.error("File send error:", err);
@@ -98,7 +94,7 @@ router.get("/download-excel", async (req, res) => {
 
 // router.get("*", async (req, res) => {
 //     console.log("all  request");
-    
+
 //     console.log(req.url);
 // });
 

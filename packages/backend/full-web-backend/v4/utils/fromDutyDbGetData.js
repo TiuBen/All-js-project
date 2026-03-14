@@ -4,8 +4,8 @@ const { normalizeRow } = require("./sqliteSaveReadArrayTools");
 const { DutyDb } = require("../config/sqliteDb.js");
 
 function fromDutyDbGetData(query) {
-    //console.log("utils fromDutyDbGetData");
-
+    console.log("utils fromDutyDbGetData");
+    console.log(query);
     const {
         id,
         userId,
@@ -79,9 +79,9 @@ function fromDutyDbGetData(query) {
     }
 
     if (inTime || (startDate && startTime)) {
-        const _inTime = endDate + " " + endTime;
+        const _inTime = inTime ?? `${startDate} ${startTime}`;
 
-        sql += ` AND inTime <=DATETIME(?)`; // Add filter for 'inTime' if provided
+        sql += ` AND inTime >=DATETIME(?)`; // Add filter for 'inTime' if provided
         params.push(_inTime);
     }
 
@@ -91,9 +91,9 @@ function fromDutyDbGetData(query) {
 
             sql += " AND outTime IS NULL";
         } else {
-            const _outTime = startDate + " " + startTime;
+            const _outTime = outTime ?? `${endDate} ${endTime}`;
 
-            sql += ` AND outTime  >=DATETIME(?) `; // Add filter for 'outTime' if provided
+            sql += ` AND outTime <=DATETIME(?) `; // Add filter for 'outTime' if provided
             params.push(_outTime);
         }
     }
@@ -154,6 +154,8 @@ function fromDutyDbGetData(query) {
 
     return new Promise((resolve, reject) => {
         DutyDb.all(sql, params, (err, rows) => {
+            console.log("SQL:" + sql);
+            console.log("params:" + params);
             if (err) {
                 console.error("查询失败:", err);
                 reject(new Error("数据库查询失败"));
@@ -180,7 +182,7 @@ function fromDutyDbGetData(query) {
                 };
             });
 
-            //console.log("getAll:" + records?.length);
+            console.log("getAll:" + records?.length);
             //console.log(records);
             resolve(records.map(normalizeRow));
         });

@@ -3,8 +3,8 @@ import { useLongPress } from "ahooks";
 import { Button, Avatar } from "@radix-ui/themes";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
-import { userStore } from "../../store/user.store";
-import { onDutyStore } from "../../store/onDuty.store";
+import { useUserStore } from "@/store/user.store";
+import { useDutyStore } from "../../store/duty.store";
 import { dialogStore } from "../../store/dialog.store";
 
 dayjs.extend(duration);
@@ -54,8 +54,8 @@ function Staff(props) {
     const { setDialogPayload } = dialogStore();
 
     //! 减少后端请求 在这里检测 长按的效果
-    const { allDetailUsers } = userStore();
-    const { setSelectedDutyRecord, selectedDutyRecord } = onDutyStore();
+    const { allDetailUsers } = useUserStore();
+    const { setSelectedDutyRecord, selectedDutyRecord } = useDutyStore();
     const [canLongPress, setCanLongPress] = useState(false);
 
     // 执勤时间
@@ -113,7 +113,7 @@ function Staff(props) {
         } else {
             const user = allDetailUsers.find((user) => user.id === userId);
             // console.log(user);
-            const uP = user.position || [];
+            const uP = user?.position || [];
             const foundP = uP.find((x) => x?.position === position) || {};
             // console.log(foundP);
             if (foundP.roleType === "教员") {

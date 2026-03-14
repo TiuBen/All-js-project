@@ -10,7 +10,7 @@ function getInitialPage() {
         return page;
     }
 
-    return PAGE_KEYS.DASHBOARD;
+    return PAGE_KEYS.DUTY_RECORD;
 }
 
 export const useAppStore = create((set, get) => ({

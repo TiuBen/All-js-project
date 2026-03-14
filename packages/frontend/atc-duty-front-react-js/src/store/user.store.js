@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { userService } from "../service/user.service";
 
-export const userStore = create((set, get) => ({
+export const useUserStore = create((set, get) => ({
     allDetailUsers: [], //  all duty records outTime ==null
     loading: false,
 

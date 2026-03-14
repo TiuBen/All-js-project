@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 // import { API_URL } from "../../../utils/const/Const";
 // import RightBarSelectDayDetail from "./RightBarSelectDayDetail";
 
-import { TestButton } from "@sn/ui";
+import { TestButton, MonthCalendar } from "@sn/ui";
 
 // function DayCellElement({ date, onClick }) {
 //     const startDate = dayjs(date, "YYYY-MM-DD").format("YYYY-MM-DD");
@@ -68,9 +68,10 @@ function Page() {
     return (
         <div className=" flex flex-row flex-1 items-stretch w-full h-full ">
             <div className="flex-1 p-2 items-stretch justify-stretch flex">
-                ddddd
-                <TestButton>dddd</TestButton>
+                <MonthCalendar />
             </div>
         </div>
     );
 }
+
+export default Page;

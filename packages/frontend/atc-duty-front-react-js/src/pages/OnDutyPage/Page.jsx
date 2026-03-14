@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { useAppStore } from "../../store/app.store";
-import { onDutyStore } from "../../store/onDuty.store";
+import { useDutyStore } from "../../store/duty.store";
 import Position from "./Position.jsx";
 
 function Page() {
     const { positions, positionsLoading } = useAppStore();
-    const { list, fetchOnDuty } = onDutyStore();
+    const { list, fetchOnDuty } = useDutyStore();
 
     useEffect(() => {
         fetchOnDuty();
