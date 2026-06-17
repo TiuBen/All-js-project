@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 // import { ArrowLeft, ArrowRight } from "lucide-react";
 // import { API_URL } from "../../../utils/const/Const";
 // import RightBarSelectDayDetail from "./RightBarSelectDayDetail";
+import YearMonthTab from "../../components/YearMonthTab";
 
 import { TestButton, MonthCalendar } from "@sn/ui";
 
@@ -66,7 +67,9 @@ function Page() {
     // const [date, setDate] = useState("");
 
     return (
-        <div className=" flex flex-row flex-1 items-stretch w-full h-full ">
+        <div className="flex flex-col  flex-1 items-stretch w-full  h-full">
+            <YearMonthTab />
+
             <div className="flex-1 p-2 items-stretch justify-stretch flex">
                 <MonthCalendar />
             </div>

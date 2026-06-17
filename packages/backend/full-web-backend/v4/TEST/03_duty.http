@@ -1,0 +1,33 @@
+### ==========================================
+### 考勤 Duty CRUD
+### ==========================================
+
+### 获取所有考勤记录 (带查询参数)
+GET http://localhost:3205/api/duty?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59
+
+### 获取单条考勤记录
+GET http://localhost:3205/api/duty/1
+
+### 创建考勤记录 (打卡上班)
+POST http://localhost:3205/api/duty
+Content-Type: application/json
+
+{
+    "username": "张三",
+    "position": "东塔台",
+    "dutyType": "主班",
+    "inTime": "2025-06-16 08:00:00",
+    "roleType": null
+}
+
+### 更新考勤记录 (修改席位等信息)
+PUT http://localhost:3205/api/duty/1
+Content-Type: application/json
+
+{
+    "position": "西塔台",
+    "dutyType": "副班"
+}
+
+### 删除考勤记录
+DELETE http://localhost:3205/api/duty/1

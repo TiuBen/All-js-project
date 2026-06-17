@@ -20,10 +20,12 @@ function Position(props) {
                         <>
                             {["主班", "副班"].map((x, index) => {
                                 return <Seat position={position} dutyType={x} key={index} />;
+                                // return <div>ddd{JSON.stringify(x)}</div>;
                             })}
                         </>
                     ) : (
                         <Seat position={position} dutyType={null} />
+                        // <div>ddddddddd</div>
                     )}
                 </div>
             </div>

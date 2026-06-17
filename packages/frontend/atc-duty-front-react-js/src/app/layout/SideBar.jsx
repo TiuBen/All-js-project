@@ -10,15 +10,17 @@ import {
     FileDown,
 } from "lucide-react";
 import { useAppStore } from "../../store/app.store";
+import { useRouterStore } from "../../store/router.store";
 
 const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
-    const setPage = useAppStore((s) => s.setPage);
+    // const setPage = useAppStore((s) => s.setPage);
+    const push = useRouterStore((s) => s.push);
 
     if (isExpanded) {
         return (
             <div className={`flex items-start gap-1 text-nowrap flex-col text-white-900`}>
                 <a
-                    onClick={() => setPage(page)}
+                    onClick={() => push(page)}
                     className={"flex flex-row gap-1 flex-nowrap hover:cursor-pointer hover:font-extrabold"}
                 >
                     <Icon size={"1.5rem"} />
@@ -31,7 +33,7 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
                             return (
                                 <a
                                     key={item.page}
-                                    onClick={() => setPage(item.page)}
+                                    onClick={() => push(item.page)}
                                     className={`flex flex-row gap-1 flex-nowrap text-base`}
                                 >
                                     {item.Icon()}
@@ -48,8 +50,8 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
     return (
         <a
             onClick={(e) => {
-                e.preventDefault();
-                setPage(page);
+                // e.preventDefault();
+                push(page);
             }}
             className={`self-center flex gap-1 items-center flex-col`}
         >
@@ -68,17 +70,17 @@ const items = [
         subNav: [
             {
                 title: "岗位状态",
-                page: "DUTY",
+                page: "duty",
                 Icon: () => <BicepsFlexed strokeWidth={1.5} />,
             },
             {
                 title: "日历",
-                page: "CALENDAR",
+                page: "calendar",
                 Icon: () => <CalendarDays strokeWidth={1.5} />,
             },
             {
                 title: "统计",
-                page: "Statistics",
+                page: "statistics",
                 Icon: () => <ChartLine size={"1.5em"} strokeWidth={1.5} />,
             },
         ],

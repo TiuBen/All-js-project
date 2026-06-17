@@ -12,4 +12,7 @@ export default defineConfig({
             "@store": path.resolve(__dirname, "./src/store"),
         },
     },
+    server: {
+        open: true,
+    },
 });

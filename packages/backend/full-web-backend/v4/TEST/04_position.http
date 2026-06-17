@@ -1,0 +1,30 @@
+### ==========================================
+### 席位 Position CRUD
+### ==========================================
+
+### 获取所有席位
+GET http://localhost:3205/api/positions
+
+### 获取单个席位
+GET http://localhost:3205/api/positions/1
+
+### 创建席位
+POST http://localhost:3205/api/positions
+Content-Type: application/json
+
+{
+    "name": "东塔台",
+    "description": "东塔台管制席位"
+}
+
+### 更新席位
+PUT http://localhost:3205/api/positions/1
+Content-Type: application/json
+
+{
+    "name": "西塔台",
+    "description": "西塔台管制席位"
+}
+
+### 删除席位
+DELETE http://localhost:3205/api/positions/1

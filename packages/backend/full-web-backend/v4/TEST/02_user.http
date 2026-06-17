@@ -1,0 +1,35 @@
+### ==========================================
+### 用户 User CRUD
+### ==========================================
+
+### 获取所有用户
+GET http://localhost:3205/api/users?fields=*
+
+### 获取单个用户
+GET http://localhost:3205/api/users/1
+
+### 创建用户
+POST http://localhost:3205/api/users
+Content-Type: application/json
+
+{
+    "username": "张三",
+    "password": "123456",
+    "position": "东塔台",
+    "roleType": "",
+    "status": 1,
+    "team": 1,
+    "rank": 1
+}
+
+### 更新用户
+PUT http://localhost:3205/api/users/1
+Content-Type: application/json
+
+{
+    "position": "西塔台",
+    "status": 1
+}
+
+### 删除用户
+DELETE http://localhost:3205/api/users/1

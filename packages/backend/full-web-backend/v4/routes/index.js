@@ -71,6 +71,11 @@ router.post("/files/download", FileController.downloadExcel);
 const { initSSE } = require("../utils/see");
 router.get("/events", initSSE);
 
+//##region 执勤时间检查
+const CheckDurationController = require("../controllers/CheckDuration.Controller");
+router.get("/check-duration", CheckDurationController.checkAll);
+//#endregion
+
 //##region 导出EXCEL的部分在这里
 //! 示例：从数据库中查询数据、计算后导出为 Excel
 const { exportAsExcel } = require("../utils/exportAsExcel");

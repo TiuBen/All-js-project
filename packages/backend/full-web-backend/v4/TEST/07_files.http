@@ -1,0 +1,19 @@
+### ==========================================
+### 文件操作 Files
+### ==========================================
+
+### 检查 Excel 文件是否存在
+GET http://localhost:3205/api/files/exists
+
+### 强制重新生成 Excel 文件
+POST http://localhost:3205/api/files/regenerate
+
+### 下载 Excel 文件
+POST http://localhost:3205/api/files/download
+
+### ==========================================
+### 导出 Excel
+### ==========================================
+
+### 下载小时数统计 Excel
+GET http://localhost:3205/api/download-excel?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59

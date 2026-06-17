@@ -13,11 +13,12 @@ export const PAGE_KEYS = {
 };
 
 export const pageRegistry = {
-    [PAGE_KEYS.DASHBOARD]: OnDutyPage,
+    // [PAGE_KEYS.DASHBOARD]: OnDutyPage,
+    [PAGE_KEYS.DASHBOARD]: <div>OnDutyPage</div>,
     [PAGE_KEYS.DUTY]: OnDutyPage,
     [PAGE_KEYS.CALENDAR]: CalendarPage,
     [PAGE_KEYS.Statistics]: StatisticsPage,
-    [PAGE_KEYS.POSITIONS]: () => <div>Positions</div>,
+    [PAGE_KEYS.POSITIONS]: <div>Positions</div>,
     [PAGE_KEYS.DUTY_RECORD]: DutyRecordPage,
 
     // 👇 先不写，明确标记

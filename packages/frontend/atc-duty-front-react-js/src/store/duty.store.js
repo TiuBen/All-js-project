@@ -11,7 +11,8 @@ export const useDutyStore = create((set, get) => ({
         set({ loading: true });
         try {
             const data = await dutyService.listOnDuty();
-            set({ list: data, loading: false });
+
+            set({ dutyRecords: data, loading: false });
         } catch (err) {
             console.log(err);
 
@@ -68,7 +69,7 @@ export const useDutyStore = create((set, get) => ({
 
             // ✅ 本地直接移除，体验更好
             const next = get().list.filter((d) => d.id !== dutyId);
-            set({ list: next, loading: false });
+            set({ dutyRecords: next, loading: false });
         } catch (err) {
             set({
                 loading: false,

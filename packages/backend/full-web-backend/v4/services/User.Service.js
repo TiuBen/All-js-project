@@ -5,7 +5,8 @@ const { normalizeValue, normalizeRow } = require("../utils/sqliteSaveReadArrayTo
 // const DutyService = require("./Duty.Service");
 // const dutyService= new DutyService();
 
-const ALLOWED_COLUMNS = ["id", "username","password","position", "dutyType", "roleType", "status", "avatarImage", "team","rank"];
+// const ALLOWED_COLUMNS = ["id", "username","password","position", "dutyType", "roleType", "status", "avatarImage", "team","rank"];
+const ALLOWED_COLUMNS = ["id", "username", "position", "dutyType", "roleType", "status", "avatarImage", "team", "rank"];
 
 class UserService extends BaseService {
     constructor(dutyService) {
@@ -17,7 +18,6 @@ class UserService extends BaseService {
         this.updatePositions = this.updatePositions.bind(this);
         this.updateRoleTypes = this.updateRoleTypes.bind(this);
     }
-
 
     create(data) {
         //console.log("UserService.create()");
@@ -38,14 +38,14 @@ class UserService extends BaseService {
 
     getAll(options) {
         console.log("UserService getAll");
-        
 
         return new Promise((resolve, reject) => {
-            const safeFields = options.fields[0] === "*" ? ALLOWED_COLUMNS : options.fields.filter((f) => ALLOWED_COLUMNS.includes(f));
+            const safeFields =
+                options.fields[0] === "*" ? ALLOWED_COLUMNS : options.fields.filter((f) => ALLOWED_COLUMNS.includes(f));
 
             const query = `SELECT ${safeFields.join(", ")} FROM user ORDER BY "rank"`;
 
-            console.log("QUERY:"+query);
+            console.log("QUERY:" + query);
 
             this.db.all(query, (err, rows) => {
                 if (err) {

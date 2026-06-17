@@ -1,0 +1,12 @@
+### ==========================================
+### 统计 Statistics
+### ==========================================
+
+### 获取夜班次数统计 (所有用户)
+GET http://localhost:3205/api/Statistics
+
+### 获取单个用户执勤时间统计
+GET http://localhost:3205/api/users/1/dutyStatistics?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59
+
+### 获取单个用户夜班次数统计
+GET http://localhost:3205/api/users/1/nightCount?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59

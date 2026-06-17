@@ -1,0 +1,28 @@
+### ==========================================
+### 登录 Auth
+### ==========================================
+
+### 登录 - 获取 token
+POST http://localhost:3205/api/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "123456"
+}
+
+### 登出
+POST http://localhost:3205/api/logout
+Content-Type: application/json
+
+{
+    "token": "your_token_here"
+}
+
+### 刷新 token
+POST http://localhost:3205/api/refresh
+Content-Type: application/json
+
+{
+    "token": "your_token_here"
+}

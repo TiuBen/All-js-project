@@ -5,7 +5,7 @@ import Position from "./Position.jsx";
 
 function Page() {
     const { positions, positionsLoading } = useAppStore();
-    const { list, fetchOnDuty } = useDutyStore();
+    const { fetchOnDuty } = useDutyStore();
 
     useEffect(() => {
         fetchOnDuty();

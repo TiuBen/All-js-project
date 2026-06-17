@@ -4,10 +4,10 @@ import { positionService } from "../service/position.service";
 import { PAGE_KEYS, pageRegistry } from "../app/pageRegistry";
 
 function getInitialPage() {
-    const page = new URLSearchParams(window.location.search).get("page");
+    const path = window.location.pathname.replace("/", "").toUpperCase();
 
-    if (page && pageRegistry[page]) {
-        return page;
+    if (pageRegistry[path] !== undefined) {
+        return path;
     }
 
     return PAGE_KEYS.DUTY_RECORD;
@@ -18,7 +18,7 @@ export const useAppStore = create((set, get) => ({
     setPage: (page) => {
         set({ page });
         // const url = new URL(window.location.href);
-        window.history.pushState({}, "", String(page).toLowerCase());
+        window.history.pushState({}, "", "/" + page.toLowerCase());
     },
 
     isLeftBarOpen: true,

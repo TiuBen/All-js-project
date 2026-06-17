@@ -12,6 +12,7 @@ export const dutyService = {
                 outTime: "null",
             },
         });
+        console.log("service duty listOnDuty:", data);
         return data; // 提取数据部分
     },
 
