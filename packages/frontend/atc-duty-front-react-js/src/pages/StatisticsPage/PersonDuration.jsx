@@ -1,7 +1,94 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import { useUserStore } from "../../store/user.store";
+import { http } from "../../service/http";
+import { useOutletContext } from "react-router-dom";
+import { formatDecimal } from "../../util/formatDecimal";
 
-function PersonDuration() {
-    return <div>PersonDuration</div>;
+function UserDutyDurationRow({ userId, username, startDate, endDate }) {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        const fetchStats = async () => {
+            try {
+                const data = await http.get(`/users/${userId}/dutyStatistics`, {
+                    params: {
+                        startDate,
+                        startTime: "00:00:00",
+                        endDate,
+                        endTime: "00:00:01",
+                    },
+                });
+                setStats(data);
+            } catch (err) {
+                console.log(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, [userId, startDate, endDate]);
+
+    if (loading)
+        return (
+            <tr>
+                <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
+                <td className="border border-black" colSpan={4}>加载中...</td>
+            </tr>
+        );
+
+    return (
+        <tr className="hover:bg-slate-400">
+            <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
+            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.time)}</td>
+            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.dayShift)}</td>
+            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.nightShift)}</td>
+            <td className="border border-black text-center">
+                {formatDecimal(stats?.totalStudentTime?.time) ? "见习" : ""}
+            </td>
+        </tr>
+    );
 }
 
-export default PersonDuration;
+export default function PersonDuration() {
+    const { year, month } = useOutletContext();
+    const { allDetailUsers, fetchAllDetailUsers } = useUserStore();
+
+    useEffect(() => {
+        fetchAllDetailUsers();
+    }, [fetchAllDetailUsers]);
+
+    const startDate = dayjs().year(year).month(month).date(1).format("YYYY-MM-DD");
+    const endDate = dayjs().year(year).month(month + 1).date(1).format("YYYY-MM-DD");
+
+    return (
+        <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">
+            <table className="w-full border-collapse text-nowrap">
+                <thead>
+                    <tr>
+                        <th className="border border-black">姓名</th>
+                        <th className="border border-black">总小时</th>
+                        <th className="border border-black">白班小时</th>
+                        <th className="border border-black">夜班小时 (0000-0800)</th>
+                        <th className="border border-black">备注</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {allDetailUsers.map((user, index) => (
+                        <UserDutyDurationRow
+                            key={index}
+                            userId={user.id}
+                            username={user.username}
+                            startDate={startDate}
+                            endDate={endDate}
+                        />
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}

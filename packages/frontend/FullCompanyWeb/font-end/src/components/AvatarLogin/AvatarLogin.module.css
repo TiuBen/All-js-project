@@ -1,0 +1,11 @@
+.avatarLoginContainer {
+    max-width: 200px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-end;
+}
+
+.underlineHyperlink{
+    font-size: large;
+}

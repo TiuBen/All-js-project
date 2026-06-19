@@ -1,0 +1,94 @@
+.id-card-font {
+  font-family: "smiley-sans";
+  --PPI: 0.233;
+  position: relative;
+  --col1-left: 28pt;
+  --img-size: 14pt;
+}
+.id-card-font .container {
+  box-sizing: border-box;
+  position: relative;
+  height: calc(54px / var(--PPI));
+  width: calc(90px / var(--PPI));
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+.id-card-font .container .container-1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 18pt;
+}
+.id-card-font .container .container-1 #logo-img {
+  position: relative;
+  width: 48pt;
+}
+.id-card-font .container .container-1 #shenzhen-name {
+  position: relative;
+  word-wrap: none;
+}
+.id-card-font .container .container-1 #dongguan-name {
+  position: relative;
+}
+.id-card-font .container .container-2 {
+  position: relative;
+  font-size: 20pt;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: -10pt;
+}
+.id-card-font .container .container-2 #name {
+  position: relative;
+  font-family: MaShanZheng;
+  font-weight: bold;
+}
+.id-card-font .container .container-2 #title {
+  position: relative;
+  margin-left: 2pt;
+  font-size: 10pt;
+}
+.id-card-font .container .container-2 #phone {
+  font-size: 10pt;
+}
+.id-card-font .container .container-2 #email {
+  position: relative;
+  font-size: 10pt;
+}
+.id-card-font .container .container-3 {
+  font-size: 8pt;
+  position: relative;
+  top: -6pt;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.id-card-font .container .container-3 #shenzhen-address {
+  position: relative;
+}
+.id-card-font .container .container-3 #dongguan-address {
+  position: relative;
+}
+.id-card-font .container .container-3 #site {
+  position: relative;
+}
+
+@media print {
+  @page {
+    size: 90mm 54mm;
+  }
+  .card-container {
+    box-sizing: border-box;
+    background-color: aqua;
+    position: relative;
+    height: calc(54px / var(--PPI));
+    width: calc(90px / var(--PPI));
+    border: 1px solid black;
+  }
+  .no-print {
+    display: none;
+  }
+}/*# sourceMappingURL=App.css.map */

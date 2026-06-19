@@ -1,0 +1,114 @@
+.ms-calendar {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+}
+.ms-calendar .type-range-switch-control {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.ms-calendar .type-range-switch-control ul {
+  padding: 4px;
+}
+.ms-calendar .type-range-switch-control ul li {
+  list-style-type: none;
+  margin: 2px;
+  text-align: left;
+}
+.ms-calendar .type-range-switch-control .dropdown {
+  position: relative;
+  display: inline-block;
+}
+.ms-calendar .type-range-switch-control .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  z-index: 9999;
+}
+.ms-calendar .type-range-switch-control .dropdown:hover .dropdown-content {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+.ms-calendar .mini-month {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  align-self: flex-start;
+}
+.ms-calendar .mini-month .mini-month-control {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: baseline;
+}
+.ms-calendar .mini-month table {
+  align-self: stretch;
+  flex-grow: 1;
+}
+.ms-calendar .main {
+  flex-grow: 1;
+  border: 2px solid black;
+}
+.ms-calendar .main .main-right {
+  flex-grow: 1;
+  height: 100%;
+}
+.ms-calendar .ranged-day-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-grow: 0;
+  align-self: flex-start;
+}
+.ms-calendar .large-month {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: 2rem;
+}
+.ms-calendar .large-month .is-today::before {
+  content: "";
+  background-color: #0f6cbd;
+  height: 4px;
+  left: 0px;
+  width: 100%;
+  position: relative;
+}
+.ms-calendar .large-month .is-selected {
+  background-color: rgba(189, 223, 253, 0.4862745098);
+}
+.ms-calendar .large-month div {
+  border: 1px solid #dfdfdf;
+  display: flex;
+  flex-direction: column;
+}
+.ms-calendar .large-month div span {
+  margin: 4px;
+  font-weight: bold;
+}
+.ms-calendar .large-month div span.cell.adding-todo {
+  background-color: #dd7027;
+}
+.ms-calendar .day-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.ms-calendar .day-cell .single-todo {
+  text-align: left;
+  flex-direction: row;
+  align-items: center;
+}
+.ms-calendar .day-cell .single-todo::before {
+  content: " ";
+  background-color: red;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}/*# sourceMappingURL=MsCalendar.css.map */

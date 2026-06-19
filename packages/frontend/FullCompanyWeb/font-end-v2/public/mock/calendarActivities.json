@@ -1,0 +1,52 @@
+{
+    "activities": [
+        {
+            "id": 1,
+            "company": "dd",
+            "starTime": "2023-04-02",
+            "title": "测试项目1",
+            "type": "fiance",
+            "status": "begin"
+        },
+        {
+            "id": 2,
+            "company": "aw",
+            "starTime": "2023-04-02",
+            "title": "测试项目1",
+            "type": "goods",
+            "status": "running"
+        },
+        {
+            "id": 3,
+            "company": "hjw",
+            "starTime": "2023-04-04",
+            "title": "测试项目1",
+            "type": "daily",
+            "status": "finish"
+        },
+        {
+            "id": 4,
+            "company": "hdl",
+            "starTime": "2023-04-05",
+            "title": "测试项目1",
+            "type": "fiance",
+            "status": "danger"
+        },
+        {
+            "id": 5,
+            "company": "dd",
+            "starTime": "2023-04-05",
+            "title": "测试项目1",
+            "type": "goods",
+            "status": "running"
+        },
+        {
+            "id": 6,
+            "company": "dd",
+            "starTime": "2023-04-16",
+            "title": "测试项目1",
+            "type": "daily",
+            "status": "finish"
+        }
+    ]
+}

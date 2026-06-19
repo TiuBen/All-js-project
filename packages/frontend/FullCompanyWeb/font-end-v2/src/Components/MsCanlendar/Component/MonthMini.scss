@@ -1,0 +1,58 @@
+.mini-calendar {
+    display: grid;
+    max-width: 15rem;
+    padding: 0.2rem;
+    text-align: center;
+
+    .header-container {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+
+        .switch {
+            grid-column-start: span 4;
+            padding-left: 0.5rem;
+            text-align: start;
+            vertical-align: baseline;
+            font-size: 1.25rem;
+            font-weight: 600;
+            font-family: "Microsoft YaHei UI";
+        }
+        .switch:hover{
+            background-color:darkgrey;
+        }
+    }
+
+
+    .body-container.show-42days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+    }
+
+    .body-container.show-12months {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .everyday,
+    .day-name-in-CN,
+    .month-name-in-CN {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        aspect-ratio: 1/1;
+        font-family: 'Microsoft YaHei';
+    }
+
+    .everyday:hover,
+    .month-name-in-CN:hover {
+        background-color: bisque;
+
+    }
+    .everyday.today{
+        border-radius: 50%;
+        color: white;
+        background-color: rgba(00, 90, 180, 0.9);
+    }
+}

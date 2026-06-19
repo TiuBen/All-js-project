@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,200&display=swap");
+
+.GridWeek>table {
+    font-family: "Fraunces", serif;
+    /* font-size: 125%; */
+    /* white-space: nowrap; */
+    margin: 0;
+    border: none;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    border: 1px solid black;
+    display: flex;
+    /* width: 100%; */
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.GridWeek thead {
+    padding: 3px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: white;
+}
+.GridWeek tbody{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid red;
+    align-items: stretch;
+    justify-content: space-around;
+}
+
+.GridWeek tr {
+    width: 100%;
+    display: flex;
+    
+}
+
+.GridWeek td {
+    display: flex;
+    flex: 1;
+    border-right: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+    align-items: flex-start;
+    justify-content: center;
+    word-wrap:break-word;
+
+}
+
+.GridWeek table>thead>tr>:first-child,
+.GridWeek table>tbody>tr>:first-child {
+    position: sticky;
+    left: 0;
+    border: 1px solid red;
+    min-width: 4rem;
+    /* z-index: 2; */
+}
+.GridWeek table>tbody>tr>:not(:first-child) {
+    left: 0;
+    border: 1px solid green;
+    min-width: 4rem;
+    justify-content: flex-start;
+}
+
+
+
+.GridWeek caption {
+    text-align: left;
+    padding: 0.25rem;
+    position: sticky;
+    left: 0;
+}
+
+[role="region"][aria-labelledby][tabindex] {
+    /* width: 100%; */
+    max-height: 98vh;
+    width: auto;
+    overflow: auto;
+}
+
+[role="region"][aria-labelledby][tabindex]:focus {
+    box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.5);
+    outline: 0;
+}

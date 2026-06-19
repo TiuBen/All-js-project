@@ -1,7 +1,6 @@
 // src/store/router.store.js
 
 import { create } from "zustand";
-import { ROUTES } from "../app/routes";
 
 function getCurrentPath() {
     return window.location.pathname;

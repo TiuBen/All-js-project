@@ -1,0 +1,1 @@
+export * from "./_test_component/TestLayoutMainPage";

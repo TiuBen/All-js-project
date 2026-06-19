@@ -1,0 +1,113 @@
+/* 主页部分的CSS样式 */
+/** 整个的容器 */
+.mainPage{
+    display: flex;
+    flex-direction: row;
+    flex-grow:1 ;
+}
+
+.modulePage{
+    width: 14.5vw;
+    border: 1px red solid;
+}
+.editPage{
+    width: 24.5vw;
+    border: 1px red solid;
+}
+
+.paginationContainer{
+    height: 100vh;
+    border: 1px solid red;
+    display: flex;
+    flex-direction: column;
+    flex-grow:1;
+    justify-content: space-around;
+}
+.paginationContentContainer{
+    height: 100%;
+    border: 1px solid red;
+    display: flex;
+    flex-grow:1;
+    justify-content: space-around;
+}
+
+.paginationFrame {
+    /* width: calc(100% - 8rem - 80px); */
+    display: flex;
+    flex-grow:1;
+}
+
+.paginationLastButton,
+.paginationNextButton {
+    align-self: center;
+    position: relative;
+    width: 4rem;
+    z-index: 2;
+}
+
+.preview-page{
+    border: 1px red solid;
+    overflow-y: visible;
+}
+
+.flexContainer{
+    border: 1px solid red;
+    padding:2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    flex-grow: 1;
+}
+
+
+/* 预览页的效果 */
+/* 预览页的效果 */
+/* 预览页的效果 */
+
+/* 第一页的整体效果 */
+/* .first-page{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.first-page>*{
+    display: flex;
+
+} */
+
+/* 
+>>first-page
+>>>>logo-name-header
+>>>>yangpingchengrensu
+>>>>changshangquerenlan
+>>>>kehuquerenlan
+>>>>gongsixinxi 
+*/
+
+
+/* logo和公司名称部分 */
+.logo-name-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.logo.DDJW{
+    margin: 10px;
+}
+
+/* */
+.flex-row,.flex-row>*{
+    display: flex;
+    flex-direction: row;
+}
+
+
+
+/* 预览页的效果 */
+/* 预览页的效果 */
+/* 预览页的效果 */
+
+.underline-row {
+    border-bottom: 1pt solid black;
+}

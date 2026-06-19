@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer components {
+  .default-page-container {
+    @apply flex flex-1 flex-row gap-4 m-2;
+  }
+  .default-page-container .center-container {
+    @apply rounded bg-zinc-100;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .default-page-container .right-container {
+    @apply w-1/4 rounded bg-zinc-100;
+    @apply relative flex flex-col overflow-x-hidden;
+  }
+  .default-page-container .right-container .item-container {
+    @apply flex flex-row gap-1 items-center bg-zinc-300;
+    @apply p-2 rounded leading-8 text-xl;
+  }
+  .default-page-container .right-container .item-container a {
+    @apply hover:underline-offset-4 hover:underline;
+  }
+  .check-in-year-indicator {
+    display: grid;
+    gap: 5px;
+    grid-template-rows: repeat(7, 16px);
+    grid-template-columns: 3.5rem, 16px;
+    grid-auto-flow: column;
+  }
+  .check-in-year-indicator > *.checkin-date {
+    position: relative;
+    border: 1px solid rgba(10, 10, 10, 0.2);
+    border-radius: 4px;
+    width: 16px;
+    height: 16px;
+  }
+  .check-in-year-indicator > *.date {
+    box-sizing: content-box;
+    width: 3.5rem;
+    font-size: 14px !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .check-in-year-indicator .tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  .check-in-year-indicator .tooltip::after {
+    content: attr(data-time) "\a" attr(data-vacation);
+    white-space: pre-line;
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    width: 800%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 999;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .check-in-year-indicator .tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+  }
+  .check-in-year-indicator > *.early,
+  .check-in-year-indicator .full {
+    background-color: rgb(33, 110, 57);
+  }
+  .check-in-year-indicator > *.late {
+    background-color: rgb(155, 233, 168);
+  }
+  .check-in-year-indicator > *.absent {
+    background-color: rgba(100, 100, 100, 0.8);
+    border: 1px solid rgba(255, 0, 0, 0.9);
+  }
+  .check-in-year-indicator > *.vacation {
+    border: 1px solid rgba(255, 0, 0, 0.9);
+  }
+  .check-in-year-indicator > *.not-yet.holiday {
+    background-color: rgba(100, 100, 100, 0.4);
+  }
+  .check-in-year-indicator > *.not-yet {
+    background-color: rgba(100, 100, 100, 0.4);
+  }
+}/*# sourceMappingURL=DefaultPage.css.map */

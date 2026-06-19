@@ -1,0 +1,216 @@
+/* For using the outlined version of icons you have to include that in your import */
+@import "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round";
+
+
+
+body {
+  margin: 0;
+
+  /* font-family:"Helvetica Neue", "Luxi Sans", "Segoe UI", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Logo",  */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+
+}
+
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v139/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -moz-font-feature-settings: 'liga';
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+.textFont {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  font-weight: bolder;
+}
+
+.valueTextFont {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  font-weight: bolder;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.strongText {
+  display: flex;
+  flex: 1;
+  min-height: 1rem;
+  font-weight: bold;
+  text-align: left;
+  align-items: center;
+  color: MidnightBlue;
+  background-color: PowderBlue;
+
+}
+
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  /* border-bottom: 1px dotted black; If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  min-width: 80px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: -25%;
+  /* margin-left: -40px;  */
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+
+/*! 公用用的 */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.test-border {
+  border: 2px dotted red;
+  padding: 2px;
+}
+
+.red-background-color {
+  background-color: red;
+}
+
+.day-item:hover {
+  background-color: aqua;
+}
+
+
+.testRectDiv {
+  width: 400px;
+  aspect-ratio: 1/1;
+  padding: 1.2rem;
+}
+
+.root {
+  height: 100%;
+  width: 100%;
+}
+
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL'0,
+    'wght'400,
+    'GRAD'0,
+    'opsz'48
+}
+
+input[type=checkbox] {
+  height: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+/* label {
+  cursor: pointer;
+  text-indent: -9999px;
+  width: 3rem;
+  height: 1.5rem;
+  background: grey;
+  display: block;
+  border-radius:calc(0.75rem);
+  position: relative;
+}
+
+label:after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.5rem - 4px);
+  height: calc(1.5rem - 4px);
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+input:checked + label {
+  background: #bada55;
+}
+
+input:checked + label:after {
+  left: calc(100% - 5px);
+  transform: translateX(-100%);
+}
+
+label:active:after {
+  width: 3rem;
+} */
+
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  table-layout: auto;
+  width: 100%;
+}
+
+.excel-like-table thead td {
+  text-align: center;
+  font-weight: bold;
+}
+
+.excel-like-table tr {
+  line-height: 1.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.excel-like-table td {
+  border: 1px solid black;
+
+}

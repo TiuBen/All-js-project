@@ -1,25 +1,23 @@
 import { create } from "zustand";
 import { positionService } from "../service/position.service";
 
-import { PAGE_KEYS, pageRegistry } from "../app/pageRegistry";
+// function getInitialPage() {
+//     const path = window.location.pathname.replace("/", "").toUpperCase();
 
-function getInitialPage() {
-    const path = window.location.pathname.replace("/", "").toUpperCase();
+//     if (pageRegistry[path] !== undefined) {
+//         return path;
+//     }
 
-    if (pageRegistry[path] !== undefined) {
-        return path;
-    }
-
-    return PAGE_KEYS.DUTY_RECORD;
-}
+//     return PAGE_KEYS.DUTY_RECORD;
+// }
 
 export const useAppStore = create((set, get) => ({
-    page: getInitialPage(),
-    setPage: (page) => {
-        set({ page });
-        // const url = new URL(window.location.href);
-        window.history.pushState({}, "", "/" + page.toLowerCase());
-    },
+    // page: getInitialPage(),
+    // setPage: (page) => {
+    //     set({ page });
+    //     // const url = new URL(window.location.href);
+    //     window.history.pushState({}, "", "/" + page.toLowerCase());
+    // },
 
     isLeftBarOpen: true,
     toggleLeftBar: () =>

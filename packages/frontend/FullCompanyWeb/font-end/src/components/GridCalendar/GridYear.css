@@ -1,0 +1,42 @@
+.year-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0px;
+    padding: 1rem;
+    flex: 1;
+}
+
+.year-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    height: 100%;
+    gap:1rem;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.border {
+    border: 1px black solid;
+}
+
+.month-container-in-year {
+    /* font-size: 2em; */
+    text-align: center;
+    border: 1px solid #e5e4e9;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+

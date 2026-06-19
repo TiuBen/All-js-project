@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    section {
+        @apply p-4
+    }
+
+    section .nav-title {
+        @apply flex py-4 text-2xl border-b-2 border-sky-700;
+    }
+
+  
+
+    .horizontal_navbar_container {
+        
+        /* 颜色部分 */
+        @apply text-white bg-blue-700; 
+        /* 布局部分 */
+        @apply  flex flex-row  h-16 max-h-16 px-8 justify-between items-center;
+        // 字体部分
+        @apply font-yahei antialiased;
+
+        section {
+            @apply p-0 flex flex-row;
+
+            .company_notify_container,.username{
+                @apply font-bold text-2xl m-1;
+            }
+        }
+        li.nav-item {
+            @apply flex flex-row ;
+            @apply hover:border-b-2 hover:border-white  hover:font-bold hover:cursor-pointer ;
+        }
+
+    }
+
+}

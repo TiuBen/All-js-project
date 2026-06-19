@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .dropdown-menu-container {
+        position: relative;
+        text-align: center;
+        width: fit-content;
+        height: fit-content;
+    }
+
+    .dropdown-menu-button {
+        display: none;
+
+    }
+
+    .dropdown-menu-container>label {
+        position: relative;
+        font-family: "Roboto", sans-serif;
+        width: fit-content;
+        @apply bg-gray-50 border border-gray-300 ;
+        @apply focus:ring-4 focus:outline-none focus:ring-blue-300  ;
+        @apply rounded-lg px-4 py-2.5 font-medium text-lg text-center inline-flex items-center hover:bg-gray-100 ;
+    }
+
+ 
+    .dropdown-menu-button:checked~.dropdown-menu-title-label>.more-arrow{
+        transform: rotate(90deg);
+        transition: transform 100ms linear;
+    }
+   
+
+    .dropdown-menu-button:not(:checked)~.dropdown-menu-items-container {
+        display: none;
+    }
+
+    .dropdown-menu-button:checked~.dropdown-menu-items-container {
+        position: absolute;
+        width:100%;
+        @apply z-10 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700;
+    }
+
+    .dropdown-menu-item {
+        @apply block px-1 py-2 rounded-lg hover:bg-gray-100;
+        @apply dark:hover:bg-gray-600 dark:hover:text-white  hover:border border-gray-300;
+    }
+
+}

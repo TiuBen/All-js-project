@@ -1,0 +1,33 @@
+.company_info_page{
+    // 整体布局
+    @apply relative left-[40px] top-[40px] self-center w-3/4 font-yahei;
+    h1{
+       @apply text-4xl font-bold text-gray-800
+    }
+    h2{
+        @apply text-3xl font-semibold text-gray-700
+    }
+    h3{
+        @apply text-2xl font-semibold text-gray-600
+    }
+    h4{
+        @apply text-xl font-medium text-gray-500
+    }
+    h5{
+        @apply text-lg font-medium text-gray-400
+    }
+
+    ul>li{
+        @apply my-2 py-1  ;
+        @apply grid grid-cols-4 ;
+        .item_label{
+            @apply col-span-1;
+        }
+        .item_value{
+            @apply col-span-3;
+
+        }
+    }
+
+
+}

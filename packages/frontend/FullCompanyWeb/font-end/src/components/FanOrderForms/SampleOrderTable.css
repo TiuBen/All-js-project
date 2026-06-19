@@ -1,0 +1,36 @@
+.sample-order-table {
+  width: 896px;
+  height: 1264px;
+  border: 1px solid #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sample-order-table .item-container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-grow: 1;
+}
+.sample-order-table .item-container .item-title {
+  display: flex;
+  border: 1px solid black;
+  text-align: center;
+  align-items: center;
+  font-weight: 700;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+.sample-order-table .item-container .item-content {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  flex-grow: 1;
+  border: 1px solid black;
+  text-align: center;
+  justify-content: flex-start;
+}
+.sample-order-table .item-container .item-cell {
+  display: flex;
+  flex-direction: row;
+}/*# sourceMappingURL=SampleOrderTable.css.map */

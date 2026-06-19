@@ -1,0 +1,50 @@
+.mini-calendar {
+  display: grid;
+  max-width: 15rem;
+  padding: 0.2rem;
+  text-align: center;
+}
+.mini-calendar .header-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.mini-calendar .header-container .switch {
+  grid-column-start: span 4;
+  padding-left: 0.5rem;
+  text-align: start;
+  vertical-align: baseline;
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-family: "Microsoft YaHei UI";
+}
+.mini-calendar .header-container .switch:hover {
+  background-color: darkgrey;
+}
+.mini-calendar .body-container.show-42days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+}
+.mini-calendar .body-container.show-12months {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.mini-calendar .everyday,
+.mini-calendar .day-name-in-CN,
+.mini-calendar .month-name-in-CN {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1/1;
+  font-family: "Microsoft YaHei";
+}
+.mini-calendar .everyday:hover,
+.mini-calendar .month-name-in-CN:hover {
+  background-color: bisque;
+}
+.mini-calendar .everyday.today {
+  border-radius: 50%;
+  color: white;
+  background-color: rgba(0, 90, 180, 0.9);
+}/*# sourceMappingURL=MonthMini.css.map */

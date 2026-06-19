@@ -10,17 +10,20 @@ import {
     FileDown,
 } from "lucide-react";
 import { useAppStore } from "../../store/app.store";
-import { useRouterStore } from "../../store/router.store";
+import { useNavigate } from "react-router-dom";
 
 const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
-    // const setPage = useAppStore((s) => s.setPage);
-    const push = useRouterStore((s) => s.push);
+    const navigate = useNavigate();
+
+    const handleNavigate = (path) => {
+        navigate(`/${path}`);
+    };
 
     if (isExpanded) {
         return (
             <div className={`flex items-start gap-1 text-nowrap flex-col text-white-900`}>
                 <a
-                    onClick={() => push(page)}
+                    onClick={() => handleNavigate(page)}
                     className={"flex flex-row gap-1 flex-nowrap hover:cursor-pointer hover:font-extrabold"}
                 >
                     <Icon size={"1.5rem"} />
@@ -29,11 +32,11 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
 
                 {subNav && (
                     <div className="flex ml-2 flex-col gap-1">
-                        {subNav.map((item) => {
+                        {subNav.map((item, index) => {
                             return (
                                 <a
-                                    key={item.page}
-                                    onClick={() => push(item.page)}
+                                    key={index}
+                                    onClick={() => handleNavigate(item.page)}
                                     className={`flex flex-row gap-1 flex-nowrap text-base`}
                                 >
                                     {item.Icon()}
@@ -50,8 +53,7 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
     return (
         <a
             onClick={(e) => {
-                // e.preventDefault();
-                push(page);
+                handleNavigate(page);
             }}
             className={`self-center flex gap-1 items-center flex-col`}
         >
@@ -64,7 +66,7 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
 const items = [
     {
         title: "执勤",
-        page: "DASHBOARD",
+        page: "",
         Icon: () => <MessageCircle strokeWidth={1.5} />,
         active: true,
         subNav: [
@@ -87,22 +89,22 @@ const items = [
     },
     {
         title: "后台",
-        page: "ADMIN_SHEET",
+        page: "duty-record",
         Icon: () => <ClipboardPenLine strokeWidth={1.5} />,
         subNav: [
             {
                 title: "执勤表格",
-                page: "DUTY_RECORD",
+                page: "duty-record",
                 Icon: () => <Sheet size={"1.5em"} strokeWidth={1.5} />,
             },
             {
                 title: "设置",
-                page: "ADMIN_SETTING",
+                page: "coming-soon",
                 Icon: () => <Settings size={"1.5em"} strokeWidth={1.5} />,
             },
             {
                 title: "导出",
-                page: "ADMIN_EXPORT",
+                page: "coming-soon",
                 Icon: () => <FileDown size={"1.5em"} strokeWidth={1.5} />,
             },
         ],

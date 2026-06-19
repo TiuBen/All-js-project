@@ -1,36 +1,74 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TabNav } from "@radix-ui/themes";
 import { useStatisticsStore } from "../../store/statistics.store";
 import YearMonthTab from "../../components/YearMonthTab";
-import { useRouterStore } from "../../store/router.store";
-function Page(year = 2026) {
-    const { statistics, loading, query, setQuery, fetchStatistics } = useStatisticsStore();
-    const push = useRouterStore((s) => s.push);
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import dayjs from "dayjs";
+
+function Page() {
+    const { statistics, loading, fetchStatistics } = useStatisticsStore();
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+
+    const [year, setYear] = useState(dayjs().get("year"));
+    const [month, setMonth] = useState(dayjs().get("month"));
 
     useEffect(() => {
         fetchStatistics();
-        console.log(statistics);
     }, []);
-    return (
-        <div className="flex flex-col">
-            <YearMonthTab />
 
-            {/* 你的 Tab 控制栏 */}
+    const isActive = (path) => pathname === path || (path === "/statistics/night-count" && pathname === "/statistics");
+
+    return (
+        <div className="flex flex-col gap-2">
+            <YearMonthTab year={year} onYearChange={setYear} month={month} onMonthChange={setMonth} />
+
             <TabNav.Root>
                 <TabNav.Link
+                    className="h-4 text-lg"
                     href="/statistics/night-count"
-                    active
+                    active={isActive("/statistics/night-count")}
                     onClick={(e) => {
                         e.preventDefault();
-                        push("/statistics/night-count");
+                        navigate("/statistics/night-count");
                     }}
                 >
                     夜班频次
                 </TabNav.Link>
-                <TabNav.Link href="#">个人执勤</TabNav.Link>
-                <TabNav.Link href="#">席位统计</TabNav.Link>
-                <TabNav.Link href="#">合规检查</TabNav.Link>
+                <TabNav.Link
+                    href="/statistics/detail"
+                    active={isActive("/statistics/detail")}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/statistics/detail");
+                    }}
+                >
+                    个人执勤详细
+                </TabNav.Link>
+                <TabNav.Link
+                    href="/statistics/position"
+                    active={isActive("/statistics/position")}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/statistics/position");
+                    }}
+                >
+                    席位统计
+                </TabNav.Link>
+                <TabNav.Link
+                    href="/statistics/check"
+                    active={isActive("/statistics/check")}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/statistics/check");
+                    }}
+                >
+                    合规检查
+                </TabNav.Link>
             </TabNav.Root>
+            <div>
+                <Outlet context={{ year, month }} />
+            </div>
         </div>
     );
 }

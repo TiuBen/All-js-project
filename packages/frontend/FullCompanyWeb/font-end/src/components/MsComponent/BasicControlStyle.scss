@@ -1,0 +1,74 @@
+@mixin plain-button  {
+    // display: block;
+    position: inherit;
+    border: 0px;
+    // text-align: center;
+    // justify-content: center;
+    // align-self: center;
+    // align-items: center;
+    background-color: transparent;
+}
+button.ms-button{
+    @include plain-button;
+}
+button.ms-button:hover{
+    cursor: pointer;
+}
+.ms-vertical-button{
+    @include plain-button;
+    display: flex;
+    flex-direction: column;
+    // justify-content: center;
+    justify-content: center;
+    border: 1px black solid;
+}
+
+
+
+
+.ms-text-field{
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, "Roboto", "Helvetica Neue", sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        box-shadow: none;
+        margin: 0px;
+        padding: 0px 8px;
+        box-sizing: border-box;
+        border-radius: 0px;
+        border: medium none;
+        background: transparent none repeat scroll 0% 0%;
+        width: 100%;
+        min-width: 0px;
+        text-overflow: ellipsis;
+        outline: currentcolor none 0px;
+        text-align: left;
+    
+}
+.ms-date-picker{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+}
+
+.ms-title-bar{
+    display: flex;
+    flex-direction: row;
+    // flex-grow: 1;
+    // height: 1.2rem;
+    margin: 0;
+    padding: 4px;
+    text-align: left;
+    justify-content: space-between;
+    [role="title"]{
+        align-self: flex-start;
+    }
+    [role="button"]{
+
+
+    }
+}
+.ms-menu-bar{
+
+    
+}

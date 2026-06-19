@@ -1,0 +1,42 @@
+{
+    "id": "1",
+    "company": "韩晶威",
+    "staffName": "沈宁",
+    "detail": "因为什么事情而产生的报销需求",
+    "relatedActivitiesId": [
+        "001,002"
+    ],
+    "item": [
+        {
+            "id": "001",
+            "title": "椅子1",
+            "price": "40",
+            "quantity": "3"
+        },
+        {
+            "id": "002",
+            "title": "椅子1",
+            "price": "40",
+            "quantity": "3"
+        },
+        {
+            "id": "003",
+            "title": "椅子1",
+            "price": "40",
+            "quantity": "3"
+        }
+    ],
+    "approve":[
+        {
+            "checkBy":"财务",
+            "Comment":"不同意或者同意的原因",
+            "isApproved":"false"
+        },
+        {
+            "checkBy":"老板",
+            "Comment":"不同意或者同意的原因",
+            "isApproved":"false"
+        }
+    ]
+  
+}

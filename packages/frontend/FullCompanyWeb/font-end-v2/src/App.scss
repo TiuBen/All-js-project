@@ -1,0 +1,116 @@
+// ! 27寸 1440P 显示器的 点距 0.233mm
+// 名片常见大小是 90mm * 54mm
+// 27-inch 1440p monitor has a pixel density of about 108 ppi
+.id-card-font {
+    font-family: 'smiley-sans';
+
+    --PPI: 0.233;
+    position: relative;
+    --col1-left: 28pt;
+    --img-size: 14pt;
+
+    .container {
+        box-sizing: border-box;
+        position: relative;
+        height: calc(54px / var(--PPI)); //54mm高
+        width: calc(90px / var(--PPI)); //90mm宽
+        border: 1px solid black;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+
+        .container-1 {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-size: 18pt;
+            #logo-img {
+                position: relative;
+                width: 48pt;
+            }
+
+            #shenzhen-name {
+                position: relative;
+                word-wrap: none;
+            }
+
+            #dongguan-name {
+                position: relative;
+            }
+        }
+
+        .container-2 {
+            position: relative;
+            font-size: 20pt;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            top: -10pt;
+
+            #name {
+                position: relative;
+                font-family: MaShanZheng;
+                font-weight: bold;
+            }
+
+            #title {
+                position: relative;
+                margin-left: 2pt;
+                font-size: 10pt;
+            }
+
+            #phone {
+                font-size: 10pt;
+            }
+
+            #email {
+                position: relative;
+                font-size: 10pt;
+            }
+        }
+
+        .container-3 {
+            font-size: 8pt;
+            // align-self: flex-start;
+            // margin-left: var(--col1-left);
+            position: relative;
+            top: -6pt;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            #shenzhen-address {
+                position: relative;
+            }
+
+            #dongguan-address {
+                position: relative;
+            }
+
+            #site {
+                position: relative;
+            }
+        }
+    }
+}
+
+@media print {
+    @page {
+        size: 90mm 54mm;
+    }
+
+    .card-container {
+        box-sizing: border-box;
+        background-color: aqua;
+        position: relative;
+        height: calc(54px / var(--PPI));
+        width: calc(90px / var(--PPI));
+        // height: 200px;
+        border: 1px solid black;
+    }
+
+    .no-print {
+        display: none;
+    }
+
+}

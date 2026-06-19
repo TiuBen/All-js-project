@@ -1,0 +1,49 @@
+.react-table {
+  table,
+  th,
+  td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+ 
+  .contact-detail-cell{
+    // display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+  }
+  ul, li{
+   margin: 0px; 
+  }
+}
+table.react-table{
+  // table-layout: fixed;
+  width: 100%;
+}
+.react-table thead {
+  text-align: center;
+}
+
+.react-table thead > tr {
+  td:nth-child(1) {
+    width: inherit;
+  }
+  td:nth-child(2) {
+    width: max-content;
+  }
+  td:nth-child(3) {
+    width: inherit;
+  }
+  td:nth-child(4) {
+    width: inherit;
+  }
+  td:nth-child(5) {
+    width: inherit;
+  }
+  td:nth-child(6) {
+    // width:inherit;
+    width: 12rem;
+  }
+  td:nth-child(7) {
+    width: max-content;
+  }
+}

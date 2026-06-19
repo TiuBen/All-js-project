@@ -1,0 +1,1 @@
+export const ErpBaseURL = "http://localhost:3100/api/v2/erp"

@@ -4,8 +4,21 @@ import { create } from "zustand";
 import { userService } from "../service/user.service";
 
 export const useUserStore = create((set, get) => ({
-    allDetailUsers: [], //  all duty records outTime ==null
+    allDetailUsers: [],
     loading: false,
+
+    selectedUser: null,
+    setSelectedUser: (user) => set({ selectedUser: user }),
+
+    dutyStatistics: {},
+    fetchDutyStatistics: async (userId, startDate, endDate) => {
+        try {
+            const data = await userService.getDutyStatistics(userId, startDate, endDate);
+            set({ dutyStatistics: data });
+        } catch (err) {
+            console.log(err);
+        }
+    },
 
     async fetchAllDetailUsers() {
         set({ loading: true });
@@ -14,7 +27,6 @@ export const useUserStore = create((set, get) => ({
             set({ allDetailUsers: data, loading: false });
         } catch (err) {
             console.log(err);
-
             set({ loading: false });
         }
     },

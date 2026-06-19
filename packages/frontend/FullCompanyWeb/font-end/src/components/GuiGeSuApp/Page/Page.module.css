@@ -1,0 +1,169 @@
+
+/* 主页部分的CSS样式 */
+/** 整个的容器 */
+.main-page{
+    display: flex;
+    flex-direction: row;
+}
+
+.module-page{
+    width: 14.5vw;
+    border: 1px red solid;
+}
+.edit-page{
+    width: 24.5vw;
+    border: 1px red solid;
+}
+
+#pagination-container{
+    height: 100vh;
+    border: 1px solid red;
+    display: flex;
+    flex-direction: column;
+    flex-grow:1;
+    justify-content: space-around;
+}
+#pagination-content-container{
+    height: 100%;
+    border: 1px solid red;
+    display: flex;
+    flex-grow:1;
+    justify-content: space-around;
+}
+
+#pagination-frame {
+    /* width: calc(100% - 8rem - 80px); */
+    display: flex;
+    flex-grow:1;
+}
+
+#pagination-last-button,
+#pagination-next-button {
+    align-self: center;
+    position: relative;
+    width: 4rem;
+    z-index: 2;
+}
+
+.preview-page{
+    border: 1px red solid;
+    overflow-y: visible;
+}
+
+/*! 公用的部分 */
+/* ************ */
+.flexContainer{
+    border: 1px solid red;
+    padding:2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+    flex-grow: 1;
+}
+.tableContainer{
+    display: flex;
+    flex-grow:1 ;
+    align-items: stretch;
+    margin: 2rem;
+}
+
+.borderTable{
+    width: 100%;
+}
+
+.borderTable td{
+    border: 1.2px solid black;
+}
+.noBorderTable td{
+    border: none;
+}
+
+
+.bolderCellText{
+    font-weight: bolder;
+    padding-left:1rem ;
+    font-family:  Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+.leftAlignText{
+    text-align: left;
+}
+.valueCellText{
+    composes: bolderCellText;
+    composes: leftAlignText;
+}
+
+.noFlexGrowTableContainer{
+    composes: tableContainer;
+    flex-grow:0 ;
+}
+
+
+
+/* 预览页的效果 */
+
+/* * 第一页的整体效果 */
+/* 
+/**     first-page
+/**       |_logo-name-header
+/**       |_yangpingchengrensu
+/**       |_changshangquerenlan
+/**       |_kehuquerenlan
+/**       |_gongsixinxi 
+
+/* logo和公司名称部分 */
+.logoNameHeader{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: center;
+}
+.logo .DDJW{
+    margin: 10px;
+}
+.logoNameHeader>div{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.signText{
+    font-family: 'Zhi Mang Xing', cursive,'Liu Jian Mao Cao', cursive;
+    font-size: 1.5rem;
+}
+/* * 第2页的整体效果 */
+/*! 放在tbody里一行的最后一个单元格字体加粗 */
+.secondPage tbody>tr>td:last-child{
+    text-align: left;
+    padding-left: 1rem;
+    font-weight: bolder;
+    width: 60%;
+}
+/* * RELIABILITY(可靠度测试)的整体效果 */
+.reliabilityTable .testTbody tr:nth-child(odd)>td  {
+    text-align: left;
+    padding-left: 1rem;
+}
+.reliabilityTable .testTbody tr:nth-child(even)> td {
+    text-align: left;
+    padding-left: 2rem;
+}
+
+
+
+
+/* */
+.flex-row,.flex-row>*{
+    display: flex;
+    flex-direction: row;
+}
+
+
+
+/* 预览页的效果 */
+/* 预览页的效果 */
+/* 预览页的效果 */
+
+.underline-row {
+    border-bottom: 1pt solid black;
+}

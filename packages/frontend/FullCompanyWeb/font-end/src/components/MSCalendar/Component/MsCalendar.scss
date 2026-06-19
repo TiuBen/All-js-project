@@ -1,0 +1,125 @@
+.ms-calendar {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    .type-range-switch-control {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        ul {
+            padding: 4px;
+        }
+        ul li {
+            list-style-type: none;
+            margin: 2px;
+            text-align: left;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            // box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+        }
+    }
+
+    .mini-month {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        align-self: flex-start;
+        .mini-month-control {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: baseline;
+        }
+        table {
+            align-self: stretch;
+            flex-grow: 1;
+        }
+    }
+    .main {
+        flex-grow: 1;
+        border: 2px solid black;
+        // :nth-child(2) {
+        //     flex-grow: 1;
+        // }
+        .main-right{
+            flex-grow: 1;
+            height: 100%;
+        }
+    }
+    .ranged-day-label {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-grow: 0;
+        align-self: flex-start;
+    }
+    .large-month {
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: repeat(7,1fr);
+        grid-template-rows: 2rem ;
+       
+        .is-today::before{
+            content: "";
+            background-color: #0f6cbd;
+            height: 4px;
+            left: 0px;
+            width: 100%;
+            position: relative;
+        }
+        .is-selected{
+            background-color: #bddffd7c;
+        }
+
+        div{
+            border: 1px solid #dfdfdf;
+            display: flex;
+            flex-direction: column;
+            span{
+                margin: 4px;
+                font-weight: bold;
+            }
+            span.cell.adding-todo{ 
+                background-color: #dd7027;
+            }
+          
+        }
+    }
+    .day-cell{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        .single-todo{
+            text-align: left;
+            flex-direction: row;
+            align-items: center;
+        }
+        .single-todo::before{
+            content: " ";
+            // padding-left: 4px;
+            // padding-right: 4px;
+            background-color: red;
+            width: 10px;
+            height: 10px;
+            border-radius:50% ;
+        }
+    }
+}

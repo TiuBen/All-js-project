@@ -1,0 +1,44 @@
+.TimelineItem:before {
+    background-color:gray;
+    bottom: 0;
+    content: "";
+    display: block;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width:1px;
+}
+.TimelineItem {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+}
+
+.TimelineItem-badge {
+    align-items: center;
+    background-color: gray;
+    border-radius: 50%;
+    display: flex;
+    flex-shrink: 0;
+    width:12px;
+    height:12px ;
+    margin-left: -6px;
+    // margin-top: 6px;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.TimelineItem-body {
+    display: block;
+    color:gray;
+    flex: auto;
+    margin-top:-6px;
+    margin-left: 12px;
+    max-width: 100%;
+    min-width: 0;
+}
+
+li {
+    list-style: none !important;
+}

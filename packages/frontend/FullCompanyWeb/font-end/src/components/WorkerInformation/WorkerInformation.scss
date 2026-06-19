@@ -1,0 +1,64 @@
+.worker-information-container {
+    justify-content: flex-start;
+    align-items: flex-start;
+    border: 2px blueviolet solid;
+    background-color:lightgray;
+    max-width: 300px;
+
+    section.main-information-section{
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+
+
+        // display: block;
+        // flex-direction: row;
+        :not(:first-child){
+            align-self:flex-end;
+        }
+        img{
+            width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        label {
+            border: 2px blueviolet solid;
+            color: white;
+            font-size: 2rem;
+            align-self:flex-end;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        .worker-avatar{
+            flex-shrink: 1;
+        }
+        .main-information{
+            display: grid;
+            // .worker-name{
+            //     font-size: 2rem;
+            // }
+            // .phone{
+            //     font-size: 0.8rem;
+            // }
+            // .job{
+            //     font-size: 1rem;
+            // }
+        }
+
+
+    }
+
+    input{
+        border: 1px #d9d9d9 solid;
+        border-radius: 4px;
+        padding: 4px;
+        margin-left: 4px;
+    }
+
+    .information{
+        display: flex;
+        align-items: center;
+        margin: 4px;
+    }
+
+}
+

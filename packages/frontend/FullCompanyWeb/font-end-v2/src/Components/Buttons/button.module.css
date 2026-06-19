@@ -1,0 +1,61 @@
+.toolbar-vertical-button {
+    background-color: transparent;
+    color: black;
+    padding: 1px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    text-align: center;
+    cursor: default;
+    vertical-align: top;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    max-width: 40px !important;
+    min-width: 40px;
+    user-select: none;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+
+.toolbar-vertical-button:hover {
+    background-color: #E0E0E0;
+    color: var(--neutralDark);
+    /* outline: transparent dashed 2px; */
+    border: 1px #808080 solid;
+}
+
+
+.toolbar-vertical-button .tip {
+    visibility: hidden;
+    position: absolute;
+    display: inline-block;
+    text-align: center;
+    white-space: nowrap;
+    z-index: 1;
+    color: black;
+    top: 100%;
+    margin-top: 2px;
+    border-radius: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+    background-color: white;
+    /* left: ; */
+}
+
+.toolbar-vertical-button:hover .tip {
+    visibility: visible;
+    z-index: 999;
+}
+
+
+.toolbar-vertical-button:focus {
+    background-color: #E0E0E0;
+    color: var(--neutralDark);
+    outline: transparent dashed 2px;
+    border: 1px #808080 solid;
+}

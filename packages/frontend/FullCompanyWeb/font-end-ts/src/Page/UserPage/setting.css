@@ -1,0 +1,33 @@
+/* .setting--nav.test {
+
+
+      .item {
+            @apply w-full block;
+            @apply bg-slate-400;
+
+
+      }
+
+      .item:hover {
+            @apply bg-slate-400;
+
+      }
+
+      .item span {
+            position: relative;
+            min-width: 4px;
+            width: 4px;
+            display: block;
+      }
+
+
+      .item.active {
+            span {
+                  @apply bg-blue-600;
+                  width: 4px;
+                  display: block;
+            }
+      }
+
+
+} */

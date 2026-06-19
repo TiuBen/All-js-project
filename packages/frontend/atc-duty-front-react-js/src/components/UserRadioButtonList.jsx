@@ -8,7 +8,7 @@ export default function UserRadioButtonList({ selectedUser = null, onChange }) {
                 return (
                     <label
                         key={i}
-                        className="border border-1 border-slate-500 text-nowrap  rounded-md  flex flex-row gap-1  px-2 py-1    text-center"
+                        className="border  border-slate-500 text-nowrap  rounded-md  flex flex-row gap-1  px-2 py-1    text-center"
                     >
                         <input
                             type="radio"

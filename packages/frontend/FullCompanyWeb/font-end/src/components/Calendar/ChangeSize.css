@@ -1,0 +1,31 @@
+.test1 {
+	width: 550px;
+	height: 100px;
+	border: 1px solid black;
+}
+
+/*@w-640:     red*/
+/*@w-768:     yellow*/
+/*@w-1024:    green*/
+/*@w-1280:    blue*/
+
+@media screen and (max-width: 639px) {
+	.test1 {
+		background-color: red;
+	}
+}
+@media (min-width: 640px) and (max-width: 768px) {
+	.test1 {
+		background-color: yellow;
+	}
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+	.test1 {
+		background-color: green;
+	}
+}
+@media (min-width: 1025px) and (max-width: 1280px) {
+	.test1 {
+		background-color: blue;
+	}
+}

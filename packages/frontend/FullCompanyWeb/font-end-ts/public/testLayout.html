@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="utf-8" />
+      <title>React App</title>
+      <style>
+            * {
+                  outline: 1px red dashed;
+                  margin: 0;
+                  box-sizing: border-box;
+            }
+
+            #root {
+                  height: 100vh;
+                  /* background-color: lightsalmon; */
+                  display: flex;
+                  flex-direction: column;
+                  border: 5px gold solid;
+                  overflow: hidden;
+            }
+
+            .header {
+                  background-color: aqua;
+            }
+
+            .flexRow {
+                  display: flex;
+                  min-height: 2vh;
+                  flex-grow: 1;
+            }
+
+            .leftNavbar {
+                  background-color: bisque;
+                  width: 20vw;
+                  display: inline-block;
+                  overflow-y: auto;
+            }
+
+            .main {
+                  background-color: cadetblue;
+                  flex: 1;
+                  border: 4px greenyellow solid;
+                  min-height: 2vh;
+                  overflow: auto;
+                  position: relative;
+                  /* display: flex; */
+                  /* flex-direction: column; */
+            }
+
+            .nav-item {
+                  height: 1.5rem;
+            }
+      </style>
+</head>
+
+<body>
+      <div id="root">
+            <div class="header">
+                  header
+            </div>
+            <div class="flexRow">
+                  <div class="leftNavbar">
+                        leftNavbar
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <div class="nav-item">1</div>
+                        <div class="nav-item">2</div>
+                        <div class="nav-item">3</div>
+                        <div class="nav-item">4</div>
+                        <div class="nav-item">5</div>
+                        <ul>
+                              <li> 1
+                                    <ul>
+                                          <li> 1 </li>
+                                          <li> 2 </li>
+                                          <li> 3 </li>
+                                          <li> 4 </li>
+                                          <li> 5 </li>
+                                    </ul>
+                              </li>
+                              <li> 2 </li>
+                              <li> 3 </li>
+                              <li> 4 </li>
+                              <li> 5 </li>
+                        </ul>
+                  </div>
+                  <div class="main">
+                        main 222
+                        <div style="position: sticky;top: 0px;"> sticky header</div>
+                        <div style="height: 1600px!important;flex-shrink: 0;">
+                              test content height 600px
+                        </div>
+                        <div>
+                              footer
+                        </div>
+                  </div>
+            </div>
+      </div>
+
+</body>
+
+</html>

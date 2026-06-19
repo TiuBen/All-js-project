@@ -1,0 +1,45 @@
+.react-table table,
+.react-table th,
+.react-table td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+.react-table .contact-detail-cell {
+  flex-grow: 1;
+  flex-direction: column;
+}
+.react-table ul, .react-table li {
+  margin: 0px;
+}
+
+table.react-table {
+  width: 100%;
+}
+
+.react-table thead {
+  text-align: center;
+}
+
+.react-table thead > tr td:nth-child(1) {
+  width: inherit;
+}
+.react-table thead > tr td:nth-child(2) {
+  width: -moz-max-content;
+  width: max-content;
+}
+.react-table thead > tr td:nth-child(3) {
+  width: inherit;
+}
+.react-table thead > tr td:nth-child(4) {
+  width: inherit;
+}
+.react-table thead > tr td:nth-child(5) {
+  width: inherit;
+}
+.react-table thead > tr td:nth-child(6) {
+  width: 12rem;
+}
+.react-table thead > tr td:nth-child(7) {
+  width: -moz-max-content;
+  width: max-content;
+}/*# sourceMappingURL=TableStyle.module.css.map */

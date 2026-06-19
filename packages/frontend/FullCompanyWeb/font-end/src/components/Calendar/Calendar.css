@@ -1,0 +1,92 @@
+.calendar {
+	display: flex;
+	border: 1px black solid;
+	flex-direction: column;
+	flex: 1;
+	overflow: hidden;
+}
+
+.calendar-nav {
+	display: flex;
+	flex-direction: row;
+
+	border: 1px black solid;
+	justify-content: space-between;
+	font-weight: bold;
+}
+.calendar-body {
+	display: flex;
+	border: 1px red solid;
+	flex-direction: column;
+}
+.calendar-week-row{
+	display: flex;
+	flex-direction: row;
+	border: 1px green solid;
+	justify-content: space-around;
+}
+.calendar-dayToday-cell ,.calendar-dateToday-cell{
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	justify-content: center;
+	border: 1px goldenrod solid;
+}
+
+.calendar-dateToday-cell{
+	
+
+}
+.svg-container :hover {
+	background-color: rgba(62, 119, 241, 0.411);
+}
+
+.calendar-header {
+	display: flex;
+}
+
+
+.calendar-row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: stretch;
+	align-content: stretch;
+}
+.calendar-row-cell  {
+	display: flex;
+	width: 2rem;
+	height: 2rem;
+	justify-content: center;
+	align-items: stretch;
+	align-content: stretch;
+}
+.row td:hover {
+	background-color: rgba(62, 119, 241, 0.411);
+}
+
+.week-day {
+	font-weight: bold;
+}
+
+.last-date {
+	background-color: rgba(180, 177, 177, 0.411);
+}
+.next-date {
+	background-color: rgba(180, 177, 177, 0.411);
+}
+.selected-date {
+	border: rgba(29, 76, 146, 0.692) 1px solid;
+}
+
+.svg-container {
+	display: inline-flex;
+}
+.svg-container svg {
+	width: 1.5rem;
+	height: 1.5rem;
+	display: inline-table;
+}
+* {
+	box-sizing: border-box;
+}

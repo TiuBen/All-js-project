@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+    "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+
+
+
+@layer utilities {
+  .text-align-justify {
+    text-align-last: justify;
+  }
+
+  .fit-content {
+    width: fit-content;
+  }
+
+}
+
+
+@layer components {
+  .form-label {
+    @apply block mb-2 text-lg font-semibold text-gray-900 dark:text-white mr-2 pr-2
+  }
+
+  .form-input {
+    @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg;
+    @apply focus:ring-blue-500 focus:border-blue-500 w-full p-2.5;
+    @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400;
+    @apply dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+    @apply relative;
+  }
+
+
+  .btn {
+    @apply font-bold py-2 px-4 w-fit text-center rounded-xl border border-slate-400;
+  }
+
+
+
+
+}
+
+
+
+@layer components {
+
+  .check-in-year-indicator {
+    display: grid;
+    gap: 5px;
+    grid-template-rows: repeat(7, 16px);
+    grid-template-columns: 3.5rem, 16px;
+    grid-auto-flow: column;
+
+    >*.checkin-date {
+      position: relative;
+      border: 1px solid rgba(10, 10, 10, 0.2);
+      border-radius: 4px;
+      width: 16px;
+      height: 16px;
+    }
+
+    ;
+
+    >*.date {
+      box-sizing: content-box;
+      width: 3.5rem;
+      font-size: 14px !important;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    ;
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip::after {
+      content: attr(data-time)"\A" attr(data-vacation);
+      white-space: pre-line;
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      width: 800%;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 999;
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .tooltip:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+
+
+    /* 加班了 工作满8小时 到的很早 */
+    >*.early,
+    .full {
+      background-color: rgb(33, 110, 57);
+    }
+
+    ;
+
+    /* 迟到 请假  */
+    >*.late {
+      background-color: rgb(155, 233, 168);
+    }
+
+    ;
+
+    /* 缺勤  */
+    >*.absent {
+      background-color: rgba(100, 100, 100, 0.8);
+      border: 1px solid rgba(255, 0, 0, 0.9);
+    }
+
+    ;
+
+    /* 法定假期 */
+    >*.vacation {
+      background-color: rgba(100, 100, 100, 0.8);
+      border: 1px solid rgba(255, 0, 0, 0.9);
+    }
+
+    ;
+
+    /*  */
+    >*.not-yet.holiday {
+      background-color: rgba(100, 100, 100, 0.4);
+    }
+
+    ;
+
+    /* 今年还没到今天 当天不需要上班 */
+    >*.not-yet {
+      background-color: rgba(100, 100, 100, 0.4);
+    }
+
+    ;
+
+  }
+
+}
+
+
+.circle-word {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  /* border-radius: 50%; */
+  font-size: 0.8rem;
+  /* color: #fff; */
+  /* line-height: 0.8rem; */
+  /* padding: 2px; */
+  text-align: center;
+  /* color: black; */
+  /* background-color:#20B2AA; */
+  font-weight: bold;
+}
+
+.fianceColor {
+  color: coral;
+}
+
+.goodsColor {
+  color: darkslategray;
+}
+
+.dailyColor {
+  color: blue;
+}
+
+.beginColor {
+  border: 0.12rem solid greenyellow;
+}
+
+.runningColor {
+  border: 0.12rem solid #FFFF00;
+}
+
+.finishColor {
+  border: 0.12rem solid #0000FF;
+}
+
+.dangerColor {
+  border: 0.12rem solid red;
+}
+
+a:link {
+  /* color: red; */
+  /* text-decoration: underline; */
+}
+
+
+.material-icons.md-18 {
+  font-size: 18px;
+}
+
+.material-icons.md-24 {
+  font-size: 24px;
+}
+
+.material-icons.md-36 {
+  font-size: 36px;
+}
+
+.material-icons.md-48 {
+  font-size: 48px;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+  opacity: 1
+}
+
+/* input[type="date"]::-webkit-calendar-picker-indicator {
+  background-position: right;
+  background-size: auto;
+  cursor: pointer;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: auto;
+} */
+
+@font-face {
+  font-family: smiley-sans;
+  src: url('../public/fonts//SmileySans-Oblique.ttf.woff2');
+}
+
+@font-face {
+  font-family: MaShanZheng;
+  src: url("../public/fonts/MaShanZheng-Regular.ttf");
+}

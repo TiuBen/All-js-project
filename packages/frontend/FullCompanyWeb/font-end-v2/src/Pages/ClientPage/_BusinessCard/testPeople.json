@@ -1,0 +1,143 @@
+[
+    {
+      "name": "John Doe",
+      "company_name": "ABC Corporation",
+      "email": "john.doe@example.com",
+      "phone": "+1 (123) 456-7890",
+      "website": "www.johndoe.com"
+    },
+    {
+      "name": "Jane Smith",
+      "company_name": "XYZ Inc.",
+      "email": "jane.smith@example.com",
+      "phone": "+1 (987) 654-3210",
+      "website": "www.janesmith.com"
+    },
+    {
+      "name": "Michael Johnson",
+      "company_name": "123 Tech Solutions",
+      "email": "michael.johnson@example.com",
+      "phone": "+1 (555) 123-4567",
+      "website": "www.michaeljohnson.com"
+    },
+    {
+      "name": "Emily Williams",
+      "company_name": "ABC Enterprises",
+      "email": "emily.williams@example.com",
+      "phone": "+1 (111) 222-3333",
+      "website": "www.emilywilliams.com"
+    },
+    {
+      "name": "Robert Brown",
+      "company_name": "XYZ Innovations",
+      "email": "robert.brown@example.com",
+      "phone": "+1 (444) 555-6666",
+      "website": "www.robertbrown.com"
+    },
+    {
+      "name": "Jennifer Lee",
+      "company_name": "Tech Solutions Ltd.",
+      "email": "jennifer.lee@example.com",
+      "phone": "+1 (777) 888-9999",
+      "website": "www.jenniferlee.com"
+    },
+    {
+      "name": "David Davis",
+      "company_name": "DataTech Inc.",
+      "email": "david.davis@example.com",
+      "phone": "+1 (111) 222-3333",
+      "website": "www.daviddavis.com"
+    },
+    {
+      "name": "Sophia Miller",
+      "company_name": "ABC Tech Group",
+      "email": "sophia.miller@example.com",
+      "phone": "+1 (222) 333-4444",
+      "website": "www.sophiamiller.com"
+    },
+    {
+      "name": "William Wilson",
+      "company_name": "XYZ Solutions",
+      "email": "william.wilson@example.com",
+      "phone": "+1 (333) 444-5555",
+      "website": "www.williamwilson.com"
+    },
+    {
+      "name": "Olivia Smith",
+      "company_name": "Tech Innovators",
+      "email": "olivia.smith@example.com",
+      "phone": "+1 (444) 555-6666",
+      "website": "www.oliviasmith.com"
+    },
+    {
+      "name": "James Johnson",
+      "company_name": "ABC Systems",
+      "email": "james.johnson@example.com",
+      "phone": "+1 (555) 666-7777",
+      "website": "www.jamesjohnson.com"
+    },
+    {
+      "name": "Emma Williams",
+      "company_name": "Innovative Solutions",
+      "email": "emma.williams@example.com",
+      "phone": "+1 (666) 777-8888",
+      "website": "www.emmawilliams.com"
+    },
+    {
+      "name": "Liam Jones",
+      "company_name": "Data Systems Corp.",
+      "email": "liam.jones@example.com",
+      "phone": "+1 (777) 888-9999",
+      "website": "www.liamjones.com"
+    },
+    {
+      "name": "Ava Brown",
+      "company_name": "Tech Wizards",
+      "email": "ava.brown@example.com",
+      "phone": "+1 (888) 999-0000",
+      "website": "www.avabrown.com"
+    },
+    {
+      "name": "Noah Davis",
+      "company_name": "ABC Innovations",
+      "email": "noah.davis@example.com",
+      "phone": "+1 (999) 000-1111",
+      "website": "www.noahdavis.com"
+    },
+    {
+      "name": "Isabella Wilson",
+      "company_name": "Tech Experts",
+      "email": "isabella.wilson@example.com",
+      "phone": "+1 (000) 111-2222",
+      "website": "www.isabellawilson.com"
+    },
+    {
+      "name": "Ethan Smith",
+      "company_name": "Data Solutions",
+      "email": "ethan.smith@example.com",
+      "phone": "+1 (111) 222-3333",
+      "website": "www.ethansmith.com"
+    },
+    {
+      "name": "Mia Johnson",
+      "company_name": "ABC Technologies",
+      "email": "mia.johnson@example.com",
+      "phone": "+1 (222) 333-4444",
+      "website": "www.miajohnson.com"
+    },
+    {
+      "name": "Alexander Williams",
+      "company_name": "Tech Creations",
+      "email": "alexander.williams@example.com",
+      "phone": "+1 (333) 444-5555",
+      "website": "www.alexanderwilliams.com"
+    },
+    {
+      "name": "Evelyn Davis",
+      "company_name": "XYZ Tech Solutions",
+      "email": "evelyn.davis@example.com",
+      "phone": "+1 (444) 555-6666",
+      "website": "www.evelyndavis.com"
+    }
+  ]
+  
