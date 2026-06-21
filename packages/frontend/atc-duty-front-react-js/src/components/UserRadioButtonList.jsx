@@ -1,7 +1,7 @@
 import React from "react";
 import { useUserStore } from "@/store/user.store";
-export default function UserRadioButtonList({ selectedUser = null, onChange }) {
-    const { allDetailUsers } = useUserStore();
+export default function UserRadioButtonList() {
+    const { allDetailUsers, selectedUser, setSelectedUser } = useUserStore();
     return (
         <aside className="grid grid-cols-2 w-[13rem] overflow-auto min-h-0  content-start gap-1 p-2 ">
             {allDetailUsers.map((item, i) => {
@@ -12,11 +12,11 @@ export default function UserRadioButtonList({ selectedUser = null, onChange }) {
                     >
                         <input
                             type="radio"
-                            value={item.username}
+                            value={item}
                             checked={i === selectedUser}
                             onChange={(e) => {
                                 console.log(e.target.value);
-                                onChange(i);
+                                setSelectedUser(i);
                             }}
                         />
                         {item.username}

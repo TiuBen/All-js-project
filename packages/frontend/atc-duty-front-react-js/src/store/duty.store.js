@@ -69,6 +69,36 @@ export const useDutyStore = create((set, get) => ({
         }
     },
 
+    async updateDuty(id, data) {
+        try {
+            const result = await dutyService.updateDuty(id, data);
+            return result;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    },
+
+    async deleteDuty(id) {
+        try {
+            const result = await dutyService.deleteDuty(id);
+            return result;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    },
+
+    async createDuty(data) {
+        try {
+            const result = await dutyService.createDuty(data);
+            return result;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    },
+
     positionStatistics: [],
     fetchPositionStatistics: async (startDate, endDate) => {
         try {

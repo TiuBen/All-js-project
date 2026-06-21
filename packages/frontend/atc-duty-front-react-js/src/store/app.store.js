@@ -1,24 +1,7 @@
 import { create } from "zustand";
 import { positionService } from "../service/position.service";
 
-// function getInitialPage() {
-//     const path = window.location.pathname.replace("/", "").toUpperCase();
-
-//     if (pageRegistry[path] !== undefined) {
-//         return path;
-//     }
-
-//     return PAGE_KEYS.DUTY_RECORD;
-// }
-
 export const useAppStore = create((set, get) => ({
-    // page: getInitialPage(),
-    // setPage: (page) => {
-    //     set({ page });
-    //     // const url = new URL(window.location.href);
-    //     window.history.pushState({}, "", "/" + page.toLowerCase());
-    // },
-
     isLeftBarOpen: true,
     toggleLeftBar: () =>
         set((state) => ({
@@ -34,6 +17,26 @@ export const useAppStore = create((set, get) => ({
             set({ positions: data, positionsLoading: false });
         } catch {
             set({ positionsLoading: false });
+        }
+    },
+
+    async createPosition(positionData) {
+        try {
+            const data = await positionService.create(positionData);
+            return data;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    },
+
+    async updatePosition(id, positionData) {
+        try {
+            const data = await positionService.update(id, positionData);
+            return data;
+        } catch (err) {
+            console.log(err);
+            return null;
         }
     },
 

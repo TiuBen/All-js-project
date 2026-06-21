@@ -34,4 +34,19 @@ export const dutyService = {
         });
         return data;
     },
+
+    async updateDuty(id, data) {
+        const response = await http.put(`/duty/${id}`, data);
+        return response;
+    },
+
+    async deleteDuty(id) {
+        const response = await http.delete(`/duty/${id}`);
+        return response;
+    },
+
+    async createDuty(data) {
+        const response = await http.post("/duty", data);
+        return response;
+    },
 };

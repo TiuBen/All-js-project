@@ -4,11 +4,12 @@ import CalendarPage from "../pages/CalendarPage/Page";
 import StatisticsLayout from "../pages/StatisticsPage/Page.jsx";
 import NightCount from "../pages/StatisticsPage/NightCount";
 import PersonDuration from "../pages/StatisticsPage/PersonDuration";
-import PositionDuration from "../pages/StatisticsPage/PositionDuration";
+import PositionDuration from "../pages/StatisticsPage/PositionDuration/index";
 import CheckDuration from "../pages/StatisticsPage/CheckDuration";
 import DutyRecordPage from "../pages/DutyRecordPage/Page";
 import ComingSoon from "./layout/ComingSoon";
 import NotFound from "./layout/NotFound";
+import SettingPage from "../pages/SettingPage/Page";
 
 export default function AppRoutes() {
     return (
@@ -24,6 +25,7 @@ export default function AppRoutes() {
                 <Route path="check" element={<CheckDuration />} />
             </Route>
             <Route path="/duty-record" element={<DutyRecordPage />} />
+            <Route path="/setting" element={<SettingPage />} />
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import dayjs from "dayjs";
-import { Settings, Edit3, Plus } from "lucide-react";
+import { Edit3, Plus } from "lucide-react";
 import DetailStatisticsTable from "./DetailStatisticsTable";
+import { dialogStore } from "../../../store/dialog.store";
 
 function LikeExcel({
     selectedMonth = dayjs().get("month"),
@@ -9,9 +10,11 @@ function LikeExcel({
     selectedUserDutyRows,
     selectedUserDutyStatistics = {},
 }) {
+    const { openEditDialog, openAddDialog } = dialogStore();
+
     return (
         <>
-            <div className="flex-1 flex flex-row justify-start items-start gap-2 overflow-auto min-h-0 cursor-pointer ">
+            <div className="flex-1 flex flex-row justify-start items-start gap-2 overflow-auto flex-wrap min-h-0 cursor-pointer text-sm">
                 <table>
                     <thead>
                         <tr>
@@ -47,13 +50,7 @@ function LikeExcel({
                                         <div className="flex flex-row justify-center items-center gap-1">
                                             <button
                                                 onClick={() => {
-                                                    console.log("clicked " + x.id);
-                                                    // setDialogPayload({
-                                                    //     ...payload,
-                                                    //     editSheetDisplay: true,
-                                                    //     editSheetRowId: x.id,
-                                                    // });
-                                                    // useStore.setState({ selectedDutyRecord: x });
+                                                    openEditDialog(x);
                                                 }}
                                             >
                                                 <Edit3 size={16} />
@@ -131,10 +128,7 @@ function LikeExcel({
                                         disabled={!selectedUser}
                                         onClick={() => {
                                             if (selectedUser) {
-                                                setDialogPayload({
-                                                    ...payload,
-                                                    AddNewDutyRecordDialogDisplay: true,
-                                                });
+                                                openAddDialog(selectedUser);
                                             }
                                         }}
                                     >

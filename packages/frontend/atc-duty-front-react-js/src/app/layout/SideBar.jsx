@@ -99,7 +99,7 @@ const items = [
             },
             {
                 title: "设置",
-                page: "coming-soon",
+                page: "setting",
                 Icon: () => <Settings size={"1.5em"} strokeWidth={1.5} />,
             },
             {

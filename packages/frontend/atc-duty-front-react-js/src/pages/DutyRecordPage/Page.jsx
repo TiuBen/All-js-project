@@ -3,8 +3,13 @@ import { useDutyStore } from "@/store/duty.store";
 import UserRadioButtonList from "@/components/UserRadioButtonList";
 import YearMonthTab from "@/components/YearMonthTab";
 import LikeExcel from "./LikeExcel/LikeExcel";
+import DutyRecordDialog from "./Dialog/DutyRecordDialog";
+import { useUserStore } from "@/store/user.store";
+
 function Page() {
     const { query, setQuery, dutyRecords } = useDutyStore();
+    const { selectedDutyRecord, setSelectedDutyRecord } = useDutyStore();
+    const { selectedUser, setSelectedUser } = useUserStore();
 
     return (
         <div>
@@ -16,10 +21,11 @@ function Page() {
                     onMonthChange={(month) => setQuery({ month })}
                 />
             </div>
-            <div className="flex flex-row  flex-nowrap m-2">
+            <div className="flex flex-row flex-nowrap m-2">
                 <LikeExcel selectedUserDutyRows={dutyRecords} />
-                <UserRadioButtonList selectedUser={query.userId} onChange={(userId) => setQuery({ userId })} />
+                <UserRadioButtonList />
             </div>
+            <DutyRecordDialog />
         </div>
     );
 }

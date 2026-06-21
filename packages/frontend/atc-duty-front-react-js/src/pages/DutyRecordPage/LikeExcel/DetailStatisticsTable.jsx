@@ -8,7 +8,12 @@ function DetailStatisticsTable({ dutyStatistics }) {
                 <thead>
                     <tr className="hover:bg-slate-400">
                         <td className="border border-slate-600 px-1 text-nowrap text-sm text-center">统计</td>
-                        <td className="border border-slate-600 px-1 text-nowrap text-sm text-center">各席位总小时 </td>
+                        <td className="border border-slate-600 px-1 text-nowrap text-sm text-center">
+                            <div>
+                                <div>各席位</div>
+                                <div>总小时</div>
+                            </div>
+                        </td>
                         <td className="border border-slate-600 px-1 text-nowrap text-sm text-center">白班小时 </td>
                         <td className="border border-slate-600 px-1 text-nowrap text-sm text-center">
                             夜班小时 <br /> (0000-0800)
@@ -141,7 +146,12 @@ function DetailStatisticsTable({ dutyStatistics }) {
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">统计</th>
-                        <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">各席位总小时</th>
+                        <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
+                            <div>
+                                <div>各席位</div>
+                                <div>总小时</div>
+                            </div>
+                        </th>
                         <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">白班小时</th>
                         <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
                             夜班小时 <br /> (0000-0800)

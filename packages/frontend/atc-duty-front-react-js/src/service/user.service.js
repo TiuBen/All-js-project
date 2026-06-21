@@ -6,6 +6,11 @@ export const userService = {
         return data;
     },
 
+    async getById(id) {
+        const data = await http.get(`/users/${id}`);
+        return data;
+    },
+
     async update(id, data) {
         const response = await http.put(`/users/${id}`, data);
         return response;
@@ -20,6 +25,11 @@ export const userService = {
                 endTime: "00:00:01",
             },
         });
+        return data;
+    },
+
+    async updateTeam(teams) {
+        const data = await http.put("/users/team", teams);
         return data;
     },
 };
