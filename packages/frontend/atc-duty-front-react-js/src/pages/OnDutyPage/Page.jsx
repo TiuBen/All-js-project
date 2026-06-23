@@ -5,11 +5,11 @@ import Position from "./Position.jsx";
 
 function Page() {
     const { positions, positionsLoading } = useAppStore();
-    const { fetchOnDuty } = useDutyStore();
+    const { getDutyRecords } = useDutyStore();
 
     useEffect(() => {
-        fetchOnDuty();
-    }, [fetchOnDuty]);
+        getDutyRecords({ outTime: "null" });
+    }, []);
 
     if (positionsLoading) return <div>ffff Loading...</div>;
     return (

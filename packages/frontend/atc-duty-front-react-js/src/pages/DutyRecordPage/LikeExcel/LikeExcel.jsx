@@ -3,14 +3,18 @@ import dayjs from "dayjs";
 import { Edit3, Plus } from "lucide-react";
 import DetailStatisticsTable from "./DetailStatisticsTable";
 import { dialogStore } from "../../../store/dialog.store";
+import { useUserStore } from "@/store/user.store";
+import { useDutyStore } from "@/store/duty.store";
 
-function LikeExcel({
-    selectedMonth = dayjs().get("month"),
-    selectedUser,
-    selectedUserDutyRows,
-    selectedUserDutyStatistics = {},
-}) {
-    const { openEditDialog, openAddDialog } = dialogStore();
+function LikeExcel({ selectedMonth = dayjs().get("month") }) {
+    const { openEditDialog, openAddDialog, openDutyDialog } = dialogStore();
+    const { selectedUser, selectedUserDutyStatistics } = useUserStore();
+
+    const { dutyRecords, loading } = useDutyStore();
+
+    if (loading) {
+        return <div className="flex-1">加载中...</div>;
+    }
 
     return (
         <>
@@ -36,7 +40,7 @@ function LikeExcel({
                         </tr>
                     </thead>
                     <tbody>
-                        {selectedUserDutyRows.map((x, index) => {
+                        {dutyRecords.map((x, index) => {
                             return (
                                 <tr
                                     key={index}
@@ -50,7 +54,11 @@ function LikeExcel({
                                         <div className="flex flex-row justify-center items-center gap-1">
                                             <button
                                                 onClick={() => {
-                                                    openEditDialog(x);
+                                                    openDutyDialog({
+                                                        type: "edit",
+                                                        dutyRecord: x,
+                                                        selectedUser: selectedUser,
+                                                    });
                                                 }}
                                             >
                                                 <Edit3 size={16} />
@@ -125,11 +133,22 @@ function LikeExcel({
                                 <div className="flex flex-row justify-center items-center gap-1">
                                     <button
                                         className=" disabled:cursor-not-allowed disabled:text-red-700"
-                                        disabled={!selectedUser}
+                                        disabled={selectedUser === null}
                                         onClick={() => {
-                                            if (selectedUser) {
-                                                openAddDialog(selectedUser);
-                                            }
+                                            openDutyDialog({
+                                                type: "add",
+                                                dutyRecord: {
+                                                    userId: selectedUser?.id,
+                                                    username: selectedUser?.username,
+                                                    position: null,
+                                                    dutyType: null,
+                                                    roleType: null,
+                                                    relatedDutyTableRowId: null,
+                                                    inTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                                                    outTime: dayjs().add(2, "hour").format("YYYY-MM-DD HH:mm:ss"),
+                                                },
+                                                selectedUser: selectedUser,
+                                            });
                                         }}
                                     >
                                         <Plus size={16} />

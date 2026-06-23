@@ -28,8 +28,17 @@ export const userService = {
         return data;
     },
 
-    async updateTeam(teams) {
-        const data = await http.put("/users/team", teams);
-        return data;
+    //只能用来更新排序
+    async updateTeam(data) {
+        const results = await Promise.all(
+            data.map((item) =>
+                http.put(`/users/${item.id}`, {
+                    team: item.team,
+                    rank: item.rank,
+                })
+            )
+        );
+        console.log(results);
+        return results;
     },
 };

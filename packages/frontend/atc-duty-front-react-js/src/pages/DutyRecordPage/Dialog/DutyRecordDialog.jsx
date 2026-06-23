@@ -5,7 +5,25 @@ import { dialogStore } from "../../../store/dialog.store";
 import { useDutyStore } from "../../../store/duty.store";
 import { useAppStore } from "../../../store/app.store";
 
-function DutyRecordDialog() {
+function getUserPositionPermission(user, positionName) {
+    const info = user?.position?.find((p) => p.position === positionName);
+
+    return {
+        canDuty: !!info,
+
+        canMain: info?.dutyType?.includes("主班") ?? false,
+
+        canSub: info?.dutyType?.includes("副班") ?? false,
+
+        canTeach: info?.roleType === "教员",
+
+        canStudent: info?.roleType === "见习",
+
+        info,
+    };
+}
+
+function DutyRecordDialog({ selectedUser }) {
     const { dutyDialogOpen, dutyDialogMode, dutyDialogRecord, dutyDialogUser, closeDutyDialog } = dialogStore();
     const { positions } = useAppStore();
     const { updateDuty, deleteDuty, createDuty } = useDutyStore();
@@ -13,19 +31,7 @@ function DutyRecordDialog() {
     const dialogRef = useRef(null);
     const isEdit = dutyDialogMode === "edit";
 
-    const buildEmpty = (user) => ({
-        userId: user?.id,
-        username: user?.username,
-        position: null,
-        dutyType: null,
-        roleType: null,
-        relatedDutyTableRowId: null,
-        inTime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-        outTime: dayjs().add(2, "hour").format("YYYY-MM-DD HH:mm:ss"),
-    });
-
     const [editingDutyRecord, setEditingDutyRecord] = useState({});
-    const [newRelatedDutyRecordId, setNewRelatedDutyRecordId] = useState("");
     const [isEditingRelated, setIsEditingRelated] = useState(false);
     const inputRef = useRef(null);
 
@@ -142,6 +148,10 @@ function DutyRecordDialog() {
             style={{ margin: "auto" }}
         >
             <div className="max-h-[90vh] overflow-y-auto p-6">
+                {JSON.stringify(dutyDialogOpen)}
+                {JSON.stringify(dutyDialogMode)}
+                {JSON.stringify(dutyDialogRecord?.id)}
+                {JSON.stringify(dutyDialogUser?.username)}
                 <h2 className="text-lg font-bold mb-1 mx-auto text-center text-blue-700">
                     {isEdit ? "修改执勤记录" : "新增执勤记录"}
                 </h2>
@@ -160,10 +170,10 @@ function DutyRecordDialog() {
                                 </label>
                             )}
                             <label className="font-bold">
-                                用户ID:<span className="px-1 text-blue-500">{editingDutyRecord?.userId}</span>
+                                用户ID:<span className="px-1 text-blue-500">{selectedUser?.id}</span>
                             </label>
                             <label className="font-bold">
-                                姓名:<span className="px-1 text-blue-500">{editingDutyRecord?.username}</span>
+                                姓名:<span className="px-1 text-blue-500">{selectedUser?.username}</span>
                             </label>
                         </div>
 
@@ -172,17 +182,19 @@ function DutyRecordDialog() {
                             <div className="flex flex-col flex-wrap gap-2 items-start">
                                 <div className="flex flex-row flex-wrap gap-2 items-start">
                                     {positions.map((item, index) => {
+                                        const permission = getUserPositionPermission(dutyDialogUser, item.position);
                                         return (
                                             <div
                                                 key={index}
-                                                className="flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-[0.5rem] py-1 rounded"
+                                                className=" flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-[0.5rem] py-1 rounded"
                                             >
                                                 <label className="inline-flex gap-1 items-center">
                                                     <input
                                                         value={item.position}
                                                         type="radio"
                                                         name="position-radio"
-                                                        checked={item.position === editingDutyRecord?.position}
+                                                        disabled={!permission.canDuty}
+                                                        checked={item.position === dutyDialogRecord?.position}
                                                         onChange={(e) => {
                                                             setEditingDutyRecord((prev) => {
                                                                 return {
@@ -196,50 +208,64 @@ function DutyRecordDialog() {
                                                 </label>
                                                 {item.dutyType && (
                                                     <div className="flex flex-col border border-gray-200 px-[0.2rem] rounded">
-                                                        {["主班", "副班"].map((x, i) => (
-                                                            <label key={i} className="inline-flex gap-1">
-                                                                <input
-                                                                    type="radio"
-                                                                    checked={
-                                                                        x === editingDutyRecord?.dutyType &&
-                                                                        item.position === editingDutyRecord?.position
-                                                                    }
-                                                                    value={x}
-                                                                    name={`${index}isMainOrCo-radio`}
-                                                                    onChange={() =>
-                                                                        setEditingDutyRecord((prev) => ({
-                                                                            ...prev,
-                                                                            dutyType: x,
-                                                                        }))
-                                                                    }
-                                                                />
-                                                                {x}
-                                                            </label>
-                                                        ))}
+                                                        {["主班", "副班"].map((x, i) => {
+                                                            const disabled =
+                                                                (x === "主班" && !permission.canMain) ||
+                                                                (x === "副班" && !permission.canSub);
+                                                            return (
+                                                                <label key={i} className="inline-flex gap-1">
+                                                                    <input
+                                                                        type="radio"
+                                                                        disabled={disabled}
+                                                                        checked={
+                                                                            x === editingDutyRecord?.dutyType &&
+                                                                            item.position ===
+                                                                                editingDutyRecord?.position
+                                                                        }
+                                                                        value={x}
+                                                                        name={`${index}isMainOrCo-radio`}
+                                                                        onChange={() =>
+                                                                            setEditingDutyRecord((prev) => ({
+                                                                                ...prev,
+                                                                                dutyType: x,
+                                                                            }))
+                                                                        }
+                                                                    />
+                                                                    {x}
+                                                                </label>
+                                                            );
+                                                        })}
                                                     </div>
                                                 )}
                                                 {item.canTeach !== 0 && (
                                                     <div className="flex flex-col border border-gray-200 px-[0.2rem] rounded">
-                                                        {["教员", "见习"].map((y, i) => (
-                                                            <label key={i} className="inline-flex gap-1">
-                                                                <input
-                                                                    type="radio"
-                                                                    value={y}
-                                                                    checked={
-                                                                        y === editingDutyRecord?.roleType &&
-                                                                        item.position === editingDutyRecord?.position
-                                                                    }
-                                                                    name={`${index}isTeacherOrStudent`}
-                                                                    onChange={() =>
-                                                                        setEditingDutyRecord((prev) => ({
-                                                                            ...prev,
-                                                                            roleType: y,
-                                                                        }))
-                                                                    }
-                                                                />
-                                                                {y}
-                                                            </label>
-                                                        ))}
+                                                        {["教员", "见习"].map((y, i) => {
+                                                            const disabled =
+                                                                (y === "教员" && !permission.canTeach) ||
+                                                                (y === "见习" && !permission.canStudent);
+                                                            return (
+                                                                <label key={i} className="inline-flex gap-1">
+                                                                    <input
+                                                                        type="radio"
+                                                                        value={y}
+                                                                        disabled={disabled}
+                                                                        checked={
+                                                                            y === editingDutyRecord?.roleType &&
+                                                                            item.position ===
+                                                                                editingDutyRecord?.position
+                                                                        }
+                                                                        name={`${index}isTeacherOrStudent`}
+                                                                        onChange={() =>
+                                                                            setEditingDutyRecord((prev) => ({
+                                                                                ...prev,
+                                                                                roleType: y,
+                                                                            }))
+                                                                        }
+                                                                    />
+                                                                    {y}
+                                                                </label>
+                                                            );
+                                                        })}
                                                     </div>
                                                 )}
                                             </div>

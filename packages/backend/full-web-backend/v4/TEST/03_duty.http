@@ -3,7 +3,7 @@
 ### ==========================================
 
 ### 获取所有考勤记录 (带查询参数)
-GET http://localhost:3205/api/duty?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59
+GET http://localhost:3205/api/duty?userId=2&startDate=2026-05-01&startTime=00:00:00&endDate=2026-05-31&endTime=23:59:59
 
 ### 获取单条考勤记录
 GET http://localhost:3205/api/duty/1

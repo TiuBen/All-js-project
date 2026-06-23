@@ -203,7 +203,7 @@ function TeamSettingPage() {
         //     console.log(user.id, user.team, user.rank);
         // });
         console.log(data);
-        // await updateTeam(data);
+        await updateTeam(data);
         // fetchAllDetailUsers();
     };
 

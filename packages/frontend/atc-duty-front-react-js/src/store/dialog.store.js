@@ -19,4 +19,14 @@ export const dialogStore = create((set) => ({
 
     closeDutyDialog: () =>
         set({ dutyDialogOpen: false, dutyDialogMode: "edit", dutyDialogRecord: null, dutyDialogUser: null }),
+
+    openDutyDialog: (payload) => {
+        console.log(payload);
+        set({
+            dutyDialogOpen: true,
+            dutyDialogMode: payload.type,
+            dutyDialogRecord: payload.dutyRecord,
+            dutyDialogUser: payload.selectedUser,
+        });
+    },
 }));

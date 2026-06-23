@@ -8,8 +8,8 @@ export const useUserStore = create((set, get) => ({
     selectedUser: null,
     setSelectedUser: (user) => set({ selectedUser: user }),
 
-    dutyStatistics: {},
-    fetchDutyStatistics: async (userId, startDate, endDate) => {
+    selectedUserDutyStatistics: {},
+    fetchSelectedUserDutyStatistics: async (userId, startDate, endDate) => {
         try {
             const data = await userService.getDutyStatistics(userId, startDate, endDate);
             set({ dutyStatistics: data });
@@ -49,10 +49,12 @@ export const useUserStore = create((set, get) => ({
         }
     },
 
-    async updateTeam(teams) {
+    async updateTeam(data) {
         try {
-            const data = await userService.updateTeam(teams);
-            return data;
+            const result = await userService.updateTeam(data);
+            await get().fetchAllDetailUsers();
+
+            return result;
         } catch (err) {
             console.log(err);
             return null;

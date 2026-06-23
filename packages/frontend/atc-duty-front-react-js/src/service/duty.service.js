@@ -14,18 +14,37 @@ export const dutyService = {
     },
 
     async getDutyRecords(query) {
-        const { year, month, userId } = query;
-        const base = dayjs().year(year).month(month);
-        const inTime = base.startOf("month").format("YYYY-MM-DD HH:mm:ss");
-        const outTime = base.endOf("month").format("YYYY-MM-DD HH:mm:ss");
-        const data = await http.get("/duty", { params: { inTime, outTime, userId } });
+        // const { year, month, username,outTime } = query;
+        // const base = dayjs().year(year).month(month);
+        // const inTime = base.startOf("month").format("YYYY-MM-DD HH:mm:ss");
+        // outTime =outTime?? base.endOf("month").format("YYYY-MM-DD HH:mm:ss");
+        // const data = await http.get("/duty", { params: { inTime, outTime, username } });
+        // return data;
+
+        // const { year, month, username, outTime } = query;
+        // const base = dayjs().year(year).month(month);
+        // // 只使用 query 中存在的字段
+        // const params = {};
+        // if (year !== undefined) params.year = year;
+        // if (month !== undefined) params.month = month;
+        // if (username !== undefined) params.username = username;
+        // if (outTime !== undefined) params.outTime = outTime;
+
+        // // 但 inTime 和 outTime 需要特殊处理
+        // if (year !== undefined && month !== undefined) {
+        //     params.inTime = base.startOf("month").format("YYYY-MM-DD HH:mm:ss");
+        //     params.outTime = outTime ?? base.endOf("month").format("YYYY-MM-DD HH:mm:ss");
+        // }
+
+        console.log({ params: { ...query } });
+        const data = await http.get("/duty", { params: { ...query } });
         return data;
     },
 
-    async getDutyRecordsByUser(userId, startDate, endDate) {
+    async getDutyRecordsByUser(username, startDate, endDate) {
         const data = await http.get("/duty", {
             params: {
-                userId,
+                username,
                 startDate,
                 startTime: "00:00:00",
                 endDate,

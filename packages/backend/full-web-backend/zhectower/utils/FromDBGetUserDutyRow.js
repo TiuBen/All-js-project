@@ -82,15 +82,16 @@ async function GetDutyRows(req, db) {
 
     if (inTime || (startDate && startTime)) {
         const _inTime = endDate + " " + endTime;
-
-        query += ` AND inTime <=DATETIME(?)`; // Add filter for 'inTime' if provided
+        console.log(_inTime);
+        query += ` AND inTime >=DATETIME(?)`; // Add filter for 'inTime' if provided
         params.push(_inTime);
     }
 
     if (outTime || (endDate && endTime)) {
         const _outTime = startDate + " " + startTime;
+        console.log(_outTime);
 
-        query += ` AND outTime  >=DATETIME(?) `; // Add filter for 'outTime' if provided
+        query += ` AND outTime <=DATETIME(?) `; // Add filter for 'outTime' if provided
         params.push(_outTime);
     } else {
         if (id) {
@@ -310,10 +311,10 @@ const _positionMatch = (item, filter) => {
     // console.log("_positionMatch");
     if (filter.includes("NOT NULL")) {
         let _xx;
-        if(item === null){
-            _xx=null;
-        }else{
-            _xx="NOT NULL";
+        if (item === null) {
+            _xx = null;
+        } else {
+            _xx = "NOT NULL";
         }
 
         if (filter.includes(_xx)) {

@@ -28,14 +28,13 @@ class DutyService extends BaseService {
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
         this.create = this.create.bind(this);
-     
     }
 
     create(data) {
         //console.log("DutyService create");
         //console.log(data);
-        const { teacherDutyRowId} = data;
-        if(data?.inTime===undefined ){
+        const { teacherDutyRowId } = data;
+        if (data?.inTime === undefined) {
             data.inTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
         }
 
@@ -46,7 +45,7 @@ class DutyService extends BaseService {
             _tempD.roleType = "见习";
             _tempD.roleStartTime = dayjs().format("YYYY-MM-DD HH:mm:ss");
         }
-       
+
         delete _tempD.teacherDutyRowId;
 
         console.log("_tempD");
@@ -73,8 +72,8 @@ class DutyService extends BaseService {
     }
 
     async getAll(query, needCalculate) {
-        //console.log("DutyService getAll");
-        // //console.log(query);
+        console.log("DutyService getAll");
+        console.log(query);
         return await fromDutyDbGetData(query, DutyDb);
     }
 
@@ -130,7 +129,6 @@ class DutyService extends BaseService {
             });
         });
     }
-
 
     // ddddtet() {
     //     //console.log("ddddtet");

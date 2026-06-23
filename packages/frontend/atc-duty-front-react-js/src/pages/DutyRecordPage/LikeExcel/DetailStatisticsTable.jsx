@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { formatDecimal } from "@/util/formatDecimal";
+import { useUserStore } from "@/store/user.store";
 
 function DetailStatisticsTable({ dutyStatistics }) {
+    // const {}=useUserStore();
+
     return (
         <>
             <table>
@@ -26,7 +29,7 @@ function DetailStatisticsTable({ dutyStatistics }) {
                         <td className="border border-slate-600 px-1 text-nowrap text-sm text-center"> 带班主任席</td>{" "}
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
                             {formatDecimal(dutyStatistics?.totalCommanderTime?.time)}
-                        </td>{" "}
+                        </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
                             {formatDecimal(dutyStatistics?.totalCommanderTime?.dayShift)}
                         </td>
