@@ -408,12 +408,9 @@ function EditDutyRecord() {
                                                 // const currentTags = (editingDutyRecord?.relatedDutyTableRowId || "")
                                                 //     .split(";")
                                                 //     .filter(Boolean);
-
                                                 // // 过滤掉要删除的标签
-
                                                 // const updatedTags = currentTags.filter((_, i) => i !== index);
                                                 // const newValue = updatedTags.length > 0 ? updatedTags.join(";") : null;
-
                                                 // // 更新状态
                                                 // setEditingDutyRecord((prev) => ({
                                                 //     ...prev,

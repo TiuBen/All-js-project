@@ -36,6 +36,10 @@ function DutyRecordDialog({ selectedUser }) {
     const inputRef = useRef(null);
 
     useEffect(() => {
+        setEditingDutyRecord(dutyDialogRecord);
+    }, [dutyDialogRecord]);
+
+    useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
         if (dutyDialogOpen && !dialog.open) {
@@ -188,19 +192,32 @@ function DutyRecordDialog({ selectedUser }) {
                                                 key={index}
                                                 className=" flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-[0.5rem] py-1 rounded"
                                             >
-                                                <label className="inline-flex gap-1 items-center">
+                                                <label
+                                                    className={`${
+                                                        !permission.canDuty
+                                                            ? "cursor-not-allowed opacity-50"
+                                                            : "cursor-pointer"
+                                                    } disabled:cursor-not-allowed inline-flex gap-1 items-center`}
+                                                >
                                                     <input
                                                         value={item.position}
                                                         type="radio"
                                                         name="position-radio"
                                                         disabled={!permission.canDuty}
-                                                        checked={item.position === dutyDialogRecord?.position}
+                                                        className="disabled:cursor-not-allowed"
+                                                        checked={item.position === editingDutyRecord?.position}
                                                         onChange={(e) => {
                                                             setEditingDutyRecord((prev) => {
-                                                                return {
-                                                                    ...prev,
-                                                                    position: e.target.value,
-                                                                };
+                                                                if (item.canTeach) {
+                                                                    return { ...prev, position: e.target.value };
+                                                                } else {
+                                                                    return {
+                                                                        ...prev,
+                                                                        position: e.target.value,
+                                                                        roleType: null,
+                                                                        relatedDutyTableRowId: null,
+                                                                    };
+                                                                }
                                                             });
                                                         }}
                                                     />
@@ -213,7 +230,14 @@ function DutyRecordDialog({ selectedUser }) {
                                                                 (x === "主班" && !permission.canMain) ||
                                                                 (x === "副班" && !permission.canSub);
                                                             return (
-                                                                <label key={i} className="inline-flex gap-1">
+                                                                <label
+                                                                    key={i}
+                                                                    className={`inline-flex gap-1 items-center ${
+                                                                        disabled
+                                                                            ? "cursor-not-allowed opacity-50"
+                                                                            : "cursor-pointer"
+                                                                    }`}
+                                                                >
                                                                     <input
                                                                         type="radio"
                                                                         disabled={disabled}
@@ -244,7 +268,14 @@ function DutyRecordDialog({ selectedUser }) {
                                                                 (y === "教员" && !permission.canTeach) ||
                                                                 (y === "见习" && !permission.canStudent);
                                                             return (
-                                                                <label key={i} className="inline-flex gap-1">
+                                                                <label
+                                                                    key={i}
+                                                                    className={`inline-flex gap-1 items-center ${
+                                                                        disabled
+                                                                            ? "cursor-not-allowed opacity-50"
+                                                                            : "cursor-pointer"
+                                                                    }`}
+                                                                >
                                                                     <input
                                                                         type="radio"
                                                                         value={y}
