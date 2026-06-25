@@ -1,6 +1,6 @@
 import React from "react";
 import { useUserStore } from "@/store/user.store";
-export default function UserRadioButtonList() {
+export default function UserRadioButtonList({ changeSelectedUser }) {
     const { allDetailUsers, selectedUser, setSelectedUser } = useUserStore();
 
     return (

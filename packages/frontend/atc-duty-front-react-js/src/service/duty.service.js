@@ -36,7 +36,7 @@ export const dutyService = {
         //     params.outTime = outTime ?? base.endOf("month").format("YYYY-MM-DD HH:mm:ss");
         // }
 
-        console.log({ params: { ...query } });
+        // console.log({ params: { ...query } });
         const data = await http.get("/duty", { params: { ...query } });
         return data;
     },

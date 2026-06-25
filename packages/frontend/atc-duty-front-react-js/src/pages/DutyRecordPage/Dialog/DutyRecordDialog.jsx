@@ -23,10 +23,10 @@ function getUserPositionPermission(user, positionName) {
     };
 }
 
-function DutyRecordDialog({ selectedUser }) {
+function DutyRecordDialog({ selectedUser, query }) {
     const { dutyDialogOpen, dutyDialogMode, dutyDialogRecord, dutyDialogUser, closeDutyDialog } = dialogStore();
     const { positions } = useAppStore();
-    const { updateDuty, deleteDuty, createDuty } = useDutyStore();
+    const { updateDuty, deleteDuty, createDuty, getDutyRecords } = useDutyStore();
 
     const dialogRef = useRef(null);
     const isEdit = dutyDialogMode === "edit";
@@ -57,6 +57,12 @@ function DutyRecordDialog({ selectedUser }) {
             };
         }
 
+        if (editingDutyRecord?.position === null) {
+            return {
+                canSave: false,
+                errorLog: "新增执勤记录必须选择席位",
+            };
+        }
         if (dayjs(editingDutyRecord?.inTime).isAfter(dayjs(editingDutyRecord?.outTime))) {
             return {
                 canSave: false,
@@ -132,13 +138,14 @@ function DutyRecordDialog({ selectedUser }) {
         if (isEdit && dutyDialogRecord) {
             setEditingDutyRecord({ ...dutyDialogRecord });
         } else if (!isEdit && dutyDialogUser) {
-            setEditingDutyRecord(buildEmpty(dutyDialogUser));
+            setEditingDutyRecord({ ...dutyDialogRecord });
         }
         setErrorLog(null);
     };
 
     const handleClose = () => {
         closeDutyDialog();
+        getDutyRecords(query);
     };
 
     return (

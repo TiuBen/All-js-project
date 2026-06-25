@@ -8,33 +8,21 @@ import { useUserStore } from "@/store/user.store";
 import dayjs from "dayjs";
 
 function Page() {
-    const { loading, dutyRecords, getDutyRecords } = useDutyStore();
+    const { loading, query, setQuery } = useDutyStore();
     const { selectedUser } = useUserStore();
-    const [year, setYear] = useState(dayjs().year());
-    const [month, setMonth] = useState(dayjs().month());
 
     useEffect(() => {
-        console.log(selectedUser);
-        if (!selectedUser) return;
-
-        getDutyRecords({
-            startDate: dayjs().year(year).month(month).startOf("month").format("YYYY-MM-DD"),
-            startTime: "00:00:00",
-            endDate: dayjs()
-                .year(year)
-                .month(month + 1)
-                .startOf("month")
-                .format("YYYY-MM-DD"),
-            endTime: " 00:00:01",
-
-            username: selectedUser.username,
-        });
-    }, [selectedUser, year, month]);
-
+        setQuery({ ...query, selectedUser: selectedUser });
+    }, [selectedUser]);
     return (
         <div>
             <div className="flex flex-row">
-                <YearMonthTab year={year} onYearChange={setYear} month={month} onMonthChange={setMonth} />
+                <YearMonthTab
+                    year={query.year}
+                    onYearChange={(year) => setQuery({ ...query, year })}
+                    month={query.month}
+                    onMonthChange={(month) => setQuery({ ...query, month })}
+                />
             </div>
             <div className="flex flex-row flex-nowrap m-2">
                 {selectedUser === null ? (
@@ -42,11 +30,12 @@ function Page() {
                 ) : loading ? (
                     <div className="flex-1">加载中...</div>
                 ) : (
-                    <LikeExcel selectedMonth={month} />
+                    <LikeExcel selectedMonth={query.month} />
                 )}
-                <UserRadioButtonList selectedUser={selectedUser} />
+                {/* <UserRadioButtonList changeSelectedUser={(x) => setQuery({ ...query, selectedUser: x })} /> */}
+                <UserRadioButtonList />
             </div>
-            <DutyRecordDialog selectedUser={selectedUser} />
+            <DutyRecordDialog />
         </div>
     );
 }

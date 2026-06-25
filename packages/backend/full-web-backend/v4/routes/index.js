@@ -31,6 +31,35 @@ const { authenticateToken, optionalAuth, requireAdmin } = require("../middleware
 //#region 关于user部分的Router
 const StatisticsController = require("../controllers/Statistics.Controller");
 router.get("/users/:id/nightCount", StatisticsController.getNightShiftCountStatisticsByUser);
+
+// 夜班段数查询接口
+const { calculateNightShiftCount } = require("../utils/calculateNightShiftCount");
+router.get("/night-count/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { date } = req.query;
+
+        if (!userId || !date) {
+            return res.status(400).json({
+                success: false,
+                message: "缺少必要参数: userId 和 date",
+            });
+        }
+
+        const result = await calculateNightShiftCount(userId, date);
+        res.json({
+            success: true,
+            data: result,
+        });
+    } catch (error) {
+        console.error("查询夜班段数失败:", error);
+        res.status(500).json({
+            success: false,
+            message: "查询夜班段数失败",
+            error: error.message,
+        });
+    }
+});
 // router.get("/users/:id/teachStatistics", StatisticsController.getTeachTimeStatisticsByUser);
 router.get("/users/:id/dutyStatistics", StatisticsController.getDurationStatisticsByUser);
 const UserRouter = generateCRUDRoutes(express.Router(), userController);

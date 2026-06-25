@@ -4,20 +4,20 @@ import { useAppStore } from "../../../store/app.store";
 import { useUserStore } from "../../../store/user.store";
 
 function UserSettingPage() {
-    const { positions, fetchPositions, positionsLoading } = useAppStore();
-    const { allDetailUsers, fetchAllDetailUsers, loading, updateUser, selectedUser, setSelectedUser } = useUserStore();
+    const { positions, positionsLoading } = useAppStore();
+    const { allDetailUsers, loading, updateUser, selectedUser, setSelectedUser } = useUserStore();
 
     const [needSave, setNeedSave] = useState(false);
     const [newSelectedUserValue, setNewSelectedUserValue] = useState(null);
 
     useEffect(() => {
-        fetchPositions();
-        fetchAllDetailUsers();
-    }, [fetchPositions, fetchAllDetailUsers]);
-
-    useEffect(() => {
         setNeedSave(JSON.stringify(selectedUser) !== JSON.stringify(newSelectedUserValue));
     }, [selectedUser, newSelectedUserValue]);
+
+    useEffect(() => {
+        console.log("selectedUser changed:", selectedUser);
+        setNewSelectedUserValue(selectedUser);
+    }, [selectedUser]);
 
     if (loading || positionsLoading) return <div>加载中...</div>;
 
@@ -38,23 +38,22 @@ function UserSettingPage() {
                             justifyContent: "flex-start",
                             alignItems: "center",
                         }}
-                        value={selectedUser}
-                        onValueChange={(value) => {
-                            if (needSave) {
-                                window.alert("请先保存");
-                            } else {
-                                setSelectedUser(value);
-                                setNewSelectedUserValue(value);
-                            }
+                        value={selectedUser?.id || ""}
+                        onValueChange={(id) => {
+                            console.log("Selected user ID:", id);
+                            const user = allDetailUsers.find((x) => x.id === id);
+                            console.log("User selected:", user);
+                            setSelectedUser(user);
+                            setNewSelectedUserValue(user);
                         }}
                     >
                         {allDetailUsers.map((item) => (
                             <RadioGroup.Item
-                                value={item}
+                                value={item.id}
                                 key={item.id}
                                 style={{ gap: "0.25rem" }}
                                 className={`hover:font-bold hover:text-blue-700  ${
-                                    selectedUser === item ? "font-bold text-blue-700" : ""
+                                    selectedUser?.id === item.id ? "font-bold text-blue-700" : ""
                                 }`}
                             >
                                 {item.username}
@@ -71,13 +70,15 @@ function UserSettingPage() {
                             return (
                                 <div
                                     key={p}
-                                    className="flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-[0.5rem] py-1 rounded"
+                                    className="flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-2 py-1 rounded"
                                 >
                                     <label className="inline-flex gap-1 items-center">
                                         <input
                                             value={p}
                                             type="checkbox"
-                                            checked={newSelectedUserValue?.position?.some((x) => x.position === p)}
+                                            checked={
+                                                newSelectedUserValue?.position?.some((x) => x.position === p) ?? false
+                                            }
                                             onChange={() => {
                                                 setNewSelectedUserValue((prev) => {
                                                     const prevPosition = prev.position ? [...prev.position] : [];
@@ -113,9 +114,11 @@ function UserSettingPage() {
                                                                 (v) => v.position === p
                                                             )
                                                         }
-                                                        checked={newSelectedUserValue?.position?.some(
-                                                            (v) => v.position === p && v?.dutyType?.includes(x)
-                                                        )}
+                                                        checked={
+                                                            newSelectedUserValue?.position?.some(
+                                                                (v) => v.position === p && v?.dutyType?.includes(x)
+                                                            ) ?? false
+                                                        }
                                                         onChange={() => {
                                                             setNewSelectedUserValue((prev) => {
                                                                 const updatedPosition = prev.position.map((pos) => {
@@ -156,9 +159,11 @@ function UserSettingPage() {
                                                                 (x) => x.position === p
                                                             )
                                                         }
-                                                        checked={newSelectedUserValue?.position?.some(
-                                                            (x) => x.position === p && x.roleType === y
-                                                        )}
+                                                        checked={
+                                                            newSelectedUserValue?.position?.some(
+                                                                (x) => x.position === p && x.roleType === y
+                                                            ) ?? false
+                                                        }
                                                         onChange={() => {
                                                             setNewSelectedUserValue((prev) => {
                                                                 const updatedPosition = prev.position.map((pos) => {
@@ -190,13 +195,13 @@ function UserSettingPage() {
                         {["管制员", "教员", "见习", "领班"].map((item) => (
                             <div
                                 key={item}
-                                className="flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-[0.5rem] py-1 rounded"
+                                className="flex flex-col gap-1 justify-start border border-gray-200 bg-gray-100 px-2 py-1 rounded"
                             >
                                 <label className="inline-flex gap-1 items-center">
                                     <input
                                         value={item}
                                         type="checkbox"
-                                        checked={newSelectedUserValue?.roleType?.includes(item)}
+                                        checked={newSelectedUserValue?.roleType?.includes(item) ?? false}
                                         onChange={() => {
                                             setNewSelectedUserValue((prev) => {
                                                 let _roles = [...(prev.roleType || [])];

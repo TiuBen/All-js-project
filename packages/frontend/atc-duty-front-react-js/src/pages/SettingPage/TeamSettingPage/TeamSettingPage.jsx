@@ -27,7 +27,7 @@ function TeamSettingPage() {
         if (allDetailUsers && allDetailUsers.length > 0 && editedUser.length === 0) {
             setEditedUser(allDetailUsers);
             const maxTeam = Math.max(...allDetailUsers.map((item) => item.team ?? -1));
-            setTeamCount(Math.max(maxTeam, 2));
+            setTeamCount(Math.max(maxTeam + 1, 2));
         }
     }, [allDetailUsers, editedUser.length]);
     const handleDragStart = (user, source) => {

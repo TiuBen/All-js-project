@@ -42,6 +42,8 @@ export const useUserStore = create((set, get) => ({
     async updateUser(id, userData) {
         try {
             const data = await userService.update(id, userData);
+            await get().fetchAllDetailUsers();
+            set({ loading: false });
             return data;
         } catch (err) {
             console.log(err);

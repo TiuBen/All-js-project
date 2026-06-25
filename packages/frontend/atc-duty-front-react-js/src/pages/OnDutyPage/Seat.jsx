@@ -14,7 +14,7 @@ function Seat(props) {
     const { position, dutyType } = props;
     // const { setDialogPayload } = useDialog();
     // const { onDutyUsers, setSelectedPosition, putDutyRecord } = useStore();
-    const { dutyRecords, loading } = useDutyStore();
+    const { onDutyRecords, loading } = useDutyStore();
 
     if (loading) return <div>loading</div>;
 
@@ -27,7 +27,7 @@ function Seat(props) {
                 </Button>
             </div>
 
-            {dutyRecords
+            {onDutyRecords
                 .filter((duty) => {
                     if (duty.position === position && duty.dutyType === dutyType) {
                         return duty;

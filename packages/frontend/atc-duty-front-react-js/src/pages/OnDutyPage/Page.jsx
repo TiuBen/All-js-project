@@ -5,13 +5,13 @@ import Position from "./Position.jsx";
 
 function Page() {
     const { positions, positionsLoading } = useAppStore();
-    const { getDutyRecords } = useDutyStore();
+    const { query, getOnDutyRecords } = useDutyStore();
 
     useEffect(() => {
-        getDutyRecords({ outTime: "null" });
+        getOnDutyRecords();
     }, []);
 
-    if (positionsLoading) return <div>ffff Loading...</div>;
+    if (positionsLoading) return <div>Loading...</div>;
     return (
         <div className="flex flex-row flex-wrap gap-4 justify-start items-start  content-start overflow-auto p-2">
             {positions
