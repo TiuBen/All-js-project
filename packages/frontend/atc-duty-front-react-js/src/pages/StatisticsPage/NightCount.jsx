@@ -1,32 +1,31 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useUserStore } from "../../store/user.store";
+import { useStatisticsStore } from "../../store/statistics.store";
 import { http } from "../../service/http";
 import { useOutletContext } from "react-router-dom";
+import { Tooltip } from "@radix-ui/themes";
 
-function UserNightCountRow({ userId, username, startDate, startTime, endDate, endTime, selectedMonthDateArray }) {
-    const YYYYMM = startDate.slice(0, 7);
+function UserNightCountRow({ userId, username, selectedMonthDateArray, year, month }) {
     const [nightCount, setNightCount] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!userId) return;
-
         const fetchNightCount = async () => {
             try {
-                const data = await http.get(`/users/${userId}/nightCount`, {
-                    params: { startDate, startTime, endDate, endTime },
+                const data = await http.get(`/night-monthly/${userId}`, {
+                    params: { year: year, month: month + 1 },
                 });
+                setLoading(false);
+                // console.log(data);
                 setNightCount(data);
             } catch (err) {
                 console.log(err);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchNightCount();
-    }, [userId, startDate, startTime, endDate, endTime]);
+    }, [userId, year, month]);
 
     if (loading)
         return (
@@ -38,23 +37,31 @@ function UserNightCountRow({ userId, username, startDate, startTime, endDate, en
 
     return (
         <tr className="hover:bg-slate-400">
-            <td className="border border-black w-[5rem]  bg-blue-50">{username}</td>
-            {selectedMonthDateArray.map((date, index) => {
-                const dateAsKey = date.format("YYYY-MM-DD");
+            <td className="border border-black w-20  bg-blue-50">{username}</td>
+            {selectedMonthDateArray.map((x, index) => {
                 return (
-                    <td key={index} className="m-0 px-0 w-[2rem] text-xs border border-black">
-                        {(nightCount?.[username]?.[dateAsKey]?.["夜班段数"] || "") &&
-                            `${nightCount[username][dateAsKey]["夜班段数"]}段`}
+                    <td key={index} className="m-0 px-0 w-8 text-xs border border-black">
+                        <Tooltip
+                            content={nightCount?.[x]?.["具体考勤"]?.map((item, idx) => (
+                                <div key={idx}>
+                                    {item?.["position"]} {item?.["dutyType"]} {item?.["inTime"]} - {item?.["outTime"]}
+                                </div>
+                            ))}
+                        >
+                            <span className="text-center">
+                                {(nightCount?.[x]?.["夜班段数"] || "") && `${nightCount?.[x]["夜班段数"]}段`}
+                            </span>
+                        </Tooltip>
                     </td>
                 );
             })}
 
             <td className="m-0 px-0 border border-black">
-                {nightCount?.[username]?.[YYYYMM]?.["夜班段数"]
-                    ? parseInt(nightCount?.[username]?.[YYYYMM]?.["夜班段数"] || 0) + "段/"
+                {nightCount?.["summary"]?.["夜班段数"]
+                    ? parseInt(nightCount?.["summary"]?.["夜班段数"] || 0) + "段/"
                     : ""}
-                {nightCount?.[username]?.[YYYYMM]?.["夜班段数"]
-                    ? parseInt(nightCount?.[username]?.[YYYYMM]?.["夜班段数"] || 0) * 10 + "元"
+                {nightCount?.["summary"]?.["夜班段数"]
+                    ? parseInt(nightCount?.["summary"]?.["夜班段数"] || 0) * 10 + "元"
                     : ""}
             </td>
         </tr>
@@ -63,23 +70,17 @@ function UserNightCountRow({ userId, username, startDate, startTime, endDate, en
 
 export default function NightCount() {
     const { year, month } = useOutletContext();
-    const { allDetailUsers, fetchAllDetailUsers } = useUserStore();
+    const { allDetailUsers } = useUserStore();
     const [daysArray, setDaysArray] = useState([]);
 
     useEffect(() => {
-        fetchAllDetailUsers();
-    }, [fetchAllDetailUsers]);
-
-    useEffect(() => {
-        const selectedYYYYMMDD = dayjs().year(year).month(month).date(1);
-        const daysInMonth = selectedYYYYMMDD.daysInMonth();
+        const daysInMonth = dayjs().year(year).month(month).daysInMonth();
         const newDaysArray = Array.from({ length: daysInMonth }, (_, index) => {
-            return selectedYYYYMMDD.startOf("month").add(index, "day");
+            return dayjs().year(year).month(month).startOf("month").add(index, "day").format("YYYY-MM-DD");
         });
+        // console.log(newDaysArray);
         setDaysArray(newDaysArray);
     }, [year, month]);
-
-    const selectedYYYYMMDD = dayjs().year(year).month(month).date(1);
 
     return (
         <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">
@@ -92,7 +93,7 @@ export default function NightCount() {
                                 key={index}
                                 className={`border border-black ${index % 7 === 0 ? "bg-gray-200 text-blue-600" : ""}`}
                             >
-                                {date.format("D")}
+                                {index + 1}
                             </th>
                         ))}
                         <th className="border border-black">总次数/补贴</th>
@@ -105,11 +106,9 @@ export default function NightCount() {
                                 key={index}
                                 userId={user.id}
                                 username={user.username}
-                                startDate={selectedYYYYMMDD.format("YYYY-MM-DD")}
-                                startTime={"00:00:00"}
-                                endDate={selectedYYYYMMDD.add(1, "month").format("YYYY-MM-DD")}
-                                endTime={"00:00:01"}
                                 selectedMonthDateArray={daysArray}
+                                year={year}
+                                month={month}
                             />
                         );
                     })}

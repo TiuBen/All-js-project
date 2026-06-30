@@ -1,0 +1,20 @@
+### ==========================================
+### 日志 Log
+### ==========================================
+
+### 获取所有日志
+GET http://localhost:3205/api/night-count/1?date=2026-05-01
+
+
+### 获取指定月份的日志
+GET http://localhost:3205/api/night-monthly/4?year=2026&month=4
+
+### ==========================================
+### 健康检查 Health Check
+### ==========================================
+
+### 服务器健康检查
+GET http://localhost:3205/health
+
+### 获取指定用户的时长
+GET http://localhost:3205/api/check-duration?userId=38&year=2026&month=5

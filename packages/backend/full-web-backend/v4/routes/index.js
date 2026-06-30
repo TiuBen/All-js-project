@@ -33,7 +33,7 @@ const StatisticsController = require("../controllers/Statistics.Controller");
 router.get("/users/:id/nightCount", StatisticsController.getNightShiftCountStatisticsByUser);
 
 // 夜班段数查询接口
-const { calculateNightShiftCount } = require("../utils/calculateNightShiftCount");
+const { calculateNightShiftCount, calculateMonthlyNightShiftCount } = require("../utils/calculateNightShiftCount");
 router.get("/night-count/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
@@ -62,6 +62,31 @@ router.get("/night-count/:userId", async (req, res) => {
 });
 // router.get("/users/:id/teachStatistics", StatisticsController.getTeachTimeStatisticsByUser);
 router.get("/users/:id/dutyStatistics", StatisticsController.getDurationStatisticsByUser);
+router.get("/night-monthly/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { year, month } = req.query;
+
+        if (!userId || !year || !month) {
+            return res.status(400).json({
+                success: false,
+                message: "缺少必要参数: userId, year, month",
+            });
+        }
+
+        const result = await calculateMonthlyNightShiftCount(userId, parseInt(year), parseInt(month));
+        res.json({
+            ...result,
+        });
+    } catch (error) {
+        console.error("查询月度夜班数据失败:", error);
+        res.status(500).json({
+            success: false,
+            message: "查询月度夜班数据失败",
+            error: error.message,
+        });
+    }
+});
 const UserRouter = generateCRUDRoutes(express.Router(), userController);
 router.use("/users", UserRouter);
 //#endregion
