@@ -1,9 +1,5 @@
-const { UserDb, DutyDb } = require("../config/sqliteDb.js");
-const { CalculationRules } = require("../config/CalculationRules.js");
-
-const { calculateNightShifts, calDurationV3, fromDutyDbGetData } = require("../utils");
-const dayjs = require("dayjs");
-
+const { calculateMonthlyNightShiftCount } = require("../utils/index");
+const { CalculationRules } = require("../config/CalculationRules");
 function removeKeys(obj, keys) {
     return Object.fromEntries(
         Object.entries(obj).map(([key, value]) => {
@@ -29,19 +25,16 @@ const statisticsService = {
         return cleaned;
     },
 
-    async getNightShiftCountStatisticsByUserId(query) {
-        const userDutyData = await fromDutyDbGetData({ ...query });
+    // async getNightShiftCountStatisticsByUserId(query) {
+    //     const userDutyData = await fromDutyDbGetData({ ...query });
 
-        const nightShiftStatistics = calculateNightShifts(userDutyData);
-        return nightShiftStatistics;
-    },
+    //     const nightShiftStatistics = calculateNightShifts(userDutyData);
+    //     return nightShiftStatistics;
+    // },
 
     // 获取夜班个数
-    async getNightCount(inTime, outTime, filter) {
-        const duties = await fromDutyDbGetData({ inTime, outTime });
-
-        const nightShiftStatistics = calculateNightShifts(duties, filter);
-        return nightShiftStatistics;
+    async getNightCount(year, month) {
+        return calculateMonthlyNightShiftCount(year, month);
     },
 };
 

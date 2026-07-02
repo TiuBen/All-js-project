@@ -1,7 +1,7 @@
 const dayjs = require("dayjs");
 const minMax = require("dayjs/plugin/minMax");
 dayjs.extend(minMax);
-const { DutyDb } = require("../config/sqliteDb.js");
+const { DutyDb } = require("../../config/sqliteDb.js");
 
 // ! 数据结构类似这种
 // [totalZongheTime: {
@@ -208,7 +208,7 @@ function calculateTimeInDailyRange(startTime, endTime, dailyStart, dailyEnd) {
     return parseFloat(totalTime.toFixed(2));
 }
 
-const { CalculationRules } = require("../config/CalculationRules");
+const { CalculationRules } = require("../../config/CalculationRules");
 
 const CalculationRulesEntries = Object.entries(CalculationRules);
 
@@ -357,15 +357,15 @@ function _splitDutyRow(rows) {
 function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
     // 按 userId 分组处理
     const groupedResults = {};
-    const userIds = [...new Set(rows.map(row => row.userId).filter(id => id !== undefined && id !== null))];
-    
-    userIds.forEach(userId => {
-        const userRows = rows.filter(row => row.userId === userId);
+    const userIds = [...new Set(rows.map((row) => row.userId).filter((id) => id !== undefined && id !== null))];
+
+    userIds.forEach((userId) => {
+        const userRows = rows.filter((row) => row.userId === userId);
         // 为每个用户创建一个独立的 CalculationRules 副本
         const userRules = structuredClone(CalculationRules);
-        
+
         const splittedRows = _splitDutyRow(userRows);
-        
+
         for (let index = 0; index < splittedRows.length; index++) {
             const dutyRow = splittedRows[index];
             for (const [key, value] of Object.entries(CalculationRules)) {
@@ -375,9 +375,7 @@ function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
                     let _inTime = startDateTime.isBefore(_dutyRowInTime) ? _dutyRowInTime : startDateTime;
                     let _outTime = endDateTime.isAfter(_dutyRowOutTime) ? _dutyRowOutTime : endDateTime;
 
-                    userRules[key].time += Math.abs(
-                        parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2))
-                    );
+                    userRules[key].time += Math.abs(parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2)));
                     userRules[key].dayShift += calculateTimeInDailyRange(
                         dayjs(dutyRow.inTime),
                         dayjs(dutyRow.outTime),
@@ -395,12 +393,9 @@ function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
         }
         groupedResults[userId] = userRules;
     });
-    
+
     return groupedResults;
 }
-
-
-
 
 // function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
 //     // console.log("_calDurationV3  version");

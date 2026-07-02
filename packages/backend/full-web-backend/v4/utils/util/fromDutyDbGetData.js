@@ -21,10 +21,6 @@ function fromDutyDbGetData(query) {
         roleTimes,
         status,
         relatedPrepareTableId,
-        startDate,
-        startTime,
-        endDate,
-        endTime,
         year,
         month,
         // page = 1,
@@ -78,25 +74,19 @@ function fromDutyDbGetData(query) {
         // sql += ` AND dutyType IS NULL`;
     }
 
-    if (inTime || (startDate && startTime)) {
-        const _inTime = endDate + " " + endTime;
-        console.log(_inTime);
-
-        sql += ` AND inTime <=DATETIME(?)`; // Add filter for 'inTime' if provided
-        params.push(_inTime);
+    if (inTime) {
+        sql += ` AND inTime >= DATETIME(?)`; // Add filter for 'inTime' if provided
+        params.push(inTime);
     }
 
-    if (outTime || (endDate && endTime)) {
+    if (outTime) {
         if (outTime === "null") {
             // //console.log("outTime is null");
 
             sql += " AND outTime IS NULL";
         } else {
-            const _outTime = startDate + " " + startTime;
-            console.log(_outTime);
-
-            sql += ` AND outTime >=DATETIME(?) `; // Add filter for 'outTime' if provided
-            params.push(_outTime);
+            sql += ` AND outTime <= DATETIME(?) `; // Add filter for 'outTime' if provided
+            params.push(outTime);
         }
     }
     //#endregion
