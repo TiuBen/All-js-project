@@ -10,8 +10,6 @@ function UserDutyDurationRow({ userId, username, startDate, endDate }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!userId) return;
-
         const fetchStats = async () => {
             try {
                 const data = await http.get(`/users/${userId}/dutyStatistics`, {
@@ -37,19 +35,27 @@ function UserDutyDurationRow({ userId, username, startDate, endDate }) {
         return (
             <tr>
                 <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
-                <td className="border border-black" colSpan={4}>加载中...</td>
+                <td className="border border-black">加载中...</td>
+                <td className="border border-black">加载中...</td>
+                <td className="border border-black">加载中...</td>
+                <td className="border border-black">加载中...</td>
             </tr>
         );
 
     return (
         <tr className="hover:bg-slate-400">
             <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
-            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.time)}</td>
-            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.dayShift)}</td>
-            <td className="border border-black text-center">{formatDecimal(stats?.totalTime?.nightShift)}</td>
             <td className="border border-black text-center">
-                {formatDecimal(stats?.totalStudentTime?.time) ? "见习" : ""}
+                {stats?.totalTime?.time !== 0 ? stats.totalTime.time.toFixed(2) : ""}
             </td>
+            <td className="border border-black text-center">
+                {stats?.totalTime?.dayShift !== 0 ? stats.totalTime.dayShift.toFixed(2) : ""}
+            </td>
+            <td className="border border-black text-center">
+                {stats?.totalTime?.nightShift !== 0 ? stats.totalTime.nightShift.toFixed(2) : ""}
+            </td>
+
+            <td className="border border-black text-center"></td>
         </tr>
     );
 }
@@ -63,7 +69,11 @@ export default function PersonDuration() {
     }, [fetchAllDetailUsers]);
 
     const startDate = dayjs().year(year).month(month).date(1).format("YYYY-MM-DD");
-    const endDate = dayjs().year(year).month(month + 1).date(1).format("YYYY-MM-DD");
+    const endDate = dayjs()
+        .year(year)
+        .month(month + 1)
+        .date(1)
+        .format("YYYY-MM-DD");
 
     return (
         <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">

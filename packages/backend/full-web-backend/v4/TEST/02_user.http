@@ -5,6 +5,9 @@
 ### 获取所有用户
 GET http://localhost:3205/api/users?fields=*
 
+### 获取所有用户
+GET http://localhost:3205/api/users
+
 ### 获取单个用户
 GET http://localhost:3205/api/users/1
 

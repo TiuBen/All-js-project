@@ -1,7 +1,7 @@
 const dayjs = require("dayjs");
 const minMax = require("dayjs/plugin/minMax");
 dayjs.extend(minMax);
-const { DutyDb } = require("../config/sqliteDb.js");
+const { DutyDb } = require("../../config/sqliteDb.js");
 
 function calculateNightShiftCount(userId, date) {
     return new Promise((resolve, reject) => {

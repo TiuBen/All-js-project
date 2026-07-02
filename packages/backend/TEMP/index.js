@@ -6,31 +6,23 @@ const cacheMiddleware = require("../middlewares/cacheMiddleware");
 
 // User 部分
 
-// 1. 初始化底层服务
-const UserService = require("../services/User.Service");
-const DutyService = require("../services/Duty.Service");
-
-const dutyService = new DutyService();
-const userService = new UserService(dutyService); // 注入 UserService
-
 // 2. 初始化控制器
-const UserController = require("../controllers/User.Controller");
-const userController = new UserController(userService, dutyService); // 注入 DutyService
+const userController = require("../controllers/userController");
 
 //  login logout refreshTOKEN
-const AuthController = require("../controllers/Auth.Controller");
-router.post("/login", AuthController.login);
-router.post("/logout", AuthController.logout);
-router.post("/refresh", AuthController.refreshToken);
+const authController = require("../controllers/authController");
+router.post("/login", authController.login);
+router.post("/logout", authController.logout);
+router.post("/refresh", authController.refreshToken);
 
-const LogController = require("../controllers/Log.Controller");
-router.get("/log", LogController.getAll);
+const logController = require("../controllers/logController");
+router.get("/log", logController.getAll);
 
 const { authenticateToken, optionalAuth, requireAdmin } = require("../middlewares/auth");
 
 //#region 关于user部分的Router
-const StatisticsController = require("../controllers/Statistics.Controller");
-router.get("/users/:id/nightCount", StatisticsController.getNightShiftCountStatisticsByUser);
+const statisticsController = require("../controllers/statisticsController");
+router.get("/users/:id/nightCount", statisticsController.getNightShiftCountStatisticsByUser);
 
 // 夜班段数查询接口
 const { calculateNightShiftCount, calculateMonthlyNightShiftCount } = require("../utils/calculateNightShiftCount");
@@ -60,8 +52,8 @@ router.get("/night-count/:userId", async (req, res) => {
         });
     }
 });
-// router.get("/users/:id/teachStatistics", StatisticsController.getTeachTimeStatisticsByUser);
-router.get("/users/:id/dutyStatistics", StatisticsController.getDurationStatisticsByUser);
+// router.get("/users/:id/teachStatistics", statisticsController.getTeachTimeStatisticsByUser);
+router.get("/users/:id/dutyStatistics", statisticsController.getDurationStatisticsByUser);
 router.get("/night-monthly/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
@@ -92,14 +84,13 @@ router.use("/users", UserRouter);
 //#endregion
 
 //#region 关于Statistics部分的Router
-router.get("/Statistics", StatisticsController.getNightShiftCountStatisticsByUser);
-const StatisticsRouter = generateCRUDRoutes(express.Router(), StatisticsController);
+router.get("/Statistics", statisticsController.getNightShiftCountStatisticsByUser);
+const StatisticsRouter = generateCRUDRoutes(express.Router(), statisticsController);
 router.use("/Statistics", StatisticsRouter);
 //#endregion
 
 //#region 关于考勤du的部分在这里
-const DutyController = require("../controllers/Duty.Controller");
-const dutyController = new DutyController(dutyService);
+const dutyController = require("../controllers/dutyController");
 const { checkDutyMiddleware } = require("../middlewares/checkRoleMiddleware");
 router.get("/duty", dutyController.getAll);
 router.post("/duty", checkDutyMiddleware, dutyController.create);
@@ -109,25 +100,25 @@ router.delete("/duty/:id", dutyController.delete);
 //#endregion
 
 //#region 关于席位Position的部分在这里
-const PositionController = require("../controllers/Position.Controller");
-const PositionRouter = generateCRUDRoutes(express.Router(), PositionController);
+const positionController = require("../controllers/positionController");
+const PositionRouter = generateCRUDRoutes(express.Router(), positionController);
 router.use("/positions", PositionRouter);
 //#region 关于席位的部分在这里
 
 //##region 文件的部分在这里
-const FileController = require("../controllers/File.Controller");
+const fileController = require("../controllers/fileController");
 
-router.get("/files/exists", FileController.checkExcelStatus);
-router.post("/files/regenerate", FileController.forceRegenerateExcel);
-router.post("/files/download", FileController.downloadExcel);
+router.get("/files/exists", fileController.checkExcelStatus);
+router.post("/files/regenerate", fileController.forceRegenerateExcel);
+router.post("/files/download", fileController.downloadExcel);
 
 // SEE
 const { initSSE } = require("../utils/see");
 router.get("/events", initSSE);
 
 //##region 执勤时间检查
-const CheckDurationController = require("../controllers/CheckDuration.Controller");
-router.get("/check-duration", CheckDurationController.checkAll);
+const checkDurationController = require("../controllers/checkDurationController");
+router.get("/check-duration", checkDurationController.checkAll);
 //#endregion
 
 //##region 导出EXCEL的部分在这里

@@ -1,7 +1,7 @@
 const dayjs = require("dayjs");
 const minMax = require("dayjs/plugin/minMax");
 dayjs.extend(minMax);
-const { DutyDb } = require("../config/sqliteDb.js");
+const { DutyDb } = require("../../config/sqliteDb.js");
 
 // ! 数据结构类似这种
 // [totalZongheTime: {
@@ -208,7 +208,7 @@ function calculateTimeInDailyRange(startTime, endTime, dailyStart, dailyEnd) {
     return parseFloat(totalTime.toFixed(2));
 }
 
-const { CalculationRules } = require("../config/CalculationRules");
+const { CalculationRules } = require("../../config/CalculationRules");
 
 const CalculationRulesEntries = Object.entries(CalculationRules);
 
@@ -355,96 +355,48 @@ function _splitDutyRow(rows) {
 
 // 这个是真确的 计算 2025-09-01 00:00:00 至 2025-09-01 23:59:59 的时间段内，的方法
 function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
-    // 按 userId 分组处理
-    const groupedResults = {};
-    const userIds = [...new Set(rows.map(row => row.userId).filter(id => id !== undefined && id !== null))];
-    
-    userIds.forEach(userId => {
-        const userRows = rows.filter(row => row.userId === userId);
-        // 为每个用户创建一个独立的 CalculationRules 副本
-        const userRules = structuredClone(CalculationRules);
-        
-        const splittedRows = _splitDutyRow(userRows);
-        
+    // console.log("_calDurationV3  version");
+    const _CalculationRules = structuredClone(CalculationRules);
+
+    if (rows.length > 0) {
+        const splittedRows = _splitDutyRow(rows);
+
         for (let index = 0; index < splittedRows.length; index++) {
+            // //console.log("============================" + index);
+
+            // 一般是 id--username--position--dutyType--inTime--outTime--
+            //roleType--relatedDutyTableRowId--roleStartTime--roleEndTime--roleTimes--status--relatedPrepareTableId
+
             const dutyRow = splittedRows[index];
-            for (const [key, value] of Object.entries(CalculationRules)) {
+            for (const [key, value] of CalculationRulesEntries) {
                 if (_checkRowAgainstFilter(dutyRow, value.filter)) {
                     let _dutyRowInTime = dayjs(dutyRow.inTime, "YYYY-MM-DD HH:mm:ss");
                     let _dutyRowOutTime = dayjs(dutyRow.outTime, "YYYY-MM-DD HH:mm:ss");
                     let _inTime = startDateTime.isBefore(_dutyRowInTime) ? _dutyRowInTime : startDateTime;
                     let _outTime = endDateTime.isAfter(_dutyRowOutTime) ? _dutyRowOutTime : endDateTime;
 
-                    userRules[key].time += Math.abs(
+                    _CalculationRules[key].time += Math.abs(
                         parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2))
                     );
-                    userRules[key].dayShift += calculateTimeInDailyRange(
+                    _CalculationRules[key].dayShift += calculateTimeInDailyRange(
                         dayjs(dutyRow.inTime),
                         dayjs(dutyRow.outTime),
                         "08:00",
                         "24:00"
                     );
-                    userRules[key].nightShift += calculateTimeInDailyRange(
+                    _CalculationRules[key].nightShift += calculateTimeInDailyRange(
                         dayjs(dutyRow.inTime),
                         dayjs(dutyRow.outTime),
                         "00:00",
                         "08:00"
                     );
+                    // //console.log(_CalculationRules[key]);
                 }
             }
+            // //console.log("============================" + index);
         }
-        groupedResults[userId] = userRules;
-    });
-    
-    return groupedResults;
+    }
+    return _CalculationRules;
 }
-
-
-
-
-// function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
-//     // console.log("_calDurationV3  version");
-//     const _CalculationRules = structuredClone(CalculationRules);
-
-//     if (rows.length > 0) {
-//         const splittedRows = _splitDutyRow(rows);
-
-//         for (let index = 0; index < splittedRows.length; index++) {
-//             // //console.log("============================" + index);
-
-//             // 一般是 id--username--position--dutyType--inTime--outTime--
-//             //roleType--relatedDutyTableRowId--roleStartTime--roleEndTime--roleTimes--status--relatedPrepareTableId
-
-//             const dutyRow = splittedRows[index];
-//             for (const [key, value] of CalculationRulesEntries) {
-//                 if (_checkRowAgainstFilter(dutyRow, value.filter)) {
-//                     let _dutyRowInTime = dayjs(dutyRow.inTime, "YYYY-MM-DD HH:mm:ss");
-//                     let _dutyRowOutTime = dayjs(dutyRow.outTime, "YYYY-MM-DD HH:mm:ss");
-//                     let _inTime = startDateTime.isBefore(_dutyRowInTime) ? _dutyRowInTime : startDateTime;
-//                     let _outTime = endDateTime.isAfter(_dutyRowOutTime) ? _dutyRowOutTime : endDateTime;
-
-//                     _CalculationRules[key].time += Math.abs(
-//                         parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2))
-//                     );
-//                     _CalculationRules[key].dayShift += calculateTimeInDailyRange(
-//                         dayjs(dutyRow.inTime),
-//                         dayjs(dutyRow.outTime),
-//                         "08:00",
-//                         "24:00"
-//                     );
-//                     _CalculationRules[key].nightShift += calculateTimeInDailyRange(
-//                         dayjs(dutyRow.inTime),
-//                         dayjs(dutyRow.outTime),
-//                         "00:00",
-//                         "08:00"
-//                     );
-//                     // //console.log(_CalculationRules[key]);
-//                 }
-//             }
-//             // //console.log("============================" + index);
-//         }
-//     }
-//     return _CalculationRules;
-// }
 
 module.exports = { calDuration, calculateTimeInDailyRange, calDurationV2, calDurationV3 };

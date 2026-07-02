@@ -1,5 +1,5 @@
 // middleware/auth.js
-const JWTUtil = require("../utils/jwt.js");
+const JWTUtil = require("../utils/util/jwt.js");
 
 const authMiddleware = {
     // 验证访问令牌

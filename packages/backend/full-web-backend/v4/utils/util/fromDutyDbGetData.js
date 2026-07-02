@@ -1,7 +1,7 @@
 const { calculateTimeInDailyRange } = require("./calculateDuration");
 const dayjs = require("dayjs");
 const { normalizeRow } = require("./sqliteSaveReadArrayTools");
-const { DutyDb } = require("../config/sqliteDb.js");
+const { DutyDb } = require("../../config/sqliteDb.js");
 
 function fromDutyDbGetData(query) {
     console.log("utils fromDutyDbGetData");

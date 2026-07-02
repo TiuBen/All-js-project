@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import dayjs from "dayjs";
 import { useOutletContext } from "react-router-dom";
-import { useDutyStore } from "../../../store/duty.store";
+import { useStatisticsStore } from "../../../store/statistics.store";
 import PositionCard from "./PositionCard";
 import { useAppStore } from "@/store/app.store";
 
 export default function PositionDuration() {
     const { year, month } = useOutletContext();
-    const { positionStatistics, fetchPositionStatistics } = useDutyStore();
+    const { positionStatistics, fetchPositionStatistics } = useStatisticsStore();
     const { positions } = useAppStore();
 
     const startDate = dayjs().year(year).month(month).date(1).format("YYYY-MM-DD");
@@ -19,6 +19,9 @@ export default function PositionDuration() {
 
     useEffect(() => {
         fetchPositionStatistics(startDate, endDate);
+        
+
+
     }, [startDate, endDate, fetchPositionStatistics]);
 
     return (

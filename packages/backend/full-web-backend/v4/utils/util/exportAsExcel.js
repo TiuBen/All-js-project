@@ -6,13 +6,13 @@
 const dayjs = require("dayjs");
 const Excel = require("exceljs");
 const path = require("path");
-const formateDecimal = require("../utils/formateDecimal");
+const formateDecimal = require("./formateDecimal");
 
 
 
-const UserService = require("../services/User.Service");
-const DutyService = require("../services/Duty.Service");
-const StatisticsService = require("../services/Statistics.Service");
+const userService = require("../../services/userService");
+const dutyService = require("../../services/dutyService");
+const statisticsService = require("../../services/statisticsService");
 
 async function exportAsExcel(
     startDate = "2025-08-01",
@@ -64,14 +64,10 @@ async function exportAsExcel(
     detailNightShiftWorksheet.getCell("F1").value = "补贴元";
 
     // 添加每个员工每月时间统计的sheet
-    const _userService = new UserService();
-    const users = await _userService.getAll({
+    const users = await userService.getAll({
         fields: ["id", "username"],
     });
     // 获取统计数据
-    const _statisticsService = new StatisticsService();
-
-    const _dutyService = new DutyService();
     for (let i = 0; i < users.length; i++) {
         const { username, id } = users[i];
 
@@ -115,7 +111,7 @@ async function exportAsExcel(
         //#endregion 设置格式
 
         // 添加数据行
-        const userDutyRows = await _dutyService.getAll(
+        const userDutyRows = await dutyService.getAll(
             { username: username, startDate: startDate, startTime: startTime, endDate: endDate, endTime: endTime },
             true
         );
@@ -147,14 +143,14 @@ async function exportAsExcel(
 
         // ! 添加统计后的时间的cell
 
-        const statistics = await _statisticsService.getDurationStatisticsByUserId(id, {
+        const statistics = await statisticsService.getDurationStatisticsByUserId(id, {
             startDate: startDate,
             startTime: startTime,
             endDate: endDate,
             endTime: endTime,
         });
 
-        const nightsCount = await _statisticsService.getNightShiftCountStatisticsByUserId(id, {
+        const nightsCount = await statisticsService.getNightShiftCountStatisticsByUserId(id, {
             startDate: startDate,
             startTime: startTime,
             endDate: endDate,
@@ -306,13 +302,13 @@ async function exportAsExcel(
     //          现场调度->J1 总时间->K1 夜班段数->L1
 
     // users.forEach(async (user, index) => {
-    //     const statistics = await _statisticsService.getDurationStatisticsByUser(user.id, {
+    //     const statistics = await statisticsService.getDurationStatisticsByUser(user.id, {
     //         startDate: startDate,
     //         startTime: startTime,
     //         endDate: endDate,
     //         endTime: endTime,
     //     });
-    //     const nightsCount = await _statisticsService.getNightShiftCountStatisticsByUser(user.id, {
+    //     const nightsCount = await statisticsService.getNightShiftCountStatisticsByUser(user.id, {
     //         startDate: startDate,
     //         startTime: startTime,
     //         endDate: endDate,

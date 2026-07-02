@@ -2,11 +2,56 @@
 ### 统计 Statistics
 ### ==========================================
 
-### 获取夜班次数统计 (所有用户)
-GET http://localhost:3205/api/Statistics
+# 夜班频次
+# 执勤时长
+# 席位时长
+# 合规检查
+
+### 夜班频次
+GET http://localhost:3205/api/statistics/night-count?year=2026&month=5
+
+### 执勤时长
+GET http://localhost:3205/api/statistics/duty-duration??year=2026&month=5
 
 ### 获取单个用户执勤时间统计
-GET http://localhost:3205/api/users/1/dutyStatistics?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59
+GET http://localhost:3205/api/statistics/duty-duration?userId=3?year=2026&month=5
+
+### 席位时长
+GET http://localhost:3205/api/statistics/duty-durationn?position=all&year=2026&month=5
+
+### 检查所有人员执勤时间是否符合规范
+### 返回每人数据: 是否满足条件, 24h内累计时间, 7天内累计时间
+GET http://localhost:3205/api/check-duration?year=2026&month=5
+
+
 
 ### 获取单个用户夜班次数统计
 GET http://localhost:3205/api/users/1/nightCount?startDate=2025-01-01&startTime=00:00:00&endDate=2025-12-31&endTime=23:59:59
+
+### 获取席位的统计
+GET http://localhost:3205/api/statistics/positions?year=2026&month=5
+
+### ==========================================
+### 日志 Log
+### ==========================================
+
+### 获取所有日志
+GET http://localhost:3205/api/night-count/1?date=2026-05-01
+
+
+### 获取指定月份的日志
+GET http://localhost:3205/api/night-monthly/4?year=2026&month=4
+
+### ==========================================
+### 健康检查 Health Check
+### ==========================================
+
+### 服务器健康检查
+GET http://localhost:3205/health
+
+### 获取指定用户的时长
+GET http://localhost:3205/api/check-duration?userId=38&year=2026&month=5
+
+    
+### 获取指定用户的值班统计
+GET http://localhost:3205/api//users/0/dutyStatistics?startDate=2026-06-01&startTime=00:00:00&endDate=2026-06-01&endTime=00:00:01

@@ -37,7 +37,7 @@ class UserService extends BaseService {
     }
 
     getAll(options) {
-        console.log("UserService getAll");
+        // console.log("UserService getAll");
 
         return new Promise((resolve, reject) => {
             const safeFields =
@@ -45,7 +45,7 @@ class UserService extends BaseService {
 
             const query = `SELECT ${safeFields.join(", ")} FROM user ORDER BY "rank"`;
 
-            console.log("QUERY:" + query);
+            // console.log("QUERY:" + query);
 
             this.db.all(query, (err, rows) => {
                 if (err) {

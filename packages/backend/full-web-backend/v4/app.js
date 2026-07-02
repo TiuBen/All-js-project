@@ -4,8 +4,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 
-const { initSSE, startHeartbeat } = require("./utils/see");
-const routes = require("./routes");
+const { initSSE, startHeartbeat } = require("./utils/util/see");
+const routes = require("./routes/router");
 
 const app = express();
 
@@ -22,8 +22,7 @@ app.use(cookieParser());
 const logMiddleware = require("./middlewares/logMiddleware");
 app.use(logMiddleware);
 
-// 
-
+//
 
 // 路由
 app.use("/api", routes);
@@ -65,7 +64,7 @@ app.use((error, req, res, next) => {
         message: "Internal server error",
     });
 });
- 
+
 // const { PrismaBetterSQLite3 } =require("@prisma/adapter-better-sqlite3") ;
 
 // const {PrismaClient} = require("./generated/prisma/client")
@@ -90,8 +89,7 @@ app.use((error, req, res, next) => {
 //     const data = await test();
 //     console.log(data);
 //   }
-  
-//   main();
 
+//   main();
 
 module.exports = app;

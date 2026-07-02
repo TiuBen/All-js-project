@@ -1,6 +1,6 @@
 //! 检查执勤部分的权限的
 const { UserDb } = require("../config/sqliteDb");
-const { normalizeValue, normalizeRow } = require("../utils/sqliteSaveReadArrayTools.js");
+const { normalizeValue, normalizeRow } = require("../utils/util/sqliteSaveReadArrayTools.js");
 
 async function checkDutyMiddleware(req, res, next) {
     //console.log("检查权限");
@@ -24,10 +24,9 @@ async function checkDutyMiddleware(req, res, next) {
 
             await UserDb.get("SELECT * FROM user WHERE  id= ?", [userId], (err, user) => {
                 try {
-                    
                     //console.log("User db error"+":"+err);
 
-                    const _user = normalizeRow(user);// { ...user, position: JSON.parse(user.position), roleType: JSON.parse(user.roleType) };
+                    const _user = normalizeRow(user); // { ...user, position: JSON.parse(user.position), roleType: JSON.parse(user.roleType) };
                     //console.log("数据库中检索到 权限检查的用户信息");
 
                     //console.log(_user);
