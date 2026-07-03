@@ -2,7 +2,8 @@ const service = require("../services/statisticsService");
 const dayjs = require("dayjs");
 
 exports.getDurationStatisticsByUser = (req, res, next) => {
-    const { id, year, month } = req.params;
+    console.log("controller getDurationStatisticsByUser called with params:", req.params, "and query:", req.query);
+    const { userId, year, month, startTime, endTime } = req.query;
     const dateStr = dayjs()
         .year(year)
         .month(month - 1)
@@ -14,7 +15,7 @@ exports.getDurationStatisticsByUser = (req, res, next) => {
     outTime = endTime ? endTime : `${dateEnd.format("YYYY-MM-DD")} 00:00:01`;
 
     service
-        .getDurationStatisticsByUserId(id, { inTime, outTime })
+        .getDurationStatisticsByUserId({ userId, inTime, outTime })
         .then((result) => {
             res.send(result);
         })
