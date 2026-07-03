@@ -375,8 +375,11 @@ function calDurationV3(rows, CalculationRules, startDateTime, endDateTime) {
                     let _inTime = startDateTime.isBefore(_dutyRowInTime) ? _dutyRowInTime : startDateTime;
                     let _outTime = endDateTime.isAfter(_dutyRowOutTime) ? _dutyRowOutTime : endDateTime;
 
+                    // _CalculationRules[key].time += Math.abs(
+                    //     parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2))
+                    // );
                     _CalculationRules[key].time += Math.abs(
-                        parseFloat(_outTime.diff(_inTime, "hours", true).toFixed(2))
+                        dayjs(dutyRow.outTime).diff(dayjs(dutyRow.inTime), "hours", true)
                     );
                     _CalculationRules[key].dayShift += calculateTimeInDailyRange(
                         dayjs(dutyRow.inTime),

@@ -5,6 +5,6 @@ const statisticsController = require("../../controllers/statisticsController");
 
 router.get("/night-count", statisticsController.getNightCount);
 router.get("/duty-duration", statisticsController.getDurationStatisticsByUser);
-router.get("/check-duration", statisticsController.getDurationStatisticsByUser);
+router.get("/check-duration", statisticsController.getCheckDurationStatisticsByUser);
 
 module.exports = router;

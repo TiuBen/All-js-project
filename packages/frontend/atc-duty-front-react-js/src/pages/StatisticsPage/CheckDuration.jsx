@@ -14,7 +14,7 @@ function UserCheckDurationRow({ userId, username, year, month }) {
     useEffect(() => {
         const fetchNightCount = async () => {
             try {
-                const data = await http.get(`/check-duration`, {
+                const data = await http.get(`/statistics/check-duration`, {
                     params: { userId: userId, year: year, month: month + 1 },
                 });
                 setLoading(false);

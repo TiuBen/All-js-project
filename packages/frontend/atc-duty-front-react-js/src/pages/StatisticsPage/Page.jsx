@@ -6,7 +6,7 @@ import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import dayjs from "dayjs";
 
 function Page() {
-    const { statistics, loading, fetchStatistics } = useStatisticsStore();
+    const { loading, setQuery } = useStatisticsStore();
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
@@ -14,8 +14,8 @@ function Page() {
     const [month, setMonth] = useState(dayjs().get("month"));
 
     useEffect(() => {
-        fetchStatistics();
-    }, []);
+        setQuery({ year, month });
+    }, [year, month]);
 
     const isActive = (path) => pathname === path || (path === "/statistics/night-count" && pathname === "/statistics");
 

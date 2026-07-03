@@ -5,21 +5,25 @@ import { http } from "../../service/http";
 import { useOutletContext } from "react-router-dom";
 import { formatDecimal } from "../../util/formatDecimal";
 
-function UserDutyDurationRow({ userId, username, startDate, endDate }) {
+function UserDutyDurationRow({ userId, username, startDate, endDate, year, month }) {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const data = await http.get(`/users/${userId}/dutyStatistics`, {
+                const data = await http.get(`/statistics/duty-duration`, {
                     params: {
-                        startDate,
-                        startTime: "00:00:00",
-                        endDate,
-                        endTime: "00:00:01",
+                        // startDate,
+                        // startTime: "00:00:00",
+                        // endDate,
+                        // endTime: "00:00:01",
+                        userId,
+                        year,
+                        month,
                     },
                 });
+                console.log(data);
                 setStats(data);
             } catch (err) {
                 console.log(err);
@@ -46,13 +50,13 @@ function UserDutyDurationRow({ userId, username, startDate, endDate }) {
         <tr className="hover:bg-slate-400">
             <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
             <td className="border border-black text-center">
-                {stats?.totalTime?.time !== 0 ? stats.totalTime.time.toFixed(2) : ""}
+                {stats?.totalTime?.time !== 0 ? stats.totalTime.time?.toFixed(2) : ""}
             </td>
             <td className="border border-black text-center">
-                {stats?.totalTime?.dayShift !== 0 ? stats.totalTime.dayShift.toFixed(2) : ""}
+                {stats?.totalTime?.dayShift !== 0 ? stats.totalTime?.dayShift?.toFixed(2) : ""}
             </td>
             <td className="border border-black text-center">
-                {stats?.totalTime?.nightShift !== 0 ? stats.totalTime.nightShift.toFixed(2) : ""}
+                {stats?.totalTime?.nightShift !== 0 ? stats.totalTime?.nightShift?.toFixed(2) : ""}
             </td>
 
             <td className="border border-black text-center"></td>
@@ -93,6 +97,8 @@ export default function PersonDuration() {
                             key={index}
                             userId={user.id}
                             username={user.username}
+                            year={year}
+                            month={month}
                             startDate={startDate}
                             endDate={endDate}
                         />

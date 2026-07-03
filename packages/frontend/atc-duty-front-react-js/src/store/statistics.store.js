@@ -18,7 +18,8 @@ export const useStatisticsStore = create((set, get) => ({
             query: { ...state.query, ...patch },
         }));
 
-        await get().fetchStatistics();
+        // await Promise.all([get().fetchStatistics(), get().fetchNightCount()]);
+        await get().fetchNightCount();
     },
 
     async fetchStatistics() {
@@ -79,6 +80,27 @@ export const useStatisticsStore = create((set, get) => ({
             set({ positionStatistics: result });
         } catch (err) {
             console.log(err);
+        }
+    },
+
+    allUserNightCount: {},
+    fetchNightCount: async () => {
+        const { query } = get();
+
+        try {
+            set({
+                allUserNightCount: {},
+                loading: true,
+            });
+            const data = await statisticsService.getNightCount({ year: query.year, month: query.month + 1 });
+
+            set({
+                allUserNightCount: data,
+                loading: false,
+            });
+        } catch (err) {
+            console.log(err);
+            set({ loading: false });
         }
     },
 }));

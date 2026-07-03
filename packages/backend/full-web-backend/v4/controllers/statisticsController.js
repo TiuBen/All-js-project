@@ -98,3 +98,20 @@ exports.getNightCount = (req, res, next) => {
         })
         .catch(next);
 };
+
+exports.getCheckDurationStatisticsByUser = (req, res, next) => {
+    console.log(
+        "controller getCheckDurationStatisticsByUser called with \nparams:",
+        req.params,
+        "\nand \nquery:",
+        req.query
+    );
+    const { userId, year, month } = req.query;
+
+    service
+        .checkDuration(userId, year, month)
+        .then((result) => {
+            res.send(result);
+        })
+        .catch(next);
+};
