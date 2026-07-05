@@ -1,106 +1,105 @@
 import { create } from "zustand";
 import { statisticsService } from "../service/statistics.service";
+import { useAppStore } from "./app.store";
+import { useUserStore } from "./user.store";
 
 export const useStatisticsStore = create((set, get) => ({
     statistics: {}, //  all duty records outTime ==null
     loading: false,
 
-    query: {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth(),
-        date: new Date().getDate(),
-        userId: 0,
-        positionId: 0,
-        statisticsType: "",
-    },
-    setQuery: async (patch) => {
-        set((state) => ({
-            query: { ...state.query, ...patch },
-        }));
-
-        // await Promise.all([get().fetchStatistics(), get().fetchNightCount()]);
-        await get().fetchNightCount();
-    },
-
-    async fetchStatistics() {
-        const { query } = get();
-        try {
-            const data = await statisticsService.getStatistics(query);
-            set({ statistics: data, loading: false });
-        } catch (err) {
-            console.log(err);
-
-            set({ loading: false });
-        }
-    },
-    positionStatistics: [],
-    fetchPositionStatistics: async (startDate, endDate) => {
-        try {
-            const data = await dutyService.getDutyRecords({
-                year: dayjs(startDate).year(),
-                month: dayjs(startDate).month(),
-            });
-
-            const positionMap = {};
-
-            data.forEach((record) => {
-                const pos = record.position;
-                if (!pos) return;
-
-                if (!positionMap[pos]) {
-                    positionMap[pos] = {
-                        position: pos,
-                        mainTotalHours: 0,
-                        mainCount: 0,
-                        subTotalHours: 0,
-                        subCount: 0,
-                    };
-                }
-
-                const inTime = dayjs(record.inTime);
-                const outTime = record.outTime ? dayjs(record.outTime) : dayjs();
-                const hours = outTime.diff(inTime, "hour", true);
-
-                const isMain = record.roleType !== "副班";
-                if (isMain) {
-                    positionMap[pos].mainTotalHours += hours;
-                    positionMap[pos].mainCount += 1;
-                } else {
-                    positionMap[pos].subTotalHours += hours;
-                    positionMap[pos].subCount += 1;
-                }
-            });
-
-            const result = Object.values(positionMap).map((item) => ({
-                ...item,
-                mainAvgHours: item.mainCount > 0 ? item.mainTotalHours / item.mainCount : 0,
-                subAvgHours: item.subCount > 0 ? item.subTotalHours / item.subCount : 0,
-            }));
-
-            set({ positionStatistics: result });
-        } catch (err) {
-            console.log(err);
-        }
-    },
-
-    allUserNightCount: {},
+    nightCount: {},
+    isNightCountLoading: false,
     fetchNightCount: async () => {
-        const { query } = get();
-
+        const { selectedYear, selectedMonth } = useAppStore.getState();
         try {
             set({
-                allUserNightCount: {},
-                loading: true,
+                nightCount: {},
+                isNightCountLoading: true,
             });
-            const data = await statisticsService.getNightCount({ year: query.year, month: query.month + 1 });
+            const data = await statisticsService.getNightCount({ year: selectedYear, month: selectedMonth + 1 });
 
             set({
-                allUserNightCount: data,
-                loading: false,
+                nightCount: data,
+                isNightCountLoading: false,
             });
         } catch (err) {
             console.log(err);
             set({ loading: false });
+        }
+    },
+
+    // 某人 某年 某月的 考勤 统计
+    userDutyDurationStatistics: {},
+    isUserDutyDurationStatistics: false,
+    fetchUserDutyDurationStatistics: async () => {
+        const { selectedYear, selectedMonth } = useAppStore.getState();
+        const { selectedUser } = useUserStore.getState();
+
+        try {
+            set({
+                isUserDutyDurationStatistics: true,
+            });
+            const data = await statisticsService.getStatistics({
+                userId: selectedUser.id,
+                year: selectedYear,
+                month: selectedMonth,
+            });
+
+            set({
+                userDutyDurationStatistics: data,
+                isUserDutyDurationStatistics: false,
+            });
+        } catch (error) {
+            console.log(error);
+            set({
+                isUserDutyDurationStatistics: false,
+            });
+        }
+    },
+
+    positionSummary: {},
+    isPositionSummaryLoading: false,
+    fetchPositionSummary: async () => {
+        const { selectedYear, selectedMonth } = useAppStore.getState();
+
+        set({
+            positionSummary: {},
+            isPositionSummaryLoading: true,
+        });
+        try {
+            const data = await statisticsService.getPositionSummary({ year: selectedYear, month: selectedMonth });
+            set({
+                positionSummary: data,
+                isPositionSummaryLoading: false,
+            });
+        } catch (err) {
+            console.log(err);
+            set({
+                isPositionSummaryLoading: false,
+            });
+        }
+    },
+
+    checkResult: {},
+    isCheckResultLoading: false,
+    fetchCheckResult: async () => {
+        const { selectedYear, selectedMonth } = useAppStore.getState();
+
+        set({
+            checkResult: {},
+            isCheckResultLoading: true,
+        });
+        try {
+            const data = await statisticsService.getCheckDuration({ year: selectedYear, month: selectedMonth });
+            set({
+                checkResult: data,
+                isCheckResultLoading: false,
+            });
+        } catch (err) {
+            console.log(err);
+            set({
+                isCheckResultLoading: false,
+            });
         }
     },
 }));

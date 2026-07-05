@@ -1,7 +1,6 @@
 const { UserDb, DutyDb } = require("../config/sqliteDb.js");
-const { fromDutyDbGetData } = require("../utils/util/fromDutyDbGetData.js");
 const dayjs = require("dayjs");
-const { normalizeValue, normalizeRow } = require("../utils/util/sqliteSaveReadArrayTools.js");
+const { normalizeValue } = require("../tools/rawRowToJsObject.js");
 const ALLOWED_COLUMNS = [
     "id",
     "userId",
@@ -18,6 +17,9 @@ const ALLOWED_COLUMNS = [
     "status",
     "relatedPrepareTableId",
 ];
+
+const { queryDuty } = require("../utils/util/calc.js");
+
 const dutyService = {
     create(data) {
         const { teacherDutyRowId } = data;
@@ -53,19 +55,10 @@ const dutyService = {
         });
     },
 
-    async getAll(query, needCalculate) {
-        console.log("DutyService getAll");
+    async getByQuery(query) {
+        console.log("Duty Service get by {id, userId, username, inTime, outTime} ");
         console.log(query);
-        return await fromDutyDbGetData(query, DutyDb);
-    },
-
-    findById(id) {
-        return new Promise((resolve, reject) => {
-            DutyDb.get(`SELECT * FROM duty WHERE id = ?`, [id], (err, row) => {
-                if (err) reject(err);
-                else resolve(normalizeRow(row));
-            });
-        });
+        return await queryDuty(query);
     },
 
     update(id, data = {}) {

@@ -10,14 +10,60 @@
 ### 夜班频次
 GET http://localhost:3205/api/statistics/night-count?year=2026&month=5
 
-### 执勤时长
-GET http://localhost:3205/api/statistics/duty-duration??year=2026&month=5
-
 ### 获取单个用户执勤时间统计
 GET http://localhost:3205/api/statistics/duty-duration?userId=3&year=2026&month=5
 
 ### 席位时长
-GET http://localhost:3205/api/statistics/duty-durationn?position=all&year=2026&month=5
+GET http://localhost:3205/api/statistics/position-summary?year=2026&month=5
+
+### 获取指定用户的时长
+GET http://localhost:3205/api/statistics/check-duration?userId=38&year=2026&month=5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 执勤时长
+GET http://localhost:3205/api/statistics/duty-duration??year=2026&month=5
+
+
+
+
+
+
 
 ### 检查所有人员执勤时间是否符合规范
 ### 返回每人数据: 是否满足条件, 24h内累计时间, 7天内累计时间
@@ -49,8 +95,6 @@ GET http://localhost:3205/api/night-monthly/4?year=2026&month=4
 ### 服务器健康检查
 GET http://localhost:3205/health
 
-### 获取指定用户的时长
-GET http://localhost:3205/api/statistics/check-duration?userId=38&year=2026&month=5
 
     
 ### 获取指定用户的值班统计

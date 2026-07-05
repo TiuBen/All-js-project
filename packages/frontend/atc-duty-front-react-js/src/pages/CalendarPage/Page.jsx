@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 // import RightBarSelectDayDetail from "./RightBarSelectDayDetail";
 import YearMonthTab from "../../components/YearMonthTab";
 
+import { useAppStore } from "../../store/app.store";
 import { TestButton, MonthCalendar } from "@sn/ui";
 
 // function DayCellElement({ date, onClick }) {
@@ -65,13 +66,13 @@ function Page() {
     // }, [year, month]);
 
     // const [date, setDate] = useState("");
-
+    const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useAppStore();
     return (
         <div className="flex flex-col  flex-1 items-stretch w-full  h-full">
             <YearMonthTab />
 
             <div className="flex-1 p-2 items-stretch justify-stretch flex">
-                <MonthCalendar />
+                <MonthCalendar year={selectedYear} month={selectedMonth} />
             </div>
         </div>
     );

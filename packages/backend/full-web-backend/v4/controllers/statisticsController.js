@@ -1,8 +1,18 @@
 const service = require("../services/statisticsService");
 const dayjs = require("dayjs");
 
+//! 当月夜班频次
+//! 当月用户时长统计
+//! 当月席位频次时长统计
+//! 当月合规检查
+
 exports.getDurationStatisticsByUser = (req, res, next) => {
-    console.log("controller getDurationStatisticsByUser called with params:", req.params, "and query:", req.query);
+    console.log(
+        "Statistics Controller getDurationStatisticsByUser called with params:",
+        req.params,
+        "and query:",
+        req.query
+    );
     const { userId, year, month, startTime, endTime } = req.query;
     const dateStr = dayjs()
         .year(year)
@@ -35,61 +45,6 @@ exports.getNightCount = (req, res, next) => {
             allowedColumns: ALLOWED_COLUMNS,
         });
     }
-    // let inTime, outTime;
-
-    // // 检查 startTime 是否符合 YYYY-MM-DD HH:mm:ss 格式
-    // if (startTime) {
-    //     const isValid = dayjs(startTime, "YYYY-MM-DD HH:mm:ss", true).isValid();
-    //     if (!isValid) {
-    //         return res.status(400).json({
-    //             error: "startTime 格式错误，必须为 YYYY-MM-DD HH:mm:ss",
-    //             received: startTime,
-    //         });
-    //     }
-    //     inTime = startTime;
-    // }
-
-    // // 检查 endTime 是否符合 YYYY-MM-DD HH:mm:ss 格式
-    // if (endTime) {
-    //     const isValid = dayjs(endTime, "YYYY-MM-DD HH:mm:ss", true).isValid();
-    //     if (!isValid) {
-    //         return res.status(400).json({
-    //             error: "endTime 格式错误，必须为 YYYY-MM-DD HH:mm:ss",
-    //             received: endTime,
-    //         });
-    //     }
-    //     outTime = endTime;
-    // }
-
-    // // 根据参数构建 inTime 和 outTime
-
-    // if (year && month) {
-    //     // 如果有年月日，构建完整的日期时间
-    //     const dateStr = dayjs()
-    //         .year(year)
-    //         .month(month - 1)
-    //         .date(1);
-    //     const dateEnd = dateStr.add(1, "month");
-
-    //     // 如果提供了 startTime 和 endTime，使用它们；否则使用默认时间
-    //     inTime = startTime ? startTime : `${dateStr.format("YYYY-MM-DD")} 00:00:00`;
-    //     outTime = endTime ? endTime : `${dateEnd.format("YYYY-MM-DD")} 00:00:01`;
-    // } else {
-    //     // 如果没有年月日，检查是否直接提供了 inTime 和 outTime
-    //     if (!req.query.startTime || !req.query.endTime) {
-    //         return res.status(400).json({
-    //             error: "查询参数错误,必须包含 year, month 或 inTime, outTime",
-    //         });
-    //     }
-    //     inTime = req.query.startTime;
-    //     outTime = req.query.endTime;
-    // }
-
-    // if (!inTime || !outTime) {
-    //     return res.status(400).json({
-    //         error: "查询参数错误",
-    //     });
-    // }
 
     service
         .getNightCount(year, month)
@@ -110,6 +65,59 @@ exports.getCheckDurationStatisticsByUser = (req, res, next) => {
 
     service
         .checkDuration(userId, year, month)
+        .then((result) => {
+            res.send(result);
+        })
+        .catch(next);
+};
+
+exports.getPositionSummary = function (req, res, next) {
+    console.log("controller getPositionSummary called with \nparams:", req.params, "\nand \nquery:", req.query);
+
+    const { year, month } = req.query;
+    service
+        .getPositionSummary(year, month)
+        .then((result) => {
+            res.send(result);
+        })
+        .catch(next);
+};
+
+exports.getDurationStatisticsByUserV2 = function (req, res, next) {
+    console.log(
+        "controller getDurationStatisticsByUserV2222222222 called with \nparams:",
+        req.params,
+        "\nand \nquery:",
+        req.query
+    );
+
+    const { userId, year, month, startTime, endTime } = req.query;
+    console.log({
+        year,
+        month,
+        typeofYear: typeof year,
+        typeofMonth: typeof month,
+    });
+
+    const y = Number(year);
+    const m = Number(month);
+
+    const _startTime = startTime ?? dayjs().year(y).month(m).date(1).startOf("day").format("YYYY-MM-DD HH:mm:ss");
+
+    const _endTime =
+        endTime ??
+        dayjs()
+            .year(y)
+            .month(m + 1)
+            .date(1)
+            .startOf("day")
+            .add(1, "second")
+            .format("YYYY-MM-DD HH:mm:ss");
+
+    console.log("controller getDurationStatisticsByUserV2====" + _startTime + "  " + _endTime);
+
+    service
+        .getDurationStatisticsByUserIdV2(userId, _startTime, _endTime)
         .then((result) => {
             res.send(result);
         })

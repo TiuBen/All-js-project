@@ -1,5 +1,5 @@
 import { Button, Radio, RadioGroup } from "@radix-ui/themes";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAppStore } from "../../../store/app.store";
 import { useUserStore } from "../../../store/user.store";
 
@@ -7,17 +7,9 @@ function UserSettingPage() {
     const { positions, positionsLoading } = useAppStore();
     const { allDetailUsers, loading, updateUser, selectedUser, setSelectedUser } = useUserStore();
 
-    const [needSave, setNeedSave] = useState(false);
-    const [newSelectedUserValue, setNewSelectedUserValue] = useState(null);
+    const [newSelectedUserValue, setNewSelectedUserValue] = useState(selectedUser);
 
-    useEffect(() => {
-        setNeedSave(JSON.stringify(selectedUser) !== JSON.stringify(newSelectedUserValue));
-    }, [selectedUser, newSelectedUserValue]);
-
-    useEffect(() => {
-        console.log("selectedUser changed:", selectedUser);
-        setNewSelectedUserValue(selectedUser);
-    }, [selectedUser]);
+    const needSave = JSON.stringify(selectedUser) !== JSON.stringify(newSelectedUserValue);
 
     if (loading || positionsLoading) return <div>加载中...</div>;
 
@@ -44,7 +36,7 @@ function UserSettingPage() {
                             const user = allDetailUsers.find((x) => x.id === id);
                             console.log("User selected:", user);
                             setSelectedUser(user);
-                            setNewSelectedUserValue(user);
+                            setNewSelectedUserValue(structuredClone(user));
                         }}
                     >
                         {allDetailUsers.map((item) => (
@@ -227,8 +219,6 @@ function UserSettingPage() {
                     disabled={!needSave}
                     onClick={async () => {
                         await updateUser(selectedUser.id, newSelectedUserValue);
-                        setNewSelectedUserValue(selectedUser);
-                        setNeedSave(false);
                     }}
                 >
                     保存

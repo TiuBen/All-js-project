@@ -159,10 +159,6 @@ function DutyRecordDialog({ selectedUser, query }) {
             style={{ margin: "auto" }}
         >
             <div className="max-h-[90vh] overflow-y-auto p-6">
-                {JSON.stringify(dutyDialogOpen)}
-                {JSON.stringify(dutyDialogMode)}
-                {JSON.stringify(dutyDialogRecord?.id)}
-                {JSON.stringify(dutyDialogUser?.username)}
                 <h2 className="text-lg font-bold mb-1 mx-auto text-center text-blue-700">
                     {isEdit ? "修改执勤记录" : "新增执勤记录"}
                 </h2>

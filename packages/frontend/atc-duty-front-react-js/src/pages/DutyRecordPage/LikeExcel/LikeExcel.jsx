@@ -1,16 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import dayjs from "dayjs";
 import { Edit3, Plus } from "lucide-react";
 import DetailStatisticsTable from "./DetailStatisticsTable";
 import { dialogStore } from "../../../store/dialog.store";
 import { useUserStore } from "@/store/user.store";
 import { useDutyStore } from "@/store/duty.store";
+import { useAppStore } from "@/store/app.store";
+import { useStatisticsStore } from "@/store/statistics.store";
 
-function LikeExcel({ selectedMonth = dayjs().get("month") }) {
-    const { openEditDialog, openAddDialog, openDutyDialog } = dialogStore();
-    const { selectedUser, selectedUserDutyStatistics } = useUserStore();
+function LikeExcel() {
+    const { openDutyDialog } = dialogStore();
+    const { selectedUser } = useUserStore();
+    const { selectedYear, selectedMonth } = useAppStore();
 
     const { dutyRecords, loading } = useDutyStore();
+    const { userDutyDurationStatistics, fetchUserDutyDurationStatistics } = useStatisticsStore();
+
+    useEffect(() => {
+        if (selectedUser) {
+            fetchUserDutyDurationStatistics();
+        }
+    }, [selectedYear, selectedMonth, selectedUser]);
 
     if (loading) {
         return <div className="flex-1">加载中...</div>;
@@ -28,14 +38,50 @@ function LikeExcel({ selectedMonth = dayjs().get("month") }) {
                             <td className="border border-slate-600 px-1 text-nowrap text-center ">上岗时刻</td>
                             <td className="border border-slate-600 px-1 text-nowrap text-center">交接班</td>
                             <td className="border border-slate-600 px-1 text-nowrap text-center">离岗时刻</td>
-                            <td className="border border-slate-600 px-1 text-nowrap text-center text-xs w-[4rem]">
-                                时段
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                打卡
                                 <br />
-                                工作小时
+                                时长
                             </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center">白班小时</td>
-                            <td className="border border-slate-600 text-nowrap text-center text-xs w-[4rem]">
-                                夜班小时 <br /> (0000-0800)
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                打卡
+                                <br />
+                                白班
+                            </td>
+                            <td className="border border-slate-600 text-nowrap text-center text-xs px-2">
+                                打卡
+                                <br />
+                                夜班
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                教员
+                                <br />
+                                小时
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                教员
+                                <br />
+                                白班
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                教员
+                                <br />
+                                夜班
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                见习
+                                <br />
+                                小时
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                见习
+                                <br />
+                                白班
+                            </td>
+                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
+                                见习
+                                <br />
+                                夜班
                             </td>
                         </tr>
                     </thead>
@@ -68,7 +114,7 @@ function LikeExcel({ selectedMonth = dayjs().get("month") }) {
                                         {/* <>{x.id}</> */}
                                     </td>
                                     <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {dayjs(x.inTime).format("YYYY-MM-DD")}
+                                        {dayjs(x.inTime).format("MM-DD")}
                                     </td>
                                     <td className="border border-slate-600 pr-2 text-nowrap group-hover:bg-slate-400">
                                         <span
@@ -110,16 +156,31 @@ function LikeExcel({ selectedMonth = dayjs().get("month") }) {
                                     <td
                                         className={`border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400 `}
                                     >
-                                        {Math.floor(
-                                            dayjs(x.outTime).diff(dayjs(x.inTime, "YYYY-MM-DD HH:mm:ss"), "h", true) *
-                                                100
-                                        ) / 100}
+                                        {x.rawDuration || ""}
                                     </td>
                                     <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.dayShift === 0 ? "" : x.dayShift}
+                                        {x.rawDayDuration || ""}
                                     </td>
                                     <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.nightShift === 0 ? "" : x.nightShift}
+                                        {x.rawNightDuration || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.teacherShift || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.teacherDayShift || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.teacherNightShift || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.studentShift || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.studentDayShift || ""}
+                                    </td>
+                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
+                                        {x.studentNightShift || ""}
                                     </td>
                                 </tr>
                             );
@@ -159,7 +220,7 @@ function LikeExcel({ selectedMonth = dayjs().get("month") }) {
                     </tbody>
                 </table>
 
-                <DetailStatisticsTable dutyStatistics={selectedUserDutyStatistics} />
+                <DetailStatisticsTable dutyStatistics={userDutyDurationStatistics} />
             </div>
         </>
     );

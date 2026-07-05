@@ -1,7 +1,7 @@
 import React from "react";
 import { formatDecimal } from "../../../util/formatDecimal";
 
-function SeatCard({ dutyType, totalHours, count, avgHours }) {
+function SeatCard({ dutyType, totalHours, count, avgHours, minHours, maxHours }) {
     return (
         <div className="flex flex-col items-center border border-gray-200 rounded-lg p-2 gap-1 text-center self-stretch min-w-[8rem]">
             <h3 className="font-black text-blue-600 text-lg">{dutyType}</h3>
@@ -14,9 +14,15 @@ function SeatCard({ dutyType, totalHours, count, avgHours }) {
                     <span className="text-gray-600">人次:</span>
                     <span className="font-medium">{count}</span>
                 </div>
-                <div className="flex justify-between px-2">
+                <div className="flex items-center justify-between px-2 ">
                     <span className="text-gray-600">平均小时:</span>
-                    <span className="font-medium">{formatDecimal(avgHours)}</span>
+                    <span className=" text-xl text-blue-600 font-bold">{formatDecimal(avgHours)}</span>
+                </div>
+                <div className="flex items-center justify-start px-2 ">
+                    <span className="text-gray-600">最短:</span>
+                    <span className="   font-bold"> {minHours} </span>
+                    <span className="text-gray-600">最长:</span>
+                    <span className="   font-bold">{formatDecimal(maxHours)}</span>
                 </div>
             </div>
         </div>

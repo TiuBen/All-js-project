@@ -1,6 +1,6 @@
 import React from "react";
 import { useUserStore } from "@/store/user.store";
-export default function UserRadioButtonList({ changeSelectedUser }) {
+export default function UserRadioButtonList() {
     const { allDetailUsers, selectedUser, setSelectedUser } = useUserStore();
 
     return (
@@ -16,9 +16,9 @@ export default function UserRadioButtonList({ changeSelectedUser }) {
                             value={item}
                             checked={item.id === selectedUser?.id}
                             onChange={() => {
-                                console.log(item);
+                                // console.log(item);
 
-                                setSelectedUser(item);
+                                setSelectedUser({ ...item });
                             }}
                         />
                         {item.username}

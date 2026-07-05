@@ -1,27 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TabNav } from "@radix-ui/themes";
-import { useStatisticsStore } from "../../store/statistics.store";
 import YearMonthTab from "../../components/YearMonthTab";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import dayjs from "dayjs";
 
 function Page() {
-    const { loading, setQuery } = useStatisticsStore();
     const navigate = useNavigate();
     const { pathname } = useLocation();
-
-    const [year, setYear] = useState(dayjs().get("year"));
-    const [month, setMonth] = useState(dayjs().get("month"));
-
-    useEffect(() => {
-        setQuery({ year, month });
-    }, [year, month]);
-
     const isActive = (path) => pathname === path || (path === "/statistics/night-count" && pathname === "/statistics");
 
     return (
         <div className="flex flex-col gap-2">
-            <YearMonthTab year={year} onYearChange={setYear} month={month} onMonthChange={setMonth} />
+            <YearMonthTab />
 
             <TabNav.Root>
                 <TabNav.Link
@@ -43,7 +32,7 @@ function Page() {
                         navigate("/statistics/detail");
                     }}
                 >
-                    个人执勤详细
+                    个人时长摘要
                 </TabNav.Link>
                 <TabNav.Link
                     href="/statistics/position"
@@ -67,7 +56,7 @@ function Page() {
                 </TabNav.Link>
             </TabNav.Root>
             <div>
-                <Outlet context={{ year, month }} />
+                <Outlet />
             </div>
         </div>
     );

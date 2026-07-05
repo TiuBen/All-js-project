@@ -1,4 +1,11 @@
-const { calculateMonthlyNightShiftCount, fromDutyDbGetData, calDurationV3, checkRule } = require("../utils/index");
+const {
+    calculateMonthlyNightShiftCount,
+    fromDutyDbGetData,
+    calDurationV3,
+    checkRule,
+    calculatePositionSummary,
+    calculate,
+} = require("../utils/index");
 const { CalculationRules } = require("../config/CalculationRules");
 const { DutyDb } = require("../config/sqliteDb.js");
 
@@ -93,6 +100,18 @@ const statisticsService = {
 
             result7day,
         };
+    },
+
+    async getPositionSummary(year, month) {
+        console.log("=====service getPositionSummary");
+
+        return await calculatePositionSummary(year, month);
+    },
+
+    async getDurationStatisticsByUserIdV2(userId, startTime, endTime) {
+        console.log("=====service getDurationStatisticsByUse======================");
+
+        return await calculate({ userId, startTime, endTime });
     },
 };
 

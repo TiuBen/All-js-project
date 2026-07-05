@@ -15,7 +15,7 @@ function Page() {
     return (
         <div className="flex flex-row flex-wrap gap-4 justify-start items-start  content-start overflow-auto p-2">
             {positions
-                .filter((i) => i)
+                .filter((i) => i.display === 1)
                 .map((item) => (
                     <Position key={item.id} position={item.position} dutyType={item.dutyType} />
                     // <div key={item.id}>{JSON.stringify(item)}</div>

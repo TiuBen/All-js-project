@@ -4,6 +4,7 @@ import UserSettingPage from "./UserSettingPage/UserSettingPage";
 import PositionSetting from "./PositionSettingPage/PositionSetting";
 import TeamSettingPage from "./TeamSettingPage/TeamSettingPage";
 import StatisticSetting from "./StatisticSettingPage/StatisticSetting";
+import ComingSoon from "@/app/layout/ComingSoon";
 
 function Page() {
     const [activeTab, setActiveTab] = useState(1);
@@ -17,7 +18,7 @@ function Page() {
             case 3:
                 return <TeamSettingPage />;
             case 4:
-                return <StatisticSetting />;
+                return <ComingSoon />;
             default:
                 return <div>Unknown Type</div>;
         }

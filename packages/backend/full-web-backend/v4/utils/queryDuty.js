@@ -1,0 +1,68 @@
+const dayjs = require("dayjs");
+const isSameOrAfter = require("dayjs/plugin/isSameOrAfter");
+dayjs.extend(isSameOrAfter);
+const isSameOrBefore = require("dayjs/plugin/isSameOrBefore");
+dayjs.extend(isSameOrBefore);
+
+const { DutyDb } = require("../../config/sqliteDb.js");
+
+const { rawRowToJsObject } = require("../tools/rawRowToJsObject.js");
+const { processRow } = require("./util/processRow.js");
+
+function queryDuty({ id, userId, username, inTime, outTime }) {
+    let sql = `
+            SELECT *
+            FROM duty
+            WHERE 1=1
+        `;
+
+    const params = [];
+    if (id != null) {
+        sql += ` AND id=?`;
+        params.push(id);
+    }
+
+    if (userId != null) {
+        sql += ` AND userId=?`;
+        params.push(userId);
+    }
+
+    if (username != null) {
+        sql += ` AND username=?`;
+        params.push(username);
+    }
+
+    if (inTime) {
+        sql += ` AND outTime >= ?`;
+        params.push(inTime);
+    }
+
+    if (outTime) {
+        sql += ` AND inTime <= ?`;
+        params.push(outTime);
+    }
+    console.log(sql);
+    console.log(params);
+
+    return new Promise((resolve, reject) => {
+        DutyDb.all(sql, params, (err, rows) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            console.log("queryDuty rows:", rows.length);
+
+            const jsObjectRows = rows.map((row) => rawRowToJsObject(row));
+            console.log("jsObjectRows:", jsObjectRows.length);
+            console.log(jsObjectRows);
+
+            const processedRows = jsObjectRows.map((row) => processRow(row));
+
+            resolve(processedRows);
+        });
+    });
+}
+
+module.exports = {
+    queryDuty,
+};

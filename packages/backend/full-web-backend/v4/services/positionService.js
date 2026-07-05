@@ -1,5 +1,5 @@
 const { UserDb, DutyDb } = require("../config/sqliteDb.js");
-const { normalizeValue, normalizeRow } = require("../utils/util/sqliteSaveReadArrayTools.js");
+const { rawRowToJsObject, normalizeValue } = require("../utils/index.js");
 const ALLOWED_COLUMNS = ["id", "position", "dutyType", "canTeach", "display"];
 
 const positionService = {
@@ -19,7 +19,7 @@ const positionService = {
         return new Promise((resolve, reject) => {
             UserDb.all(sql, values, (err, rows) => {
                 if (err) reject(err);
-                else resolve(rows.map(normalizeRow));
+                else resolve(rows.map(rawRowToJsObject));
             });
         });
     },
@@ -28,7 +28,7 @@ const positionService = {
         return new Promise((resolve, reject) => {
             UserDb.get(`SELECT * FROM position WHERE id = ?`, [id], (err, row) => {
                 if (err) reject(err);
-                else resolve(normalizeRow(row));
+                else resolve(rawRowToJsObject(row));
             });
         });
     },

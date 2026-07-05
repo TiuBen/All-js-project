@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import { useUserStore } from "../../store/user.store";
 import { useStatisticsStore } from "../../store/statistics.store";
-import { http } from "../../service/http";
-import { useOutletContext } from "react-router-dom";
 import { Tooltip } from "@radix-ui/themes";
+import { useAppStore } from "@/store/app.store";
 
 function UserNightCountRow({ userId, username, selectedMonthDateArray, nightCount, isLoading }) {
     if (isLoading) {
@@ -55,7 +54,7 @@ function UserNightCountRow({ userId, username, selectedMonthDateArray, nightCoun
                 );
             })}
 
-            <td className="m-0 px-0 border border-black text-center">
+            <td className="m-0 px-4 border border-black text-center">
                 {nightCount?.summary?.["夜班段数"] ? (
                     <>
                         {nightCount.summary["夜班次数"] || 0}夜/
@@ -70,22 +69,32 @@ function UserNightCountRow({ userId, username, selectedMonthDateArray, nightCoun
     );
 }
 export default function NightCount() {
-    const { year, month } = useOutletContext();
     const { allDetailUsers } = useUserStore();
-    const [daysArray, setDaysArray] = useState([]);
-    const { loading, allUserNightCount } = useStatisticsStore();
+    const { selectedYear, selectedMonth } = useAppStore();
 
-    useEffect(() => {
-        const daysInMonth = dayjs().year(year).month(month).daysInMonth();
-        const newDaysArray = Array.from({ length: daysInMonth }, (_, index) => {
-            return dayjs().year(year).month(month).startOf("month").add(index, "day").format("YYYY-MM-DD");
+    const { isNightCountLoading, nightCount, fetchNightCount } = useStatisticsStore();
+
+    // 1. 在组件内部直接计算，每次年月改变时，它会在渲染瞬间零延迟计算完成！
+    const daysArray = useMemo(() => {
+        const daysInMonth = dayjs().year(selectedYear).month(selectedMonth).daysInMonth();
+
+        // 获取当月的第一天作为基准
+        const startOfMonth = dayjs().year(selectedYear).month(selectedMonth).startOf("month");
+
+        return Array.from({ length: daysInMonth }, (_, index) => {
+            // ✅ 基于第一天，依次累加天数，并格式化
+            return startOfMonth.add(index, "day").format("YYYY-MM-DD");
         });
-        setDaysArray(newDaysArray);
-    }, [year, month]);
+    }, [selectedYear, selectedMonth]); // 只有年月变了才重新计算，性能拉满
+
+    // 2. 原来 useEffect 里的另外一个异步请求，带到它自己的单独 Effect 里去
+    useEffect(() => {
+        fetchNightCount();
+    }, [selectedYear, selectedMonth, fetchNightCount]);
 
     return (
         <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">
-            <table className="w-full border-collapse text-nowrap">
+            <table className="w-auto border-collapse text-nowrap">
                 <thead>
                     <tr>
                         <th className="border border-black">姓名</th>
@@ -108,10 +117,10 @@ export default function NightCount() {
                                 userId={user.id}
                                 username={user.username}
                                 selectedMonthDateArray={daysArray}
-                                year={year}
-                                month={month}
-                                nightCount={allUserNightCount?.[user.id] || {}}
-                                isLoading={loading}
+                                year={selectedYear}
+                                month={selectedMonth}
+                                nightCount={nightCount?.[user.id] || {}}
+                                isLoading={isNightCountLoading}
                             />
                         );
                     })}

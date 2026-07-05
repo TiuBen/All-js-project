@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { formatDecimal } from "@/util/formatDecimal";
-import { useUserStore } from "@/store/user.store";
+import React from "react";
 
 function DetailStatisticsTable({ dutyStatistics }) {
     // const {}=useUserStore();
@@ -26,119 +24,119 @@ function DetailStatisticsTable({ dutyStatistics }) {
                 </thead>
                 <tbody>
                     <tr className="hover:bg-slate-400">
-                        <td className="border border-slate-600 px-1 text-nowrap text-sm text-center"> 带班主任席</td>{" "}
+                        <td className="border border-slate-600 px-1 text-nowrap text-sm text-center"> 带班主任席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalCommanderTime?.time)}
+                            {dutyStatistics?.totalCommanderTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalCommanderTime?.dayShift)}
+                            {dutyStatistics?.totalCommanderTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalCommanderTime?.nightShift)}
+                            {dutyStatistics?.totalCommanderTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">塔台管制席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerMainTime?.time)}
+                            {dutyStatistics?.totalTowerMainTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerMainTime?.dayShift)}
+                            {dutyStatistics?.totalTowerMainTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerMainTime?.nightShift)}
+                            {dutyStatistics?.totalTowerMainTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">塔台协调席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerSubTime?.time)}
+                            {dutyStatistics?.totalTowerSubTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerSubTime?.dayShift)}
+                            {dutyStatistics?.totalTowerSubTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTowerSubTime?.nightShift)}
+                            {dutyStatistics?.totalTowerSubTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">放行席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalDeliveryTime?.time)}
+                            {dutyStatistics?.totalDeliveryTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalDeliveryTime?.dayShift)}
+                            {dutyStatistics?.totalDeliveryTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalDeliveryTime?.nightShift)}
+                            {dutyStatistics?.totalDeliveryTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">地面席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalGroundTime?.time)}
+                            {dutyStatistics?.totalGroundTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalGroundTime?.dayShift)}
+                            {dutyStatistics?.totalGroundTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalGroundTime?.nightShift)}
+                            {dutyStatistics?.totalGroundTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">综合协调席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalZongheTime?.time)}
+                            {dutyStatistics?.totalZongheTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalZongheTime?.dayShift)}
+                            {dutyStatistics?.totalZongheTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalZongheTime?.nightShift)}
+                            {dutyStatistics?.totalZongheTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">现场调度席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.time)}
+                            {dutyStatistics?.totalAOCTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.dayShift)}
+                            {dutyStatistics?.totalAOCTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.nightShift)}
+                            {dutyStatistics?.totalAOCTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">见习</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.time)}
+                            {dutyStatistics?.totalStudentTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.dayShift)}
+                            {dutyStatistics?.totalStudentTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.nightShift)}
+                            {dutyStatistics?.totalStudentTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">教员</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.time)}
+                            {dutyStatistics?.totalTeacherTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.dayShift)}
+                            {dutyStatistics?.totalTeacherTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.nightShift)}
+                            {dutyStatistics?.totalTeacherTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
@@ -162,86 +160,67 @@ function DetailStatisticsTable({ dutyStatistics }) {
                         <th className=" border border-slate-600 px-1 text-nowrap text-sm text-center">备注</th>
                     </tr>
                     <tr className="hover:bg-slate-400">
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">席位</td>
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">管制时间</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(
-                                dutyStatistics?.totalCommanderTime?.time +
-                                    dutyStatistics?.totalTowerTime?.time +
-                                    dutyStatistics?.totalGroundTime?.time +
-                                    dutyStatistics?.totalDeliveryTime?.time +
-                                    dutyStatistics?.totalZongheTime?.time
-                            )}
+                            {dutyStatistics?.totalPositionTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(
-                                dutyStatistics?.totalCommanderTime?.dayShift +
-                                    dutyStatistics?.totalTowerTime?.dayShift +
-                                    dutyStatistics?.totalGroundTime?.dayShift +
-                                    dutyStatistics?.totalDeliveryTime?.dayShift +
-                                    dutyStatistics?.totalZongheTime?.dayShift
-                            )}
+                            {dutyStatistics?.totalPositionTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(
-                                dutyStatistics?.totalCommanderTime?.nightShift +
-                                    dutyStatistics?.totalTowerTime?.nightShift +
-                                    dutyStatistics?.totalGroundTime?.nightShift +
-                                    dutyStatistics?.totalDeliveryTime?.nightShift +
-                                    dutyStatistics?.totalZongheTime?.nightShift
-                            )}
+                            {dutyStatistics?.totalPositionTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">见习</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.time)}
-                            {/* {formatDecimal(totalTeacherTime?.time)} */}
+                            {dutyStatistics?.totalStudentTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.dayShift)}
+                            {dutyStatistics?.totalStudentTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalStudentTime?.nightShift)}
+                            {dutyStatistics?.totalStudentTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">教员</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.time)}
+                            {dutyStatistics?.totalTeacherTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.dayShift)}
+                            {dutyStatistics?.totalTeacherTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTeacherTime?.nightShift)}
+                            {dutyStatistics?.totalTeacherTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">现场调度</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.time)}
+                            {dutyStatistics?.totalAOCTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.dayShift)}
+                            {dutyStatistics?.totalAOCTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalAOCTime?.nightShift)}
+                            {dutyStatistics?.totalAOCTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">月度总小时</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTime?.time)}
+                            {dutyStatistics?.totalTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTime?.dayShift)}
+                            {dutyStatistics?.totalTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {formatDecimal(dutyStatistics?.totalTime?.nightShift)}
+                            {dutyStatistics?.totalTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>

@@ -5,32 +5,29 @@ import YearMonthTab from "@/components/YearMonthTab";
 import LikeExcel from "./LikeExcel/LikeExcel";
 import DutyRecordDialog from "./Dialog/DutyRecordDialog";
 import { useUserStore } from "@/store/user.store";
-import dayjs from "dayjs";
 
 function Page() {
-    const { loading, query, setQuery } = useDutyStore();
     const { selectedUser } = useUserStore();
+    const { isDutyRecordsLoading, getDutyRecords } = useDutyStore();
 
     useEffect(() => {
-        setQuery({ ...query, selectedUser: selectedUser });
+        if (selectedUser) {
+            getDutyRecords();
+        }
     }, [selectedUser]);
+
     return (
         <div>
             <div className="flex flex-row">
-                <YearMonthTab
-                    year={query.year}
-                    onYearChange={(year) => setQuery({ ...query, year })}
-                    month={query.month}
-                    onMonthChange={(month) => setQuery({ ...query, month })}
-                />
+                <YearMonthTab />
             </div>
             <div className="flex flex-row flex-nowrap m-2">
                 {selectedUser === null ? (
                     <div className="flex-1">请选择用户</div>
-                ) : loading ? (
+                ) : isDutyRecordsLoading ? (
                     <div className="flex-1">加载中...</div>
                 ) : (
-                    <LikeExcel selectedMonth={query.month} />
+                    <LikeExcel />
                 )}
                 {/* <UserRadioButtonList changeSelectedUser={(x) => setQuery({ ...query, selectedUser: x })} /> */}
                 <UserRadioButtonList />

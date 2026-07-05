@@ -5,49 +5,45 @@ import { dutyService } from "@/service/duty.service";
 import dayjs from "dayjs";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useUserStore } from "./user.store";
+import { useAppStore } from "./app.store";
 
 export const useDutyStore = create(
     subscribeWithSelector((set, get) => ({
         dutyRecords: [],
-        loading: false,
-
-        query: {
-            year: dayjs().year(),
-            month: dayjs().month(),
-            selectedUser: null,
-        },
-        setQuery: (query) => {
-            // console.log(JSON.stringify(query));
-            set({ query });
-        },
+        isDutyRecordsLoading: false,
         async getDutyRecords() {
-            const { query } = get();
+            console.log("getDutyRecords +++++++++++++++++++++++++++++++");
+
+            const { selectedYear, selectedMonth } = useAppStore.getState();
             const { selectedUser } = useUserStore.getState();
             // 防止 selectedUser 为空时发起无效请求
             if (!selectedUser) return;
             const dd = {
-                startDate: dayjs().year(query.year).month(query.month).startOf("month").format("YYYY-MM-DD"),
-                startTime: "00:00:00",
-                endDate: dayjs()
-                    .year(query.year)
-                    .month(query.month + 1)
+                inTime: `${dayjs()
+                    .year(selectedYear)
+                    .month(selectedMonth)
                     .startOf("month")
-                    .format("YYYY-MM-DD"),
-                endTime: " 00:00:01",
-
+                    .format("YYYY-MM-DD")} 00:00:00`,
+                outTime: `${dayjs()
+                    .year(selectedYear)
+                    .month(selectedMonth + 1)
+                    .startOf("month")
+                    .format("YYYY-MM-DD")}  00:00:01`,
                 username: selectedUser.username,
             };
 
             set({
                 dutyRecords: [],
-                loading: true,
+                isDutyRecordsLoading: true,
             });
+            console.log("fetchDutyRecords", dd);
+
             try {
                 const data = await dutyService.getDutyRecords(dd);
-                set({ dutyRecords: data, loading: false });
+                set({ dutyRecords: data, isDutyRecordsLoading: false });
             } catch (err) {
                 console.log(err);
-                set({ loading: false, dutyRecords: [] });
+                set({ isDutyRecordsLoading: false, dutyRecords: [] });
             }
         },
 
@@ -110,14 +106,22 @@ export const useDutyStore = create(
 
 let timer = null;
 
-useDutyStore.subscribe(
-    (state) => state.query,
+useUserStore.subscribe(
+    (state) => state.selectedUser,
     () => {
-        // console.log("useDutyStore.query changed, fetching duty records...");
-        clearTimeout(timer);
+        useDutyStore.getState().getDutyRecords();
+    }
+);
 
-        timer = setTimeout(() => {
-            useDutyStore.getState().getDutyRecords();
-        }, 200);
+useAppStore.subscribe(
+    (state) => state.selectedMonth,
+    () => {
+        useDutyStore.getState().getDutyRecords();
+    }
+);
+useAppStore.subscribe(
+    (state) => state.selectedYear,
+    () => {
+        useDutyStore.getState().getDutyRecords();
     }
 );

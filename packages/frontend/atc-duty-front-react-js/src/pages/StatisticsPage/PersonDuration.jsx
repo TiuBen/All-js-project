@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useUserStore } from "../../store/user.store";
 import { http } from "../../service/http";
-import { useOutletContext } from "react-router-dom";
-import { formatDecimal } from "../../util/formatDecimal";
+import { useAppStore } from "@/store/app.store";
 
 function UserDutyDurationRow({ userId, username, startDate, endDate, year, month }) {
     const [stats, setStats] = useState(null);
@@ -38,57 +37,57 @@ function UserDutyDurationRow({ userId, username, startDate, endDate, year, month
     if (loading)
         return (
             <tr>
-                <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
-                <td className="border border-black">加载中...</td>
-                <td className="border border-black">加载中...</td>
-                <td className="border border-black">加载中...</td>
-                <td className="border border-black">加载中...</td>
+                <td className="border border-black w-[5rem] bg-blue-50 px-4">{username}</td>
+                <td className="border border-black px-4">加载中...</td>
+                <td className="border border-black px-4">加载中...</td>
+                <td className="border border-black px-4">加载中...</td>
+                <td className="border border-black px-4">加载中...</td>
             </tr>
         );
 
     return (
         <tr className="hover:bg-slate-400">
-            <td className="border border-black w-[5rem] bg-blue-50">{username}</td>
-            <td className="border border-black text-center">
+            <td className="border border-black w-[5rem] bg-blue-50  px-4">{username}</td>
+            <td className="border border-black text-center  px-4">
                 {stats?.totalTime?.time !== 0 ? stats.totalTime.time?.toFixed(2) : ""}
             </td>
-            <td className="border border-black text-center">
+            <td className="border border-black text-center  px-4">
                 {stats?.totalTime?.dayShift !== 0 ? stats.totalTime?.dayShift?.toFixed(2) : ""}
             </td>
-            <td className="border border-black text-center">
+            <td className="border border-black text-center px-4">
                 {stats?.totalTime?.nightShift !== 0 ? stats.totalTime?.nightShift?.toFixed(2) : ""}
             </td>
 
-            <td className="border border-black text-center"></td>
+            <td className="border border-black text-center  "></td>
         </tr>
     );
 }
 
 export default function PersonDuration() {
-    const { year, month } = useOutletContext();
+    const { selectedYear, selectedMonth } = useAppStore();
     const { allDetailUsers, fetchAllDetailUsers } = useUserStore();
 
     useEffect(() => {
         fetchAllDetailUsers();
     }, [fetchAllDetailUsers]);
 
-    const startDate = dayjs().year(year).month(month).date(1).format("YYYY-MM-DD");
+    const startDate = dayjs().year(selectedYear).month(selectedMonth).date(1).format("YYYY-MM-DD");
     const endDate = dayjs()
-        .year(year)
-        .month(month + 1)
+        .year(selectedYear)
+        .month(selectedMonth + 1)
         .date(1)
         .format("YYYY-MM-DD");
 
     return (
         <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">
-            <table className="w-full border-collapse text-nowrap">
+            <table className="w-auto border-collapse text-nowrap">
                 <thead>
                     <tr>
-                        <th className="border border-black">姓名</th>
-                        <th className="border border-black">总小时</th>
-                        <th className="border border-black">白班小时</th>
-                        <th className="border border-black">夜班小时 (0000-0800)</th>
-                        <th className="border border-black">备注</th>
+                        <th className="border border-black px-4">姓名</th>
+                        <th className="border border-black px-4">总小时</th>
+                        <th className="border border-black px-4">白班小时</th>
+                        <th className="border border-black px-4">夜班小时 (0000-0800)</th>
+                        <th className="border border-black px-4">备注</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -97,8 +96,8 @@ export default function PersonDuration() {
                             key={index}
                             userId={user.id}
                             username={user.username}
-                            year={year}
-                            month={month}
+                            year={selectedYear}
+                            month={selectedMonth}
                             startDate={startDate}
                             endDate={endDate}
                         />

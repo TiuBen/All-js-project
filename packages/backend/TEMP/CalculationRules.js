@@ -36,8 +36,7 @@
 const CalculationRules = {
     //! 所有席位的时间(管制的)
     totalTime: {
-        filter: {
-        },
+        filter: {},
         operator: ["inTime", "outTime"],
         name: "总小时",
         time: 0,
@@ -48,7 +47,7 @@ const CalculationRules = {
     totalCommanderTime: {
         filter: {
             position: ["带班主任", "领班"],
-            roleType: [null],//排除 见习人员的时间
+            // roleType: [null],//排除 见习人员的时间
         },
         operator: ["inTime", "outTime"],
         name: "带班主任席",
@@ -59,9 +58,9 @@ const CalculationRules = {
     totalTowerTime: {
         filter: {
             position: ["东塔台", "西塔台"],
-            roleType: [null],//排除 见习人员的时间
+            roleType: [null], //排除 见习人员的时间
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "塔台席",
         time: 0,
         dayShift: 0,
@@ -73,7 +72,7 @@ const CalculationRules = {
             dutyType: ["主班"],
             roleType: [null],
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "塔台管制席",
         time: 0,
         dayShift: 0,
@@ -85,7 +84,7 @@ const CalculationRules = {
             dutyType: ["副班"],
             roleType: [null],
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "塔台协调席",
         time: 0,
         dayShift: 0,
@@ -97,7 +96,7 @@ const CalculationRules = {
             // dutyType: ["主班", "副班", null],
             roleType: [null],
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "地面席",
         time: 0,
         dayShift: 0,
@@ -110,7 +109,7 @@ const CalculationRules = {
             roleType: [null],
             // relatedDutyTableRowId: [null],
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "放行席",
         time: 0,
         dayShift: 0,
@@ -119,8 +118,8 @@ const CalculationRules = {
     //! 教员时间 *************** 去掉了
     totalTeacherTime: {
         filter: {
-            roleType: ["教员"],
-            // relatedDutyTableRowId: ["NOT NULL"],
+            // roleType: ["教员"],
+            relatedDutyTableRowId: ["NOT NULL"],
         },
         operator: ["roleStartTime", "roleEndTime"],
         name: "教员",
@@ -169,13 +168,14 @@ const CalculationRules = {
                 "流控",
                 "进近高扇",
                 "进近低扇",
+                "领班",
             ],
 
             // dutyType: ["主班", "副班", null],
             roleType: [null],
             // relatedDutyTableRowId: [null],
         },
-        operator: ["inTime", "outTime","needExcludeTime"],
+        operator: ["inTime", "outTime", "needExcludeTime"],
         name: "管制席",
         time: 0,
         dayShift: 0,

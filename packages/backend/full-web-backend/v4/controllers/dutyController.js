@@ -2,41 +2,18 @@ const { successResponse, errorResponse } = require("../utils/util/apiResponse");
 const service = require("../services/dutyService");
 const { sendEvent } = require("../utils/util/see.js");
 
-exports.getAll = (req, res, next) => {
-    // 从 query 或 params 取 id（兼容两种方式）
-    const id = req.query.id || req.params.id;
-    const { calculate, ...otherQueries } = req.query;
-    const needCalculate = calculate === "true" || calculate === true;
+exports.getByQuery = async (req, res, next) => {
+    console.log(" DutyController getByQuery");
 
-    if (id) {
-        ///////
-        service
-            .findById(id)
-            .then((result) => {
-                if (!result) {
-                    return errorResponse(res, "Not found", 404);
-                }
-                res.send(result);
-            })
-            .catch(next);
-        return;
-    }
-
-    service
-        .getAll(otherQueries, needCalculate)
-        .then((result) => {
-            if (!result) {
-                return errorResponse(res, "Not found", 404);
-            }
-            res.send(result);
-        })
-        .catch(next);
-};
-
-exports.getById = async (req, res, next) => {
     try {
-        const id = req.params.id;
-        const result = await service.findById(id);
+        // 从 query 或 params 取 id（兼容两种方式）
+        const id = req.query.id || req.params.id;
+        let query = req.query;
+        if (id) {
+            query = { ...query, id };
+        }
+
+        const result = await service.getByQuery(query);
         if (!result) {
             return errorResponse(res, "Not found", 404);
         }
@@ -47,6 +24,8 @@ exports.getById = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
+    console.log(" DutyController update");
+
     try {
         const id = req.params.id;
         const data = req.body;

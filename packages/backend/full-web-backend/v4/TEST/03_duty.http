@@ -5,8 +5,16 @@
 ### 获取所有考勤记录 (带查询参数)
 GET http://localhost:3205/api/duty
 
+### 获取所有在执勤考勤记录 (带查询参数)
+GET http://localhost:3205/api/duty?outTime=null
+
+
 ### 获取所有考勤记录 (带查询参数)
 GET http://localhost:3205/api/duty?userId=2&startDate=2026-05-01&startTime=00:00:00&endDate=2026-05-31&endTime=23:59:59
+
+### 
+GET http://localhost:3205/api/duty?inTime=2025-01-01 00:00:00&outTime=2025-02-01 00:00:01&userId=23 
+
 
 ### 获取单条考勤记录
 GET http://localhost:3205/api/duty/120

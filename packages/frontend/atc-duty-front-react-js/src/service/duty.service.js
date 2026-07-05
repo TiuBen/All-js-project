@@ -45,10 +45,8 @@ export const dutyService = {
         const data = await http.get("/duty", {
             params: {
                 username,
-                startDate,
-                startTime: "00:00:00",
-                endDate,
-                endTime: "00:00:01",
+                inTime: `${startDate} 00:00:00`,
+                outTime: `${endDate} 00:00:01`,
             },
         });
         return data;
