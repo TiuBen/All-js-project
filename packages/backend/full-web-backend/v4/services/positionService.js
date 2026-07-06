@@ -1,5 +1,5 @@
-const { UserDb, DutyDb } = require("../config/sqliteDb.js");
-const { rawRowToJsObject, normalizeValue } = require("../utils/index.js");
+const { UserDb } = require("../config/sqliteDb.js");
+const { rawRowToJsObject, normalizeValue } = require("../tools/rawRowToJsObject.js");
 const ALLOWED_COLUMNS = ["id", "position", "dutyType", "canTeach", "display"];
 
 const positionService = {

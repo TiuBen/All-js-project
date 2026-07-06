@@ -1,5 +1,6 @@
 const dayjs = require("dayjs");
-
+const minMax = require("dayjs/plugin/minMax");
+dayjs.extend(minMax);
 const NIGHT_SHIFT_START = "18:00";
 const NIGHT_SHIFT_END = "08:30";
 

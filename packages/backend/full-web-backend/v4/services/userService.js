@@ -1,5 +1,5 @@
 const { UserDb, DutyDb } = require("../config/sqliteDb.js");
-const { normalizeValue, normalizeRow } = require("../utils/util/sqliteSaveReadArrayTools.js");
+const { rawRowToJsObject, normalizeRow } = require("../tools/rawRowToJsObject.js");
 
 // const ALLOWED_COLUMNS = ["id", "username","password","position", "dutyType", "roleType", "status", "avatarImage", "team","rank"];
 const ALLOWED_COLUMNS = ["id", "username", "position", "dutyType", "roleType", "status", "avatarImage", "team", "rank"];
@@ -33,7 +33,7 @@ const userService = {
                 }
                 try {
                     const jsObjectRows = rows.map((row) => {
-                        return normalizeRow(row);
+                        return rawRowToJsObject(row);
                     });
 
                     resolve(jsObjectRows);
@@ -48,7 +48,7 @@ const userService = {
         return new Promise((resolve, reject) => {
             UserDb.get(`SELECT * FROM user WHERE id = ?`, [id], (err, row) => {
                 if (err) reject(err);
-                else resolve(normalizeRow(row));
+                else resolve(rawRowToJsObject(row));
             });
         });
     },

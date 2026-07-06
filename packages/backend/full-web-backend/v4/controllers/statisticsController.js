@@ -1,40 +1,30 @@
-const service = require("../services/statisticsService");
+const { calcNightCount } = require("../services/statisticsService.NightCount.js");
+const { checkDuration } = require("../services/statisticsService.CheckDuration.js");
+const { calcPositionSummary } = require("../services/statisticsService.PositionSummary.js");
 const dayjs = require("dayjs");
 
+function getStatisticsTimeRange(year, month) {
+    const y = Number(year);
+    const m = Number(month);
+
+    return {
+        inTime: dayjs().year(y).month(m).date(1).startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+
+        outTime: dayjs()
+            .year(y)
+            .month(m + 1)
+            .date(20)
+            .startOf("day")
+            .add(1, "second")
+            .format("YYYY-MM-DD HH:mm:ss"),
+    };
+}
+
+//! 支持 year month
 //! 当月夜班频次
-//! 当月用户时长统计
-//! 当月席位频次时长统计
-//! 当月合规检查
-
-exports.getDurationStatisticsByUser = (req, res, next) => {
-    console.log(
-        "Statistics Controller getDurationStatisticsByUser called with params:",
-        req.params,
-        "and query:",
-        req.query
-    );
-    const { userId, year, month, startTime, endTime } = req.query;
-    const dateStr = dayjs()
-        .year(year)
-        .month(month - 1)
-        .date(1);
-    const dateEnd = dateStr.add(1, "month");
-
-    // 如果提供了 startTime 和 endTime，使用它们；否则使用默认时间
-    inTime = startTime ? startTime : `${dateStr.format("YYYY-MM-DD")} 00:00:00`;
-    outTime = endTime ? endTime : `${dateEnd.format("YYYY-MM-DD")} 00:00:01`;
-
-    service
-        .getDurationStatisticsByUserId({ userId, inTime, outTime })
-        .then((result) => {
-            res.send(result);
-        })
-        .catch(next);
-};
-
-exports.getNightCount = (req, res, next) => {
+exports.getNightCount = async (req, res, next) => {
     const ALLOWED_COLUMNS = ["year", "month", "startTime", "endTime", "filter"];
-    const { filter, year, month, startTime, endTime } = req.query;
+    const { filter, year, month, startTime, endTime, userId } = req.query;
 
     const invalidParams = Object.keys(req.query).filter((key) => !ALLOWED_COLUMNS.includes(key));
 
@@ -46,43 +36,58 @@ exports.getNightCount = (req, res, next) => {
         });
     }
 
-    service
-        .getNightCount(year, month)
-        .then((result) => {
-            res.send(result);
-        })
-        .catch(next);
+    try {
+        const { inTime, outTime } = getStatisticsTimeRange(year, month);
+
+        // 使用 await 异步等待结果
+        const result = await calcNightCount({ year, month, inTime, outTime });
+
+        // 成功响应
+        return res.send(result);
+    } catch (error) {
+        // 捕获到错误后，无缝丢给 Express 的错误处理中间件 (next)
+        next(error);
+    }
 };
 
-exports.getCheckDurationStatisticsByUser = (req, res, next) => {
+//! 当月合规检查
+exports.getCheckDurationStatisticsByUser = async (req, res, next) => {
     console.log(
-        "controller getCheckDurationStatisticsByUser called with \nparams:",
+        "Controller getCheckDurationStatisticsByUser called with \nparams:",
         req.params,
         "\nand \nquery:",
         req.query
     );
-    const { userId, year, month } = req.query;
+    try {
+        const { userId, year, month } = req.query;
+        const { inTime, outTime } = getStatisticsTimeRange(year, month);
 
-    service
-        .checkDuration(userId, year, month)
-        .then((result) => {
-            res.send(result);
-        })
-        .catch(next);
+        // 修正：将转换后的数字 y 和 m 传给 Service
+        const result = await checkDuration(userId, y, m, inTime, outTime);
+
+        return res.send(result);
+    } catch (error) {
+        // 捕获异常，并抛给 Express 的错误中间件
+        next(error);
+    }
 };
 
-exports.getPositionSummary = function (req, res, next) {
+//! 当月席位频次时长统计
+exports.getPositionSummary = async (req, res, next) => {
     console.log("controller getPositionSummary called with \nparams:", req.params, "\nand \nquery:", req.query);
 
-    const { year, month } = req.query;
-    service
-        .getPositionSummary(year, month)
-        .then((result) => {
-            res.send(result);
-        })
-        .catch(next);
+    try {
+        const { year, month } = req.query;
+        const result = await calcPositionSummary(year, month);
+
+        return res.send(result);
+    } catch (error) {
+        // 捕获异常，并抛给 Express 的错误中间件
+        next(error);
+    }
 };
 
+//! 当月用户时长统计
 exports.getDurationStatisticsByUserV2 = function (req, res, next) {
     console.log(
         "controller getDurationStatisticsByUserV2222222222 called with \nparams:",
@@ -91,35 +96,37 @@ exports.getDurationStatisticsByUserV2 = function (req, res, next) {
         req.query
     );
 
-    const { userId, year, month, startTime, endTime } = req.query;
-    console.log({
-        year,
-        month,
-        typeofYear: typeof year,
-        typeofMonth: typeof month,
-    });
+    return res.status(400).json({});
 
-    const y = Number(year);
-    const m = Number(month);
+    // const { userId, year, month, startTime, endTime } = req.query;
+    // console.log({
+    //     year,
+    //     month,
+    //     typeofYear: typeof year,
+    //     typeofMonth: typeof month,
+    // });
 
-    const _startTime = startTime ?? dayjs().year(y).month(m).date(1).startOf("day").format("YYYY-MM-DD HH:mm:ss");
+    // const y = Number(year);
+    // const m = Number(month);
 
-    const _endTime =
-        endTime ??
-        dayjs()
-            .year(y)
-            .month(m + 1)
-            .date(1)
-            .startOf("day")
-            .add(1, "second")
-            .format("YYYY-MM-DD HH:mm:ss");
+    // const _startTime = startTime ?? dayjs().year(y).month(m).date(1).startOf("day").format("YYYY-MM-DD HH:mm:ss");
 
-    console.log("controller getDurationStatisticsByUserV2====" + _startTime + "  " + _endTime);
+    // const _endTime =
+    //     endTime ??
+    //     dayjs()
+    //         .year(y)
+    //         .month(m + 1)
+    //         .date(1)
+    //         .startOf("day")
+    //         .add(1, "second")
+    //         .format("YYYY-MM-DD HH:mm:ss");
 
-    service
-        .getDurationStatisticsByUserIdV2(userId, _startTime, _endTime)
-        .then((result) => {
-            res.send(result);
-        })
-        .catch(next);
+    // console.log("controller getDurationStatisticsByUserV2====" + _startTime + "  " + _endTime);
+
+    // service
+    //     .getDurationStatisticsByUserIdV2(userId, _startTime, _endTime)
+    //     .then((result) => {
+    //         res.send(result);
+    //     })
+    //     .catch(next);
 };

@@ -18,7 +18,7 @@ const ALLOWED_COLUMNS = [
     "relatedPrepareTableId",
 ];
 
-const { queryDuty } = require("../utils/util/calc.js");
+const { queryDuty } = require("../utils/queryDuty.js");
 
 const dutyService = {
     create(data) {
@@ -58,6 +58,7 @@ const dutyService = {
     async getByQuery(query) {
         console.log("Duty Service get by {id, userId, username, inTime, outTime} ");
         console.log(query);
+
         return await queryDuty(query);
     },
 

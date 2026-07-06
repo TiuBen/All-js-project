@@ -4,18 +4,13 @@ dayjs.extend(isSameOrAfter);
 const isSameOrBefore = require("dayjs/plugin/isSameOrBefore");
 dayjs.extend(isSameOrBefore);
 
-const { DutyDb } = require("../../config/sqliteDb.js");
+const { DutyDb } = require("../config/sqliteDb.js");
 
 const { rawRowToJsObject } = require("../tools/rawRowToJsObject.js");
 const { processRow } = require("./util/processRow.js");
-
+const { clipDutyRow } = require("./util/clipDutyRow");
 function queryDuty({ id, userId, username, inTime, outTime }) {
-    let sql = `
-            SELECT *
-            FROM duty
-            WHERE 1=1
-        `;
-
+    let sql = `SELECT *FROM duty WHERE 1=1`;
     const params = [];
     if (id != null) {
         sql += ` AND id=?`;
@@ -38,8 +33,12 @@ function queryDuty({ id, userId, username, inTime, outTime }) {
     }
 
     if (outTime) {
-        sql += ` AND inTime <= ?`;
-        params.push(outTime);
+        if (outTime === "null") {
+            sql += ` AND outTime IS NULL`;
+        } else {
+            sql += ` AND inTime <= ?`;
+            params.push(outTime);
+        }
     }
     console.log(sql);
     console.log(params);
@@ -54,9 +53,9 @@ function queryDuty({ id, userId, username, inTime, outTime }) {
 
             const jsObjectRows = rows.map((row) => rawRowToJsObject(row));
             console.log("jsObjectRows:", jsObjectRows.length);
-            console.log(jsObjectRows);
+            // console.log(jsObjectRows);
 
-            const processedRows = jsObjectRows.map((row) => processRow(row));
+            const processedRows = jsObjectRows.map(processRow).map((row) => clipDutyRow(row, { inTime, outTime }));
 
             resolve(processedRows);
         });

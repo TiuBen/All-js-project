@@ -12,6 +12,13 @@ exports.getByQuery = async (req, res, next) => {
         if (id) {
             query = { ...query, id };
         }
+        if (req.query.startDate && req.query.startTime && req.query.endDate && req.query.endTime) {
+            query = {
+                ...query,
+                inTime: `${req.query.startDate} ${req.query.startTime}`,
+                outTime: `${req.query.endDate} ${req.query.endTime}`,
+            };
+        }
 
         const result = await service.getByQuery(query);
         if (!result) {

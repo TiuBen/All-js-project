@@ -1,6 +1,6 @@
 //! 检查执勤部分的权限的
 const { UserDb } = require("../config/sqliteDb");
-const { normalizeValue, normalizeRow } = require("../utils/util/sqliteSaveReadArrayTools.js");
+const { rawRowToJsObject, normalizeRow } = require("../tools/rawRowToJsObject");
 
 async function checkDutyMiddleware(req, res, next) {
     //console.log("检查权限");
