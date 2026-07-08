@@ -1,47 +1,68 @@
 const dayjs = require("dayjs");
 const minMax = require("dayjs/plugin/minMax");
 dayjs.extend(minMax);
-function clipDutyRow(row, { inTime, outTime }) {
-    if (!row) return row;
+const dayjs = require("dayjs");
 
-    const result = { ...row };
+function splitTimeSegment(segment, splitters = []) {
+    // 按开始时间排序
+    splitters = [...splitters].sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf());
 
-    const originalStart = dayjs(row.inTime);
-    const originalEnd = dayjs(row.outTime);
+    let segments = [
+        {
+            ...segment,
+        },
+    ];
 
-    let clipStart = originalStart;
-    let clipEnd = originalEnd;
+    for (const splitter of splitters) {
+        const next = [];
 
-    let before = 0;
-    let after = 0;
+        const cutStart = dayjs(splitter.start);
+        const cutEnd = dayjs(splitter.end);
 
-    if (inTime) {
-        const queryStart = dayjs(inTime);
-
-        if (queryStart.isAfter(originalStart)) {
-            before = parseFloat(queryStart.diff(originalStart, "hour", true).toFixed(2));
-            clipStart = queryStart;
+        if (!cutStart.isValid() || !cutEnd.isValid()) {
+            continue;
         }
+
+        if (!cutStart.isBefore(cutEnd)) {
+            continue;
+        }
+
+        for (const seg of segments) {
+            const segStart = dayjs(seg.start);
+            const segEnd = dayjs(seg.end);
+
+            // 没有交集，不切
+            if (cutEnd.isSameOrBefore(segStart) || cutStart.isSameOrAfter(segEnd)) {
+                next.push(seg);
+                continue;
+            }
+
+            // 左边
+            if (cutStart.isAfter(segStart)) {
+                next.push({
+                    ...seg,
+                    end: cutStart.format("YYYY-MM-DD HH:mm:ss"),
+                });
+            }
+
+            // 中间（交集）
+            next.push({
+                ...splitter,
+                start: dayjs.max(segStart, cutStart).format("YYYY-MM-DD HH:mm:ss"),
+                end: dayjs.min(segEnd, cutEnd).format("YYYY-MM-DD HH:mm:ss"),
+            });
+
+            // 右边
+            if (cutEnd.isBefore(segEnd)) {
+                next.push({
+                    ...seg,
+                    start: cutEnd.format("YYYY-MM-DD HH:mm:ss"),
+                });
+            }
+        }
+
+        segments = next;
     }
 
-    if (outTime) {
-        const queryEnd = dayjs(outTime);
-
-        if (queryEnd.isBefore(originalEnd)) {
-            after = parseFloat(originalEnd.diff(queryEnd, "hour", true).toFixed(2));
-            clipEnd = queryEnd;
-        }
-    }
-
-    result.clip = {
-        enabled: before > 0 || after > 0,
-        startTime: clipStart.format("YYYY-MM-DD HH:mm:ss"),
-        endTime: clipEnd.format("YYYY-MM-DD HH:mm:ss"),
-        before,
-        after,
-    };
-
-    return result;
+    return segments;
 }
-
-module.exports = { clipDutyRow };
