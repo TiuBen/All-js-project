@@ -53,36 +53,6 @@ function LikeExcel() {
                                 <br />
                                 夜班
                             </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                教员
-                                <br />
-                                小时
-                            </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                教员
-                                <br />
-                                白班
-                            </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                教员
-                                <br />
-                                夜班
-                            </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                见习
-                                <br />
-                                小时
-                            </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                见习
-                                <br />
-                                白班
-                            </td>
-                            <td className="border border-slate-600 px-2 text-nowrap text-center text-xs">
-                                见习
-                                <br />
-                                夜班
-                            </td>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,7 +61,7 @@ function LikeExcel() {
                                 <tr
                                     key={index}
                                     className={`text-sm font-bold group hover:bg-transparent ${
-                                        dayjs(x.outTime).diff(dayjs(x.inTime, "YYYY-MM-DD HH:mm:ss"), "h", true) > 8.0
+                                        dayjs(x.outTime).diff(dayjs(x.inTime, "YYYY-MM-DD HH:mm:ss"), "h", true) > 6.0
                                             ? "text-red-600"
                                             : ""
                                     }`}
@@ -156,31 +126,13 @@ function LikeExcel() {
                                     <td
                                         className={`border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400 `}
                                     >
-                                        {x.rawDuration || ""}
+                                        {x.duration || ""}
                                     </td>
                                     <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.rawDayDuration || ""}
+                                        {x.dayDuration || ""}
                                     </td>
                                     <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.rawNightDuration || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.teacherShift || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.teacherDayShift || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.teacherNightShift || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.studentShift || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.studentDayShift || ""}
-                                    </td>
-                                    <td className="border border-slate-600 px-2 text-nowrap text-center group-hover:bg-slate-400">
-                                        {x.studentNightShift || ""}
+                                        {x.nightDuration || ""}
                                     </td>
                                 </tr>
                             );

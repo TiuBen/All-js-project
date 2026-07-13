@@ -49,16 +49,12 @@ const dutyService = {
             if (dutyRows.length > 0) {
                 // 处理每一行数据
                 const processedRows = dutyRows.map((row) => {
-                    console.log("processedRows");
-                    console.log(row);
-
-                    return row;
-                    // try {
-                    //     return FinalEditionDutyRowClip(row);
-                    // } catch (error) {
-                    //     console.error("处理单行数据出错:", error, row);
-                    //     return row; // 返回原始数据
-                    // }
+                    try {
+                        return FinalEditionDutyRowClip(row);
+                    } catch (error) {
+                        console.error("处理单行数据出错:", error, row);
+                        return row; // 返回原始数据
+                    }
                 });
 
                 // 过滤掉处理失败的行（可选）

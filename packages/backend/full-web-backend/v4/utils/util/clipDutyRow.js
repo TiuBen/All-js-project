@@ -206,7 +206,7 @@ function splitTimeSegment(segment, splitters = []) {
 const NIGHT_SHIFT_RULES = [
     {
         name: "管制夜班",
-        startHour: 24,w
+        startHour: 24,
         startMinute: 0,
         endHour: 8,
         endMinute: 0,
@@ -267,6 +267,73 @@ function nightShiftSegmentMaker(dutyRow, seed = NIGHT_SHIFT_RULES) {
     return result;
 }
 
+function calcuDuration(data) {
+    const calc = (start, end) => {
+        if (!start || !end) return 0;
+        return Number(dayjs(end).diff(dayjs(start), "hour", true).toFixed(2));
+    };
+
+    const walk = (item) => {
+        if (Array.isArray(item)) {
+            return item.map(walk);
+        }
+
+        if (!item || typeof item !== "object") {
+            return item;
+        }
+
+        const result = { ...item };
+
+        // dutyRow
+        if (result.inTime && result.outTime) {
+            result.duration = calc(result.inTime, result.outTime);
+
+            let dayDuration = 0;
+            let nightDuration = 0;
+
+            if (Array.isArray(result.segments)) {
+                result.segments = result.segments.map((seg) => {
+                    const newSeg = walk(seg);
+
+                    const duration = newSeg.duration || 0;
+                    const isNight = Array.isArray(newSeg.tags) && newSeg.tags.some((tag) => tag.type === "夜班");
+
+                    if (isNight) {
+                        nightDuration += duration;
+                    } else {
+                        dayDuration += duration;
+                    }
+
+                    return newSeg;
+                });
+            }
+
+            result.dayDuration = Number(dayDuration.toFixed(2));
+            result.nightDuration = Number(nightDuration.toFixed(2));
+        }
+
+        // segment
+        else if (result.start && result.end) {
+            result.duration = calc(result.start, result.end);
+        }
+
+        // startTime/endTime
+        else if (result.startTime && result.endTime) {
+            result.duration = calc(result.startTime, result.endTime);
+        }
+
+        // 递归处理其它对象（避免重复处理 segments）
+        for (const key in result) {
+            if (key !== "segments" && typeof result[key] === "object" && result[key] !== null) {
+                result[key] = walk(result[key]);
+            }
+        }
+
+        return result;
+    };
+
+    return walk(data);
+}
 function FinalEditionDutyRowClip(dutyRow) {
     try {
         // 1. 将 dutyRow 转换为 splitTimeSegment 需要的标准格式
@@ -296,10 +363,11 @@ function FinalEditionDutyRowClip(dutyRow) {
         // console.dir(finalSegments, { depth: null });
         // console.log("\n\n");
         // 6. 返回结果
-        return {
+        return calcuDuration({
             ...dutyRow,
             segments: finalSegments,
-        };
+        });
+
         // return segmentsAfterRole;
     } catch (error) {
         console.error("FinalEditionDutyRowClip 出错:", error);
