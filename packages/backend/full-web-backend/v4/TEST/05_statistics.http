@@ -11,7 +11,7 @@
 GET http://localhost:3205/api/statistics/night-count?year=2026&month=5
 
 ### 获取单个用户执勤时间统计
-GET http://localhost:3205/api/statistics/duty-duration?userId=3&year=2026&month=5
+GET http://localhost:3205/api/statistics/duty-duration?userId=4&year=2026&month=5
 
 ### 席位时长
 GET http://localhost:3205/api/statistics/position-summary?year=2026&month=5

@@ -16,7 +16,9 @@ export const useStatisticsStore = create((set, get) => ({
                 nightCount: {},
                 isNightCountLoading: true,
             });
-            const data = await statisticsService.getNightCount({ year: selectedYear, month: selectedMonth + 1 });
+            console.log("fetchNightCount");
+            console.log({ year: selectedYear, month: selectedMonth });
+            const data = await statisticsService.getNightCount({ year: selectedYear, month: selectedMonth });
 
             set({
                 nightCount: data,

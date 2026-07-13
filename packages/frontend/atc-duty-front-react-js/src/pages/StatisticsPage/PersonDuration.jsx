@@ -49,7 +49,7 @@ function UserDutyDurationRow({ userId, username, startDate, endDate, year, month
         <tr className="hover:bg-slate-400">
             <td className="border border-black w-[5rem] bg-blue-50  px-4">{username}</td>
             <td className="border border-black text-center  px-4">
-                {stats?.totalTime?.time !== 0 ? stats.totalTime.time?.toFixed(2) : ""}
+                {stats?.totalTime?.time !== 0 ? stats.totalTime?.time?.toFixed(2) : ""}
             </td>
             <td className="border border-black text-center  px-4">
                 {stats?.totalTime?.dayShift !== 0 ? stats.totalTime?.dayShift?.toFixed(2) : ""}

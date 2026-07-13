@@ -8,13 +8,13 @@ async function checkDuration(userId, year, month, inTime, outTime) {
     const dutyRows = await queryDuty({ userId, inTime, outTime });
     console.log("查询结果:", dutyRows.length);
 
-    const result24hour = checkRule(allRecords, {
+    const result24hour = checkRule(dutyRows, {
         windowHours: 24,
         thresholdHours: 10,
         mergeGapMinutes: 30,
         removeGapHours: 8, // 没有则传 null
     });
-    const result7day = checkRule(allRecords, {
+    const result7day = checkRule(dutyRows, {
         windowHours: 168,
         thresholdHours: 40,
         mergeGapMinutes: 30,

@@ -10,6 +10,7 @@ const { rawRowToJsObject } = require("../tools/rawRowToJsObject.js");
 const { processRow } = require("./util/processRow.js");
 const { clipDutyRow } = require("./util/clipDutyRow");
 function queryDuty({ id, userId, username, inTime, outTime }) {
+    console.log("queryDuty", { id, userId, username, inTime, outTime });
     let sql = `SELECT *FROM duty WHERE 1=1`;
     const params = [];
     if (id != null) {
@@ -55,9 +56,10 @@ function queryDuty({ id, userId, username, inTime, outTime }) {
             console.log("jsObjectRows:", jsObjectRows.length);
             // console.log(jsObjectRows);
 
-            const processedRows = jsObjectRows.map(processRow).map((row) => clipDutyRow(row, { inTime, outTime }));
+            // const processedRows = jsObjectRows.map(processRow).map((row) => clipDutyRow(row, { inTime, outTime }));
 
-            resolve(processedRows);
+            resolve(jsObjectRows);
+            // resolve(processedRows);
         });
     });
 }

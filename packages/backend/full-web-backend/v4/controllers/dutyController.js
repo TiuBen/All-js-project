@@ -1,24 +1,15 @@
 const { successResponse, errorResponse } = require("../utils/util/apiResponse");
 const service = require("../services/dutyService");
 const { sendEvent } = require("../utils/util/see.js");
+const { normalizeDutyQuery } = require("../utils/index.js");
 
 exports.getByQuery = async (req, res, next) => {
     console.log(" DutyController getByQuery");
 
     try {
         // 从 query 或 params 取 id（兼容两种方式）
-        const id = req.query.id || req.params.id;
-        let query = req.query;
-        if (id) {
-            query = { ...query, id };
-        }
-        if (req.query.startDate && req.query.startTime && req.query.endDate && req.query.endTime) {
-            query = {
-                ...query,
-                inTime: `${req.query.startDate} ${req.query.startTime}`,
-                outTime: `${req.query.endDate} ${req.query.endTime}`,
-            };
-        }
+        const query = normalizeDutyQuery(req);
+        console.log(" DutyController getByQuery query:" + JSON.stringify(query));
 
         const result = await service.getByQuery(query);
         if (!result) {

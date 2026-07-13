@@ -99,3 +99,12 @@ const CalcRule = {
         nightShift: 0,
     },
 };
+
+module.exports = {
+    Tower_POSITIONS,
+    Ground_POSITIONS,
+    Delivery_POSITIONS,
+    Leader_POSITIONS,
+    AOC_POSITIONS,
+    DD_POSITIONS,
+};

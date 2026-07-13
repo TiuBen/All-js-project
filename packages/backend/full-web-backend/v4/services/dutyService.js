@@ -1,22 +1,8 @@
 const { UserDb, DutyDb } = require("../config/sqliteDb.js");
 const dayjs = require("dayjs");
 const { normalizeValue } = require("../tools/rawRowToJsObject.js");
-const ALLOWED_COLUMNS = [
-    "id",
-    "userId",
-    "username",
-    "position",
-    "dutyType",
-    "inTime",
-    "outTime",
-    "roleType",
-    "relatedDutyTableRowId",
-    "roleStartTime",
-    "roleEndTime",
-    "roleTimes",
-    "status",
-    "relatedPrepareTableId",
-];
+const { calculateStatistics } = require("../utils/util/sumDutyRow");
+const { FinalEditionDutyRowClip } = require("../utils/util/clipDutyRow");
 
 const { queryDuty } = require("../utils/queryDuty.js");
 
@@ -56,10 +42,34 @@ const dutyService = {
     },
 
     async getByQuery(query) {
-        console.log("Duty Service get by {id, userId, username, inTime, outTime} ");
-        console.log(query);
+        try {
+            const dutyRows = await queryDuty(query);
+            console.log("sssss dutyRows length:", dutyRows.length);
 
-        return await queryDuty(query);
+            if (dutyRows.length > 0) {
+                // 处理每一行数据
+                const processedRows = dutyRows.map((row) => {
+                    console.log("processedRows");
+                    console.log(row);
+
+                    return row;
+                    // try {
+                    //     return FinalEditionDutyRowClip(row);
+                    // } catch (error) {
+                    //     console.error("处理单行数据出错:", error, row);
+                    //     return row; // 返回原始数据
+                    // }
+                });
+
+                // 过滤掉处理失败的行（可选）
+                return processedRows;
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.error("getByQuery 出错:", error);
+            throw error;
+        }
     },
 
     update(id, data = {}) {
