@@ -67,19 +67,23 @@ function validateSplitters(splitters = []) {
 
         // 1. 验证时间有效性
         if (!start.isValid() || !end.isValid()) {
-            console.warn(`[validateSplitters] invalid time at index ${i}`);
+            console.warn(`[validateSplitters] invalid time at index ${i}: start=${current.start}, end=${current.end}`);
             return false;
         }
 
         // 2. 验证当前段的开始必须在结束之前
         if (!start.isBefore(end)) {
-            console.warn(`[validateSplitters] start must be before end at index ${i}`);
+            console.warn(
+                `[validateSplitters] start must be before end at index ${i}: start=${current.start}, end=${current.end}`
+            );
             return false;
         }
 
         // 3. 验证与上一段是否重叠
         if (lastEnd && start.isBefore(lastEnd)) {
-            console.warn(`[validateSplitters] splitter ${i} overlaps with previous splitter`);
+            console.warn(
+                `[validateSplitters] splitter ${i} overlaps with previous splitter: start=${current.start}, end=${current.end}`
+            );
             return false;
         }
 
@@ -220,9 +224,19 @@ const NIGHT_SHIFT_RULES = [
  */
 function nightShiftSegmentMaker(dutyRow, seed = NIGHT_SHIFT_RULES) {
     const { inTime, outTime } = dutyRow;
+    // ✅ 添加验证
+    if (!inTime || !outTime) {
+        return [];
+    }
+    const inTimeDayjs = dayjs(inTime);
+    const outTimeDayjs = dayjs(outTime);
 
-    const startDay = dayjs(inTime).startOf("day").subtract(1, "day");
-    const loopEndDate = dayjs(outTime).startOf("day").add(1, "day");
+    if (!inTimeDayjs.isValid() || !outTimeDayjs.isValid()) {
+        return [];
+    }
+
+    const startDay = inTimeDayjs.startOf("day").subtract(1, "day");
+    const loopEndDate = outTimeDayjs.startOf("day").add(1, "day");
 
     const result = [];
 
@@ -270,7 +284,10 @@ function nightShiftSegmentMaker(dutyRow, seed = NIGHT_SHIFT_RULES) {
 function calcuDuration(data) {
     const calc = (start, end) => {
         if (!start || !end) return 0;
-        return Number(dayjs(end).diff(dayjs(start), "hour", true).toFixed(2));
+        const startDayjs = dayjs(start);
+        const endDayjs = dayjs(end);
+        if (!startDayjs.isValid() || !endDayjs.isValid()) return 0;
+        return Number(endDayjs.diff(startDayjs, "hour", true).toFixed(2));
     };
 
     const walk = (item) => {
@@ -336,6 +353,19 @@ function calcuDuration(data) {
 }
 function FinalEditionDutyRowClip(dutyRow) {
     try {
+        // ✅ 添加验证：如果没有 inTime 或 outTime，直接返回原始数据
+        if (!dutyRow.inTime || !dutyRow.outTime) {
+            console.warn(
+                `[FinalEditionDutyRowClip] 跳过无效数据: id=${dutyRow.id}, inTime=${dutyRow.inTime}, outTime=${dutyRow.outTime}`
+            );
+            return {
+                ...dutyRow,
+                segments: [],
+                duration: 0,
+                dayDuration: 0,
+                nightDuration: 0,
+            };
+        }
         // 1. 将 dutyRow 转换为 splitTimeSegment 需要的标准格式
         const baseSegment = {
             // ...dutyRow,

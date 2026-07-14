@@ -6,9 +6,32 @@ dayjs.extend(isSameOrBefore);
 
 const { DutyDb } = require("../config/sqliteDb.js");
 
-const { rawRowToJsObject } = require("../tools/rawRowToJsObject.js");
-const { processRow } = require("./util/processRow.js");
 const { clipDutyRow } = require("./util/clipDutyRow");
+
+function rawRowToJsObject(row) {
+    if (!row) return row;
+
+    const parsedRow = { ...row };
+
+    for (const key in parsedRow) {
+        const val = parsedRow[key];
+        // 仅对字符串进行处理
+        if (typeof val === "string") {
+            // 简单的启发式判断：只有以 { 或 [ 开头的字符串才尝试解析
+            // 这可以避免对普通文本（如 "hello world"）进行无意义的 JSON.parse 尝试
+            const trimmed = val.trim();
+            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                try {
+                    parsedRow[key] = JSON.parse(val);
+                } catch {
+                    // 解析失败，保持原样
+                }
+            }
+        }
+    }
+    return parsedRow;
+}
+
 function queryDuty({ id, userId, username, inTime, outTime }) {
     console.log("queryDuty", { id, userId, username, inTime, outTime });
     let sql = `SELECT *FROM duty WHERE 1=1`;

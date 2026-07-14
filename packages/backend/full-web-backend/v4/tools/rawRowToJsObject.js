@@ -27,4 +27,3 @@ const normalizeValue = (val) => {
 };
 
 module.exports = { rawRowToJsObject, normalizeValue };
-w;

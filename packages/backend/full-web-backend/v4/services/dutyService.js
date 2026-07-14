@@ -50,7 +50,19 @@ const dutyService = {
                 // 处理每一行数据
                 const processedRows = dutyRows.map((row) => {
                     try {
-                        return FinalEditionDutyRowClip(row);
+                        // ✅ 只处理有完整时间数据的数据
+                        if (row.inTime && row.outTime) {
+                            return FinalEditionDutyRowClip(row);
+                        } else {
+                            console.warn(`跳过不完整数据: id=${row.id}, inTime=${row.inTime}, outTime=${row.outTime}`);
+                            return {
+                                ...row,
+                                segments: [],
+                                duration: 0,
+                                dayDuration: 0,
+                                nightDuration: 0,
+                            };
+                        }
                     } catch (error) {
                         console.error("处理单行数据出错:", error, row);
                         return row; // 返回原始数据
