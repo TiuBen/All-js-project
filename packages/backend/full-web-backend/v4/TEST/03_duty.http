@@ -20,7 +20,7 @@ GET http://localhost:3205/api/duty?inTime=2025-01-01 00:00:00&outTime=2025-02-01
 GET http://localhost:3205/api/duty/120
 
 ### 获取单条考勤记录
-GET http://localhost:3205/api/duty?id=120
+GET http://localhost:3205/api/duty?id=1245
 
 ### 创建考勤记录 (打卡上班)
 POST http://localhost:3205/api/duty

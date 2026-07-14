@@ -30,8 +30,8 @@ function PositionCard({ position, dutyType }) {
                             totalHours={summary?.sub?.totalHours ?? 0}
                             count={summary?.sub?.count ?? 0}
                             avgHours={summary?.sub?.averageHours ?? 0}
-                            minHours={summary?.main?.minHours ?? 0}
-                            maxHours={summary?.main?.maxHours ?? 0}
+                            minHours={summary?.main?.minHours}
+                            maxHours={summary?.main?.maxHours}
                         />
                     </>
                 ) : (

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { dutyService } from "@/service/duty.service";
+import { fileService } from "@/service/file.service";
 import dayjs from "dayjs";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useUserStore } from "./user.store";
@@ -99,6 +100,29 @@ export const useDutyStore = create(
             } catch (err) {
                 console.log(err);
                 return null;
+            }
+        },
+
+        excelDutyRecords: [],
+        isExcelDutyRecordsLoading: true,
+        async getSelectedYearMonthUserExcelRows() {
+            console.log("getSelectedYearMonthUserExcelRows +++++++++++++++++++++++++++++++");
+
+            const { selectedYear, selectedMonth } = useAppStore.getState();
+            const { selectedUser } = useUserStore.getState();
+            // 防止 selectedUser 为空时发起无效请求
+            if (!selectedUser) return;
+
+            try {
+                const data = await fileService.getSelectedYearMonthUserExcelRows(
+                    selectedYear,
+                    selectedMonth,
+                    selectedUser.username
+                );
+                set({ dutyRecords: data, isDutyRecordsLoading: false });
+            } catch (err) {
+                console.log(err);
+                set({ isDutyRecordsLoading: false, dutyRecords: [] });
             }
         },
     }))

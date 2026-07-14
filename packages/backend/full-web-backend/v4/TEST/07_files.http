@@ -11,6 +11,9 @@ POST http://localhost:3205/api/files/regenerate
 ### 下载 Excel 文件
 POST http://localhost:3205/api/files/download
 
+### 获取 Excel 文件
+GET   http://localhost:3205/api/file/duty-rows?year=2026&month=6&username=明嘉
+
 ### ==========================================
 ### 导出 Excel
 ### ==========================================

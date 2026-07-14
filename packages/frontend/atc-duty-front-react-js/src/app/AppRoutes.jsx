@@ -10,6 +10,7 @@ import DutyRecordPage from "../pages/DutyRecordPage/Page";
 import ComingSoon from "./layout/ComingSoon";
 import NotFound from "./layout/NotFound";
 import SettingPage from "../pages/SettingPage/Page";
+import ExportPage from "../pages/ExportPage/Page";
 
 export default function AppRoutes() {
     return (
@@ -26,6 +27,7 @@ export default function AppRoutes() {
             </Route>
             <Route path="/duty-record" element={<DutyRecordPage />} />
             <Route path="/setting" element={<SettingPage />} />
+            <Route path="/export" element={<ExportPage />} />
             <Route path="/coming-soon" element={<ComingSoon />} />
             <Route path="*" element={<NotFound />} />
         </Routes>
