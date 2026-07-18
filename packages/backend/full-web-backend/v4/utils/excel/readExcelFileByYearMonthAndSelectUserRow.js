@@ -3,7 +3,7 @@ const NodeCache = require("node-cache");
 const dayjs = require("dayjs");
 
 // 缓存1小时
-const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120 });
+const cache = new NodeCache({ stdTTL: 3600, checkperiod: 120, maxKeys: 100 });
 
 function getCellValue(cell, type = "text", dateStr = null) {
     if (!cell) return "";
@@ -34,6 +34,24 @@ function getCellValue(cell, type = "text", dateStr = null) {
     // 数字、字符串
     return cell.w ?? cell.v ?? "";
 }
+
+/**
+ * 安全获取工作表
+ */
+function getWorksheet(workbook, sheetName) {
+    // 精确匹配
+    if (workbook.SheetNames.includes(sheetName)) {
+        return workbook.Sheets[sheetName];
+    }
+
+    // 忽略前后空格匹配
+    const matchedName = workbook.SheetNames.find((name) => name.trim() === sheetName.trim());
+    if (matchedName) {
+        return workbook.Sheets[matchedName];
+    }
+
+    return null;
+}
 /**
  * 流式读取Excel - 获取单个用户数据
  */
@@ -59,29 +77,35 @@ function getRowsByUsername(filePath, username) {
         console.log("所有sheet名称:", workbook.SheetNames);
 
         // 检查sheet是否存在（去掉前后空格）
-        const sheetName = workbook.SheetNames.find((name) => name.trim() === username.trim());
-
-        if (!sheetName) {
-            console.error(`找不到名为 "${username}" 的工作表`);
-            console.error("可用的sheet名称:", workbook.SheetNames);
-            return [];
-        }
-
-        const worksheet = workbook.Sheets[sheetName];
-
-        // 检查worksheet是否有效
+        // 查找工作表
+        const worksheet = getWorksheet(workbook, username);
         if (!worksheet) {
-            console.error(`工作表 "${sheetName}" 无效`);
+            console.error(`❌ 找不到名为 "${username}" 的工作表`);
+            console.error(`📋 可用的sheet名称:`, workbook.SheetNames);
             return [];
         }
-        // A-H
+
+        // 检查工作表引用范围
+        if (!worksheet["!ref"]) {
+            console.error(`❌ 工作表 "${username}" 为空`);
+            return [];
+        }
+
         const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
-        const headers = [];
+        // 检查行数是否足够
+        if (range.e.r < 2) {
+            console.error(`❌ 工作表 "${username}" 数据行数不足`);
+            return [];
+        }
+
         // 第二行作为表头
+        const headers = [];
+        const headerRow = 1; // 第2行
         for (let c = 0; c <= 7; c++) {
-            const addr = XLSX.utils.encode_cell({ r: 1, c });
-            headers.push((worksheet[addr]?.v ?? "").toString().trim());
+            const addr = XLSX.utils.encode_cell({ r: headerRow, c });
+            const cell = worksheet[addr];
+            headers.push((cell?.v ?? "").toString().trim());
         }
 
         const rows = [];

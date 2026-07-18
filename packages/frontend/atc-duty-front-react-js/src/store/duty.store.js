@@ -103,15 +103,32 @@ export const useDutyStore = create(
             }
         },
 
+        // Excel相关
         excelDutyRecords: [],
-        isExcelDutyRecordsLoading: true,
+        isExcelDutyRecordsLoading: false,
+        excelError: null,
+        excelErrorType: null,
         async getSelectedYearMonthUserExcelRows() {
             console.log("getSelectedYearMonthUserExcelRows +++++++++++++++++++++++++++++++");
 
-            const { selectedYear, selectedMonth } = useAppStore.getState();
-            const { selectedUser } = useUserStore.getState();
             // 防止 selectedUser 为空时发起无效请求
-            if (!selectedUser) return;
+            const { selectedUser } = useUserStore.getState();
+            const { selectedYear, selectedMonth } = useAppStore.getState();
+
+            if (!selectedYear || !selectedMonth || !selectedUser) {
+                set({
+                    excelDutyRecords: [],
+                    excelError: null,
+                    excelErrorType: null,
+                });
+                return;
+            }
+
+            set({
+                isExcelDutyRecordsLoading: true,
+                excelError: null,
+                excelErrorType: null,
+            });
 
             try {
                 const data = await fileService.getSelectedYearMonthUserExcelRows(
@@ -119,11 +136,56 @@ export const useDutyStore = create(
                     selectedMonth,
                     selectedUser.username
                 );
-                set({ dutyRecords: data, isDutyRecordsLoading: false });
+                set({ excelDutyRecords: data, isExcelDutyRecordsLoading: false });
             } catch (err) {
                 console.log(err);
-                set({ isDutyRecordsLoading: false, dutyRecords: [] });
+                set({ isExcelDutyRecordsLoading: false, excelDutyRecords: [] });
             }
+
+            try {
+                const data = await fileService.getSelectedYearMonthUserExcelRows(
+                    selectedYear,
+                    selectedMonth,
+                    selectedUser.username
+                );
+
+                if (data.success) {
+                    set({
+                        excelDutyRecords: data?.data || [],
+                        isExcelDutyRecordsLoading: false,
+                        excelError: null,
+                        excelErrorType: null,
+                    });
+                } else {
+                    set({
+                        excelDutyRecords: [],
+                        isExcelDutyRecordsLoading: false,
+                        excelError: data?.message || "获取数据失败",
+                        excelErrorType: data?.errorType || "UNKNOWN_ERROR",
+                    });
+                }
+            } catch (error) {
+                console.error("获取Excel数据失败:", error);
+                const errorMessage = error.response?.data?.message || "网络请求失败";
+                const errorType = error.response?.data?.errorType || "NETWORK_ERROR";
+
+                set({
+                    excelDutyRecords: [],
+                    isExcelDutyRecordsLoading: false,
+                    excelError: errorMessage,
+                    excelErrorType: errorType,
+                });
+            }
+        },
+
+        // 清除Excel错误
+        clearExcelError: () => {
+            set({ excelError: null, excelErrorType: null });
+        },
+
+        // 刷新Excel数据
+        refreshExcelData: async () => {
+            await get().getSelectedYearMonthUserExcelRows();
         },
     }))
 );
