@@ -25,7 +25,7 @@ app.use(logMiddleware);
 //
 
 // 路由
-app.use("/api-v2", routes);
+app.use("/api", routes);
 
 //
 app.use(express.static("public"));

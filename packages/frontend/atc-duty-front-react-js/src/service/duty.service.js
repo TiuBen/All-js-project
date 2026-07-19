@@ -66,4 +66,13 @@ export const dutyService = {
         const response = await http.post("/duty", data);
         return response;
     },
+
+    async getHrDutySummary(query) {
+        const data = await http.get("/duty/hr-duty/list", { params: query });
+        return data;
+    },
+    async createHrDutySummary(data) {
+        const result = await http.post("/duty/hr-duty", data);
+        return result;
+    },
 };

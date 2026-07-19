@@ -187,10 +187,53 @@ export const useDutyStore = create(
         refreshExcelData: async () => {
             await get().getSelectedYearMonthUserExcelRows();
         },
+
+        // HR duty 相关
+        selectedUserHrDutySummary: [],
+        isSelectedUserHrDutySummaryLoading: true,
+        async getHrDutySummary() {
+            try {
+                const { selectedYear, selectedMonth } = useAppStore.getState();
+                const { selectedUser } = useUserStore.getState();
+
+                if (!selectedYear || !selectedMonth || !selectedUser) {
+                    set({
+                        selectedUserHrDutySummary: [],
+                        isSelectedUserHrDutySummaryLoading: false,
+                    });
+                    const data = await dutyService.getHrDutySummary({
+                        year: selectedYear,
+                        month: selectedMonth,
+                        userId: selectedUser.id,
+                        username: selectedUser.username,
+                    });
+                    set({
+                        selectedUserHrDutySummary: data.data,
+                        isSelectedUserHrDutySummaryLoading: false,
+                    });
+                }
+            } catch (err) {
+                console.log(err);
+                set({
+                    selectedUserHrDutySummary: [],
+                    isSelectedUserHrDutySummaryLoading: false,
+                });
+            }
+        },
+
+        async createHrDutySummary(data) {
+            try {
+                const result = await dutyService.createHrDutySummary(data);
+                return result;
+            } catch (err) {
+                console.log(err);
+                return null;
+            }
+        },
     }))
 );
 
-let timer = null;
+// let timer = null;
 
 useUserStore.subscribe(
     (state) => state.selectedUser,

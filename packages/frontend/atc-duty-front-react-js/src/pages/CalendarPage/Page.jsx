@@ -9,67 +9,23 @@ import React, { useEffect, useState, useRef } from "react";
 import YearMonthTab from "../../components/YearMonthTab";
 
 import { useAppStore } from "../../store/app.store";
+import { useDutyStore } from "../../store/duty.store";
 import { TestButton, MonthCalendar } from "@sn/ui";
 import UserRadioButtonList from "@/components/UserRadioButtonList";
 
-// function DayCellElement({ date, onClick }) {
-//     const startDate = dayjs(date, "YYYY-MM-DD").format("YYYY-MM-DD");
-//     const startTime = "00:00:00";
-//     const endDate = dayjs(date, "YYYY-MM-DD").add(1, "day").format("YYYY-MM-DD");
-//     const endTime = "00:00:01";
-
-//     const query = new URLSearchParams({ startDate, startTime, endDate, endTime });
-//     query.append("calculate", "day");
-
-//     const { data, error, isLoading } = useSWR(`${SERVER_URL}/duty?${query}`, fetcher);
-
-//     if (error) return <div>failed to load</div>;
-//     if (isLoading) return <div>loading...</div>;
-//     const usernameSet = new Set(data.map((item) => item.username));
-//     const usernameArray = Array.from(usernameSet);
-//     return (
-//         <div className="flex flex-col items-start justify-center  overflow-y-scroll" onClick={() => onClick(date)}>
-//             <div className="text-sm text-gray-500 px-1 text-ellipsis">{usernameArray.join(",")}</div>
-//         </div>
-//     );
-// }
-
-// function TimeLineSidebar({ date }) {
-//     const startDate = dayjs(date, "YYYY-MM-DD").format("YYYY-MM-DD");
-//     const startTime = "00:00:00";
-//     const endDate = dayjs(date, "YYYY-MM-DD").add(1, "day").format("YYYY-MM-DD");
-//     const endTime = "00:00:01";
-
-//     const query = new URLSearchParams({ startDate, startTime, endDate, endTime });
-//     query.append("calculate", "month");
-
-//     const { data, error, isLoading } = useSWR(`${API_URL.query_statics}/${query}`, fetcher);
-
-//     if (error) return <div>failed to load</div>;
-//     if (isLoading) return <div>loading...</div>;
-
-//     return (
-//         <div className="flex flex-col items-start justify-center  overflow-auto p-4">
-//             <ul className="text-sm text-gray-500 px-1">
-//                 {data.map((x, index) => {
-//                     return <li key={index}>{x.username}</li>;
-//                 })}
-//             </ul>
-//         </div>
-//     );
-// }
-
 // 1. 定义选项数据，方便后续维护
 const DUTY_OPTIONS = [
-    { label: "不填 (不上班/轮休)", value: "" },
-    { label: "0 (行政班/调度席且无夜班)", value: "0" },
-    { label: "1-5 (当日实际夜班时段数)", value: "1-5" }, // 实际业务中可能需要拆分为 1,2,3,4,5
-    { label: "C (出差)", value: "C" },
-    { label: "S (事假)", value: "S" },
-    { label: "B (病假)", value: "B" },
-    { label: "● (产假)", value: "●" },
-    { label: "N (年休假)", value: "N" },
-    { label: "■ (其他)", value: "■" },
+    { label: "不填=不上班/轮休", value: "" },
+    { label: "0=行政班/调度席且无夜班", value: "0" },
+    { label: "1=1段夜班", value: "1" }, // 实际业务中可能需要拆分为 1,2,3,4,5
+    { label: "2=2段夜班", value: "2" }, // 实际业务中可能需要拆分为 1,2,3,4,5
+    { label: "3=3段夜班", value: "3" }, // 实际业务中可能需要拆分为 1,2,3,4,5
+    { label: "C=出差", value: "C" },
+    { label: "S=事假", value: "S" },
+    { label: "B=病假", value: "B" },
+    { label: "●=产假", value: "●" },
+    { label: "N=年休假", value: "N" },
+    { label: "■=其他", value: "■" },
 ];
 
 function Page() {
@@ -79,8 +35,10 @@ function Page() {
     // const _data = getDuty(new URLSearchParams({ year: year, month: month }));
     // }, [year, month]);
 
-    // const [date, setDate] = useState("");
-    const { selectedYear, selectedMonth, setSelectedYear, setSelectedMonth } = useAppStore();
+    const { selectedYear, selectedMonth } = useAppStore();
+
+    const { selectedUserHrDutySummary, isSelectedUserHrDutySummaryLoading } = useDutyStore();
+    const { getHrDutySummary, createHrDutySummary } = useDutyStore();
 
     // 2. 记录当前点击的日期
     const [selectedDate, setSelectedDate] = useState(null);
@@ -108,7 +66,7 @@ function Page() {
 
             <div className="flex-1 p-2 items-stretch justify-stretch flex flex-row">
                 <div className="flex flex-col flex-1">
-                    <h3 className="text-center text-wrap text-xl  font-bold text-blue-600">
+                    <h3 className="text-center text-wrap text-[clamp(0.875rem,2vw,1.5rem)] font-bold text-blue-600">
                         不填=不上班\轮休, 0=行政班\调度席且无夜班 1-5=当日实际夜班时段数 C=出差 S=事假 B=病假 ●=产假
                         N=年休假 ■=其他
                     </h3>
@@ -120,7 +78,7 @@ function Page() {
                                 className="w-full h-full cursor-pointer p-1 text-xs text-gray-600 hover:bg-blue-100"
                                 onClick={() => setSelectedDate(date)}
                             >
-                                这里可以渲染该日期已有的排班数据
+                                {""}
                             </div>
                         )}
                     />

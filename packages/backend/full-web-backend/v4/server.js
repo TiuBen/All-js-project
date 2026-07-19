@@ -18,7 +18,7 @@ const app = require("./app");
 
 //  exportAsExcel();
 
-const PORT = 3206;
+const PORT = 3205;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });
