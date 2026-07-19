@@ -1,0 +1,134 @@
+### ==========================================
+### hr_duty_summary 考勤汇总 CRUD 测试
+### 路由前缀: /duty/hr-duty
+### ==========================================
+
+### ---- 查询 ----
+
+### 查询所有考勤汇总记录
+GET http://localhost:3205/api/duty/hr-duty/list
+
+### 按用户ID查询
+GET http://localhost:3205/api/duty/hr-duty/list?userId=1
+
+### 按用户名模糊查询
+GET http://localhost:3205/api/duty/hr-duty/list?username=张
+
+### 按日期范围查询
+GET http://localhost:3205/api/duty/hr-duty/list?startDate=2026-01-01&endDate=2026-12-31
+
+### 按单个日期查询
+GET http://localhost:3205/api/duty/hr-duty/list?duty_date=2026-07-19
+
+### 按用户ID+日期范围组合查询
+GET http://localhost:3205/api/duty/hr-duty/list?userId=1&startDate=2026-07-01&endDate=2026-07-31
+
+### 根据ID查询单条记录
+GET http://localhost:3205/api/duty/hr-duty/1
+
+### ---- 创建 ----
+
+### 创建单条考勤汇总记录
+POST http://localhost:3205/api/duty/hr-duty
+Content-Type: application/json
+
+{
+    "userId": 1,
+    "username": "张三",
+    "duty_date": "2026-07-19",
+    "value": "1"
+}
+
+### 创建记录(value为空)
+POST http://localhost:3205/api/duty/hr-duty
+Content-Type: application/json
+
+{
+    "userId": 2,
+    "username": "李四",
+    "duty_date": "2026-07-19",
+    "value": ""
+}
+
+### 创建记录(value为特殊字符)
+POST http://localhost:3205/api/duty/hr-duty
+Content-Type: application/json
+
+{
+    "userId": 3,
+    "username": "王五",
+    "duty_date": "2026-07-19",
+    "value": "●"
+}
+
+### 批量创建考勤汇总记录
+POST http://localhost:3205/api/duty/hr-duty/batch
+Content-Type: application/json
+
+{
+    "records": [
+        { "userId": 1, "username": "张三", "duty_date": "2026-07-01", "value": "1" },
+        { "userId": 1, "username": "张三", "duty_date": "2026-07-02", "value": "2" },
+        { "userId": 1, "username": "张三", "duty_date": "2026-07-03", "value": "C" },
+        { "userId": 2, "username": "李四", "duty_date": "2026-07-01", "value": "S" },
+        { "userId": 2, "username": "李四", "duty_date": "2026-07-02", "value": "B" }
+    ]
+}
+
+### ---- 更新 ----
+
+### 更新考勤值
+PUT http://localhost:3205/api/duty/hr-duty/1
+Content-Type: application/json
+
+{
+    "value": "3"
+}
+
+### 更新用户名
+PUT http://localhost:3205/api/duty/hr-duty/1
+Content-Type: application/json
+
+{
+    "username": "张三丰"
+}
+
+### 更新日期
+PUT http://localhost:3205/api/duty/hr-duty/1
+Content-Type: application/json
+
+{
+    "duty_date": "2026-07-20"
+}
+
+### ---- 删除 ----
+
+### 删除单条记录
+DELETE http://localhost:3205/api/duty/hr-duty/1
+
+### 删除不存在的记录(应返回404)
+DELETE http://localhost:3205/api/duty/hr-duty/9999
+
+### ---- 错误场景测试 ----
+
+### 缺少必填字段(应返回400)
+POST http://localhost:3205/api/duty/hr-duty
+Content-Type: application/json
+
+{
+    "username": "测试"
+}
+
+### 重复创建同一用户同一日期(应返回409)
+POST http://localhost:3205/api/duty/hr-duty
+Content-Type: application/json
+
+{
+    "userId": 1,
+    "username": "张三",
+    "duty_date": "2026-07-19",
+    "value": "1"
+}
+
+### 查询不存在的记录(应返回404)
+GET http://localhost:3205/api/duty/hr-duty/9999

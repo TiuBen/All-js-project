@@ -58,7 +58,7 @@ const LeftNavItem = ({ title, page, Icon, isExpanded, subNav, active }) => {
             className={`self-center flex gap-1 items-center flex-col`}
         >
             <Icon size={"2rem"} />
-            <h2 className={`text-sm`}>{title}</h2>
+            <h2 className={`text-sm text-center text-nowrap`}>{title}</h2>
         </a>
     );
 };

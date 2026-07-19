@@ -244,25 +244,64 @@ function Page() {
             </div>
 
             <div className="flex flex-row flex-nowrap m-2">
-                <div className="flex-1 flex flex-row justify-start items-start gap-2 overflow-auto flex-wrap min-h-0 cursor-pointer text-sm">
-                    <div className="">
-                        <LikeExcel />
-                        <div className="flex-1">滴滴滴滴 {renderExcelStatus()}</div>
-                    </div>
-                    <DetailStatisticsTable dutyStatistics={userDutyDurationStatistics} />
-                </div>
-
-                {showJsonData && hasExcelData && (
-                    <div className="mt-4 p-4 border rounded bg-gray-50 overflow-auto max-h-96 flex-1 ml-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold text-gray-700">Excel 原始数据</h3>
+                <div className="flex-1 flex flex-row flex-nowrap justify-start items-start gap-2 overflow-auto flex-wrap min-h-0 cursor-pointer text-sm">
+                    <div className="flex gap-2 flex-1 flex-row flex-nowrap">
+                        <div className="flex">
+                            <LikeExcel />
                         </div>
+                        <div className="flex flex-col justify-items-start align-content-start">
+                            {renderExcelStatus()}
+                            {showJsonData && hasExcelData && (
+                                <>
+                                    <table>
+                                        {/* 1. 渲染表头：取数组的第一个元素，获取所有的 key */}
+                                        <thead className="bg-gray-100 sticky top-0 h-[2rem]">
+                                            <tr>
+                                                <th className="border border-slate-600 px-2 text-nowrap text-center ">
+                                                    序号
+                                                </th>
+                                                {Object.keys(excelDutyRecords[0]).map((key) => (
+                                                    <th
+                                                        key={key}
+                                                        className="border border-slate-600 px-2 text-nowrap text-center "
+                                                    >
+                                                        {key}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
 
-                        <pre className="text-xs whitespace-pre-wrap break-words">
-                            {JSON.stringify(excelDutyRecords, null, 2)}
-                        </pre>
+                                        {/* 2. 渲染表体：遍历数组中的每一个对象 */}
+                                        <tbody className="bg-gray-100 ">
+                                            {excelDutyRecords.map((row, rowIndex) => (
+                                                <tr key={rowIndex} className="hover:bg-blue-50 transition-colors">
+                                                    {/* 3. 遍历当前对象的所有 value */}
+                                                    {
+                                                        <td className="border border-slate-600 px-2 text-nowrap text-center">
+                                                            {rowIndex + 1}
+                                                        </td>
+                                                    }
+                                                    {Object.values(row).map((value, colIndex) => (
+                                                        <td
+                                                            key={colIndex}
+                                                            className="border border-slate-600 px-2 text-nowrap text-center"
+                                                        >
+                                                            {value}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    <div className=" justify-self-end align-self-end">
+                        <DetailStatisticsTable dutyStatistics={userDutyDurationStatistics} />
+                    </div>
+                </div>
 
                 <div className="flex flex-col ml-4">
                     <UserRadioButtonList />

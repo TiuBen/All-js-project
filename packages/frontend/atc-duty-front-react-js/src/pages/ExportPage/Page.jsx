@@ -95,7 +95,6 @@ function Page() {
     return (
         <div className="flex flex-col gap-2">
             <YearMonthTab />
-            {selectedYear + "nian " + selectedMonth + "yue"}
             <div className="flex items-center justify-center w-full">
                 <label
                     className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 ${
