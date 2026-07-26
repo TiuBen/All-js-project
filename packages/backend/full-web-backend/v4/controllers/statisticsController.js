@@ -53,12 +53,12 @@ exports.getNightCount = async (req, res, next) => {
 
 //! 当月合规检查
 exports.getCheckDurationStatisticsByUser = async (req, res, next) => {
-    console.log(
-        "Controller getCheckDurationStatisticsByUser called with \nparams:",
-        req.params,
-        "\nand \nquery:",
-        req.query
-    );
+    // console.log(
+    //     "Controller getCheckDurationStatisticsByUser called with \nparams:",
+    //     req.params,
+    //     "\nand \nquery:",
+    //     req.query
+    // );
     try {
         const { userId, year, month } = req.query;
         const { inTime, outTime } = getStatisticsTimeRange(year, month);
@@ -75,7 +75,7 @@ exports.getCheckDurationStatisticsByUser = async (req, res, next) => {
 
 //! 当月席位频次时长统计
 exports.getPositionSummary = async (req, res, next) => {
-    console.log("controller getPositionSummary called with \nparams:", req.params, "\nand \nquery:", req.query);
+    // console.log("controller getPositionSummary called with \nparams:", req.params, "\nand \nquery:", req.query);
 
     try {
         const { year, month } = req.query;
@@ -90,12 +90,12 @@ exports.getPositionSummary = async (req, res, next) => {
 
 //! 当月用户时长统计
 exports.getDurationStatisticsByUserV2 = async (req, res, next) => {
-    console.log(
-        "controller getDurationStatisticsByUserV2222222222 called with \nparams:",
-        req.params,
-        "\nand \nquery:",
-        req.query
-    );
+    // console.log(
+    //     "controller getDurationStatisticsByUserV2222222222 called with \nparams:",
+    //     req.params,
+    //     "\nand \nquery:",
+    //     req.query
+    // );
     const { filter, year, month, startTime, endTime, userId } = req.query;
     try {
         const { inTime, outTime } = getStatisticsTimeRange(year, month);

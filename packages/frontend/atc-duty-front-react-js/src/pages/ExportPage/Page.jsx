@@ -6,6 +6,7 @@ import { Outlet } from "react-router-dom";
 import { http } from "@/service/http";
 import { useAppStore } from "@/store/app.store";
 import { useDutyStore } from "@/store/duty.store";
+import HrDutyExcel from "./HrDutyExcel";
 
 const ALLOWED_EXCEL_TYPES = [".xls", ".xlsx", ".xlsm"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB 限制
@@ -92,10 +93,11 @@ function Page() {
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };
+
     return (
         <div className="flex flex-col gap-2">
             <YearMonthTab />
-            <div className="flex items-center justify-center w-full">
+            <div className="flex flex-col gap-2 w-full">
                 <label
                     className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200 ${
                         isUploading ? "pointer-events-none opacity-60" : ""
@@ -123,13 +125,17 @@ function Page() {
                         disabled={isUploading}
                     />
                 </label>
+                {uploadMsg && (
+                    <p
+                        className={`mt-2 text-sm text-center ${
+                            msgType === "error" ? "text-red-500" : "text-green-600"
+                        }`}
+                    >
+                        {uploadMsg}
+                    </p>
+                )}
+                <HrDutyExcel />
             </div>
-
-            {uploadMsg && (
-                <p className={`mt-2 text-sm text-center ${msgType === "error" ? "text-red-500" : "text-green-600"}`}>
-                    {uploadMsg}
-                </p>
-            )}
         </div>
     );
 }

@@ -21,17 +21,19 @@ const UserStore = create((set, get) => ({
     // 初始化
     initStore: async () => {
         console.log("初始化 store");
-        
+
         set({ isLoading: true, error: null });
         try {
             const { positionsRes, usersRes, groupedUsers, detailUsers, onDutyUsersRes } =
                 await userService.initStoreData();
+            console.log(positionsRes);
+            console.log(groupedUsers);
 
             set({
                 positions: positionsRes,
                 users: usersRes,
-                groupedUsers,
-                detailUsers,
+                groupedUsers: groupedUsers,
+                detailUsers: detailUsers,
                 onDutyUsers: onDutyUsersRes,
                 isLoading: false,
             });

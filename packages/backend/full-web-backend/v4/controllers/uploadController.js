@@ -45,7 +45,7 @@ uploadFile = [
 checkExcelExists = async (req, res, next) => {
     try {
         const { year, month } = req.query;
-        console.info(`CheckExcelExistsController: ${year}, ${month}`);
+        // console.info(`CheckExcelExistsController: ${year}, ${month}`);
         if (!year || !month) {
             // 统一使用 errorResponse
             return errorResponse(res, "year and month are required", 400);
@@ -57,7 +57,7 @@ checkExcelExists = async (req, res, next) => {
 
         for (const ext of possibleExts) {
             const filePath = path.join(UPLOAD_DIR, `${year}-${month}${ext}`);
-            console.log(filePath);
+            // console.log(filePath);
 
             // 异步判断文件存在
             let exist = false;
@@ -86,7 +86,7 @@ getDutyRowsController = async (req, res, next) => {
 
     try {
         const { year, month, username } = req.query;
-        console.info(`GetDutyRowsController: ${year}, ${month}, ${username}`);
+        // console.info(`GetDutyRowsController: ${year}, ${month}, ${username}`);
 
         if (!year || !month || !username) {
             return errorResponse(res, "year, month and user are required", 400);

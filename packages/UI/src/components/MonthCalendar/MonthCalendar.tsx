@@ -40,6 +40,7 @@ export function MonthCalendar<T = any>({
                         >
                             {/* 非本月显示 M月D号，本月只显示 D */}
                             {isCurrentMonth ? dayjs(date).format("D") : dayjs(date).format("M月D")}
+                            {isToday ? " 今天" : ""}
                         </div>
 
                         <div className="flex-1">{cellRender?.(date, data?.[date])}</div>

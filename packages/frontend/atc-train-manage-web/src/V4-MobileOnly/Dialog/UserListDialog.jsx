@@ -13,6 +13,8 @@ function UserListDialog() {
     const [availableStaffs, setAvailableStaffs] = useState([]);
 
     const {
+        isLoading,
+        error,
         groupedUsers,
         detailUsers,
         onDutyUsers,
@@ -22,9 +24,6 @@ function UserListDialog() {
         setSelectedDutyRecord,
         fetchOnDutyUsers,
     } = useStore();
-
-    // if (error) return <div>failed to load UserListDialog</div>;
-    // if (isLoading) return <div>loading...UserListDialog</div>;
 
     // ! 在这部分直接监听 dialogPayload 中的席位 然后来判断能不能 点击
     useEffect(() => {
@@ -46,7 +45,7 @@ function UserListDialog() {
 
         detailUsers.forEach((user) => {
             const uPositions = user.position || [];
-            uPositions.forEach((x) => {
+            uPositions?.forEach((x) => {
                 // 要 position dutyType roleType 都匹配
                 if (x?.position === position) {
                     //! 职位匹配
@@ -71,6 +70,9 @@ function UserListDialog() {
 
         setAvailableStaffs(_availableStaffs);
     }, [selectedPosition, detailUsers, selectedDutyRecord]);
+
+    if (error) return <div>failed to load UserListDialog</div>;
+    if (isLoading) return <div>loading...UserListDialog</div>;
 
     return (
         <Dialog.Root
@@ -109,12 +111,12 @@ function UserListDialog() {
                 </Dialog.Title>
                 <Dialog.Description className="text-center border pr-[40px] font-bold text-blue-500">
                     {/* {`席位:${selected?.Position&&selected?.Position} ${dutyType ? `(${dutyType})` : ""}${roleType ? `(${roleType})` : ""}`} */}
-                    {`席位:${selectedPosition?.position || selectedDutyRecord?.position} ${
-                        selectedPosition?.dutyType || selectedDutyRecord?.dutyType
+                    {`席位: ${selectedPosition?.position || selectedDutyRecord?.position || ""} ${
+                        selectedPosition?.dutyType || selectedDutyRecord?.dutyType || ""
                     }`}
                 </Dialog.Description>
                 <div className="flex flex-col flex-wrap gap-2">
-                    {groupedUsers.map((uRow, index) => {
+                    {groupedUsers?.map((uRow = [], index) => {
                         return (
                             <div
                                 key={index}
@@ -122,9 +124,10 @@ function UserListDialog() {
                                     index !== 0 ? "border-t-2 pt-2" : ""
                                 }`}
                             >
-                                {uRow.map((x, key) => {
+                                {uRow?.map((x, index2) => {
                                     return (
                                         <Button
+                                            key={index2}
                                             color="cyan"
                                             variant="soft"
                                             disabled={
@@ -205,7 +208,10 @@ function UserListDialog() {
                                                                 roleStartTime: Array.isArray(
                                                                     selectedDutyRecord.roleStartTime
                                                                 )
-                                                                    ? [...selectedDutyRecord.roleStartTime, dayjs().format("YYYY-MM-DD HH:mm:ss")]
+                                                                    ? [
+                                                                          ...selectedDutyRecord.roleStartTime,
+                                                                          dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                                                                      ]
                                                                     : [dayjs().format("YYYY-MM-DD HH:mm:ss")], // ,
                                                             };
                                                             fetch(`${API_URL.duty}/${selectedDutyRecord.id}`, {
@@ -234,7 +240,6 @@ function UserListDialog() {
                                                         .finally(() => {});
                                                 }
                                             }}
-                                            key={key}
                                             style={{ width: "5rem" }}
                                         >
                                             {x.username}

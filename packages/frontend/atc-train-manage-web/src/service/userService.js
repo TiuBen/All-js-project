@@ -6,19 +6,24 @@ import { API_URL } from "../utils/const/Const.js";
 const userService = {
     // 初始化数据
     async initStoreData() {
-        const [positionsRes, usersRes, groupedUsersRes, onDutyUsersRes] = await Promise.all([
+        const [positionsRes, usersRes, onDutyUsersRes] = await Promise.all([
             fetch(`${API_URL.positions}?display=true`).then((r) => r.json()),
-            fetch(API_URL.users + `?fields=${encodeURIComponent("id,team,username,rank")}`).then((r) => r.json()),
-            fetch(`${API_URL.users}?fields=${encodeURIComponent("id,username,team,position")}&groupBy=team`).then((r) =>
-                r.json()
-            ),
+            fetch(API_URL.users).then((r) => r.json()),
             fetch(`${API_URL.duty}?outTime=null`).then((r) => r.json()),
         ]);
 
-        const groupedUsers = groupedUsersRes;
-        const detailUsers = groupedUsersRes
-            .flat()
-            .map(({ id, username, team, position }) => ({ id, username, position }));
+        const groupedUsers = usersRes.reduce((acc, person) => {
+            const team = person.team;
+            if (!acc[team]) {
+                acc[team] = [];
+            }
+            acc[team].push(person);
+            return acc;
+        }, []);
+
+        console.log(groupedUsers);
+
+        const detailUsers = usersRes;
 
         return { positionsRes, usersRes, groupedUsers, detailUsers, onDutyUsersRes };
     },

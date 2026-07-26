@@ -1,34 +1,21 @@
 const dayjs = require("dayjs");
-const {
-    Tower_POSITIONS,
-    Ground_POSITIONS,
-    Delivery_POSITIONS,
-    Leader_POSITIONS,
-    AOC_POSITIONS,
-    DD_POSITIONS,
-} = require("../../config/Const");
+const { Leader_POSITIONS, CalcRule } = require("../../config/Const");
 function calculateStatistics(dutyRecords) {
-    const result = {
-        totalTime: { time: 0, dayShift: 0, nightShift: 0 },
+    const result = {};
 
-        totalCommanderTime: { time: 0, dayShift: 0, nightShift: 0 },
+    // 初始化
+    Object.keys(CalcRule).forEach((key) => {
+        result[key] = {
+            time: 0,
+            dayShift: 0,
+            nightShift: 0,
+        };
+    });
 
-        totalTowerMainTime: { time: 0, dayShift: 0, nightShift: 0 },
-        totalTowerSubTime: { time: 0, dayShift: 0, nightShift: 0 },
-
-        totalGroundTime: { time: 0, dayShift: 0, nightShift: 0 },
-
-        totalDeliveryTime: { time: 0, dayShift: 0, nightShift: 0 },
-
-        totalAOCTime: { time: 0, dayShift: 0, nightShift: 0 },
-
-        totalDDTime: { time: 0, dayShift: 0, nightShift: 0 },
-
-        // 月度统计
-        positionTime: { time: 0, dayShift: 0, nightShift: 0 },
-        teacherTime: { time: 0, dayShift: 0, nightShift: 0 },
-        traineeTime: { time: 0, dayShift: 0, nightShift: 0 },
-    };
+    // 其它统计
+    result.positionTime = { time: 0, dayShift: 0, nightShift: 0 };
+    result.teacherTime = { time: 0, dayShift: 0, nightShift: 0 };
+    result.traineeTime = { time: 0, dayShift: 0, nightShift: 0 };
 
     for (const record of dutyRecords) {
         // 如果没有 segments，尝试回退到 inTime/outTime 计算（防御性编程）
@@ -46,111 +33,85 @@ function calculateStatistics(dutyRecords) {
 
             // 2. 标签解析 (关键修复点)
             const tags = seg.tags || [];
-            // const isNight = seg.tags.some((t) => t.type === "夜班");
-            // // const isTeacher = seg.tags.some((t) => t.type === "教员");
-            // const isTeacher = Array.isArray(record.relatedDutyTableRowId);
-            // const isLeader = record?.position?.includes("领班");
-            // const isTrainee = record?.roleType?.includes("见习");
-
-            // 优先从 tags 中获取角色信息，这是最准确的
             const tagTypes = tags.map((t) => t.type);
 
             const isNight = tagTypes.includes("夜班");
             const isLeader = tagTypes.includes("领班") || Leader_POSITIONS.includes(record.position);
             const isTeacher = tagTypes.includes("教员");
             const isTrainee = tagTypes.includes("见习") || record.roleType === "见习";
+            //------------------------------------------------------
+            // CalcRule 自动统计
+            //------------------------------------------------------
 
-            //--------------------------------------------------
-            // 总小时（所有席位都统计）
-            //--------------------------------------------------
+            Object.entries(CalcRule).forEach(([key, rule]) => {
+                const { filter = {} } = rule;
 
-            result.totalTime.time += hours;
+                if (filter.position && !filter.position.includes(record.position)) {
+                    return;
+                }
 
-            if (isNight) result.totalTime.nightShift += hours;
-            else result.totalTime.dayShift += hours;
+                if (filter.dutyType && !filter.dutyType.includes(record.dutyType)) {
+                    return;
+                }
 
-            //--------------------------------------------------
+                result[key].time += hours;
+
+                if (isNight) {
+                    result[key].nightShift += hours;
+                } else {
+                    result[key].dayShift += hours;
+                }
+            });
+
+            //------------------------------------------------------
             // 教员
-            //--------------------------------------------------
+            //------------------------------------------------------
 
             if (isTeacher) {
                 result.teacherTime.time += hours;
 
-                if (isNight) result.teacherTime.nightShift += hours;
-                else result.teacherTime.dayShift += hours;
+                if (isNight) {
+                    result.teacherTime.nightShift += hours;
+                } else {
+                    result.teacherTime.dayShift += hours;
+                }
             }
 
-            //--------------------------------------------------
+            //------------------------------------------------------
             // 见习
-            //--------------------------------------------------
+            //------------------------------------------------------
 
             if (isTrainee) {
                 result.traineeTime.time += hours;
 
-                if (isNight) result.traineeTime.nightShift += hours;
-                else result.traineeTime.dayShift += hours;
-            }
-
-            //--------------------------------------------------
-            // 领班统计
-            //--------------------------------------------------
-
-            if (Leader_POSITIONS.includes(record.position) || isLeader) {
-                result.totalCommanderTime.time += hours;
-
-                if (isNight) result.totalCommanderTime.nightShift += hours;
-                else result.totalCommanderTime.dayShift += hours;
-            }
-
-            //--------------------------------------------------
-            // 教员、领班覆盖席位
-            //--------------------------------------------------
-
-            if (isTeacher || isLeader) {
-                continue;
-            }
-
-            //--------------------------------------------------
-            // 月度席位统计
-            //--------------------------------------------------
-
-            result.positionTime.time += hours;
-
-            if (isNight) result.positionTime.nightShift += hours;
-            else result.positionTime.dayShift += hours;
-
-            //--------------------------------------------------
-            // 各席位统计
-            //--------------------------------------------------
-
-            let target = null;
-
-            if (Tower_POSITIONS.includes(record.position)) {
-                if (record.dutyType === "主班") {
-                    target = result.totalTowerMainTime;
+                if (isNight) {
+                    result.traineeTime.nightShift += hours;
                 } else {
-                    target = result.totalTowerSubTime;
+                    result.traineeTime.dayShift += hours;
                 }
-            } else if (Ground_POSITIONS.includes(record.position)) {
-                target = result.totalGroundTime;
-            } else if (Delivery_POSITIONS.includes(record.position)) {
-                target = result.totalDeliveryTime;
-            } else if (AOC_POSITIONS.includes(record.position)) {
-                target = result.totalAOCTime;
-            } else if (DD_POSITIONS.includes(record.position)) {
-                target = result.totalDDTime;
             }
 
-            if (!target) continue;
+            //------------------------------------------------------
+            // 月度席位统计
+            // 教员、领班不计入席位时间
+            //------------------------------------------------------
 
-            target.time += hours;
+            if (!isTeacher && !isLeader) {
+                result.positionTime.time += hours;
 
-            if (isNight) target.nightShift += hours;
-            else target.dayShift += hours;
+                if (isNight) {
+                    result.positionTime.nightShift += hours;
+                } else {
+                    result.positionTime.dayShift += hours;
+                }
+            }
         }
     }
 
+    //------------------------------------------------------
     // 保留两位小数
+    //------------------------------------------------------
+
     Object.values(result).forEach((item) => {
         item.time = Number(item.time.toFixed(2));
         item.dayShift = Number(item.dayShift.toFixed(2));

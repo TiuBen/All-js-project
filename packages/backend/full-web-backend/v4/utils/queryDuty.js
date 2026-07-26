@@ -33,7 +33,7 @@ function rawRowToJsObject(row) {
 }
 
 function queryDuty({ id, userId, username, inTime, outTime }) {
-    console.log("queryDuty", { id, userId, username, inTime, outTime });
+    // console.log("queryDuty", { id, userId, username, inTime, outTime });
     let sql = `SELECT *FROM duty WHERE 1=1`;
     const params = [];
     if (id != null) {
@@ -64,8 +64,8 @@ function queryDuty({ id, userId, username, inTime, outTime }) {
             params.push(outTime);
         }
     }
-    console.log(sql);
-    console.log(params);
+    // console.log(sql);
+    // console.log(params);
 
     return new Promise((resolve, reject) => {
         DutyDb.all(sql, params, (err, rows) => {
@@ -73,10 +73,10 @@ function queryDuty({ id, userId, username, inTime, outTime }) {
                 reject(err);
                 return;
             }
-            console.log("queryDuty rows:", rows.length);
+            // console.log("queryDuty rows:", rows.length);
 
             const jsObjectRows = rows.map((row) => rawRowToJsObject(row));
-            console.log("jsObjectRows:", jsObjectRows.length);
+            // console.log("jsObjectRows:", jsObjectRows.length);
             // console.log(jsObjectRows);
 
             // const processedRows = jsObjectRows.map(processRow).map((row) => clipDutyRow(row, { inTime, outTime }));

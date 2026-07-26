@@ -3,7 +3,7 @@ const service = require("../services/userService");
 
 exports.login = async (req, res, next) => {
     try {
-        console.log("login");
+        // console.log("login");
 
         const AllUser = await service.getAll({ fields: ["id", "username", "password"] });
 
@@ -48,7 +48,7 @@ exports.login = async (req, res, next) => {
             id: user.id,
         });
     } catch (error) {
-        console.error("Login error:", error);
+        // console.error("Login error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -93,7 +93,7 @@ exports.refreshToken = async (req, res, next) => {
             },
         });
     } catch (error) {
-        console.error("Refresh token error:", error);
+        // console.error("Refresh token error:", error);
 
         res.clearCookie("refreshToken");
 
@@ -113,7 +113,7 @@ exports.logout = async (req, res, next) => {
             message: "Logout successful",
         });
     } catch (error) {
-        console.error("Logout error:", error);
+        // console.error("Logout error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -132,7 +132,7 @@ exports.getProfile = async (req, res, next) => {
             },
         });
     } catch (error) {
-        console.error("Get profile error:", error);
+        // console.error("Get profile error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -167,7 +167,7 @@ exports.updateProfile = async (req, res, next) => {
             },
         });
     } catch (error) {
-        console.error("Update profile error:", error);
+        // console.error("Update profile error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -186,7 +186,7 @@ exports.validateToken = async (req, res, next) => {
             },
         });
     } catch (error) {
-        console.error("Validate token error:", error);
+        // console.error("Validate token error:", error);
         res.status(500).json({
             success: false,
             message: "Internal server error",

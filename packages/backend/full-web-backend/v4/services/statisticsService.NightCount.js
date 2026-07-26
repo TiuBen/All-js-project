@@ -48,11 +48,11 @@ function remove(result) {
 
 //!  这里有点问题，可能需要再改
 async function calcNightCount({ year, month, inTime, outTime, userId }) {
-    console.log("================== Service GetNightCount called with year and month: ==================");
-    console.log("================== Service GetNightCount ==", { year, month, inTime, outTime });
+    // console.log("================== Service GetNightCount called with year and month: ==================");
+    // console.log("================== Service GetNightCount ==", { year, month, inTime, outTime });
 
     const dutyRows = await queryDuty({ inTime, outTime, userId });
-    console.log("查询结果:", dutyRows.length);
+    // console.log("查询结果:", dutyRows.length);
     // ========= 第一步：按 userId 分组 =========
 
     const userMap = {};

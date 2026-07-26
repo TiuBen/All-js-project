@@ -3,11 +3,10 @@ import react from "@vitejs/plugin-react";
 import path from "path"; // 需要安装 @types/node
 import { env } from "process";
 // import basicSsl from '@vitejs/plugin-basic-ssl'
-import fs from 'fs'
+import fs from "fs";
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
-
     return {
         plugins: [react()],
         server: {
@@ -25,7 +24,7 @@ export default defineConfig(({ command, mode }) => {
             },
         },
         define: {
-          'import.meta.env.VITE_SERVE_URL': JSON.stringify(env.VITE_SERVER_URL),
+            "import.meta.env.VITE_SERVE_URL": JSON.stringify(env.VITE_SERVER_URL),
         },
         esbuild: {
             include: /\.[jt]sx?$/,
@@ -35,11 +34,11 @@ export default defineConfig(({ command, mode }) => {
         optimizeDeps: {
             esbuildOptions: {
                 loader: {
-                    '.js':'jsx',
-                },  
+                    ".js": "jsx",
+                },
             },
         },
-        base: "/",
+        base: "./",
         build: {
             outDir: "dist",
             assetsDir: "src",
@@ -47,12 +46,11 @@ export default defineConfig(({ command, mode }) => {
                 input: {
                     main: path.resolve(__dirname, "index.html"),
                 },
-                output:{
-                    entryFileNames:'index.js',
-                    assetFileNames:'assets/[name][extname]',
-                    chunkFileNames:'[name].js'
-                  }
-            
+                output: {
+                    entryFileNames: "index.js",
+                    assetFileNames: "assets/[name][extname]",
+                    chunkFileNames: "[name].js",
+                },
             },
         },
     };

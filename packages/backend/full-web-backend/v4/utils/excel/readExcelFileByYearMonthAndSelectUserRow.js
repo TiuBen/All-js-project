@@ -59,7 +59,7 @@ function getRowsByUsername(filePath, username) {
     const cacheKey = `${filePath}:${username}`;
     const cached = cache.get(cacheKey);
     if (cached) {
-        console.log(`从缓存获取 ${username} 的数据`);
+        // console.log(`从缓存获取 ${username} 的数据`);
         return cached;
     }
 
@@ -74,20 +74,20 @@ function getRowsByUsername(filePath, username) {
         });
 
         // 打印所有sheet名称，用于调试
-        console.log("所有sheet名称:", workbook.SheetNames);
+        // console.log("所有sheet名称:", workbook.SheetNames);
 
         // 检查sheet是否存在（去掉前后空格）
         // 查找工作表
         const worksheet = getWorksheet(workbook, username);
         if (!worksheet) {
-            console.error(`❌ 找不到名为 "${username}" 的工作表`);
-            console.error(`📋 可用的sheet名称:`, workbook.SheetNames);
+            // console.error(`❌ 找不到名为 "${username}" 的工作表`);
+            // console.error(`📋 可用的sheet名称:`, workbook.SheetNames);
             return [];
         }
 
         // 检查工作表引用范围
         if (!worksheet["!ref"]) {
-            console.error(`❌ 工作表 "${username}" 为空`);
+            // console.error(`❌ 工作表 "${username}" 为空`);
             return [];
         }
 
@@ -95,7 +95,7 @@ function getRowsByUsername(filePath, username) {
 
         // 检查行数是否足够
         if (range.e.r < 2) {
-            console.error(`❌ 工作表 "${username}" 数据行数不足`);
+            // console.error(`❌ 工作表 "${username}" 数据行数不足`);
             return [];
         }
 
@@ -137,7 +137,7 @@ function getRowsByUsername(filePath, username) {
 
         return rows;
     } catch (error) {
-        console.error("读取Excel文件时出错:", error);
+        // console.error("读取Excel文件时出错:", error);
         throw error;
     }
 }

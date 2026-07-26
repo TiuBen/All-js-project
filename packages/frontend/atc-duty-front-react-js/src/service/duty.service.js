@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { http } from "./http";
 
 export const dutyService = {
@@ -69,10 +68,13 @@ export const dutyService = {
 
     async getHrDutySummary(query) {
         const data = await http.get("/duty/hr-duty/list", { params: query });
+        console.log("service getHrDutySummary :", data);
         return data;
     },
-    async createHrDutySummary(data) {
+    async saveHrDutySummary(data) {
         const result = await http.post("/duty/hr-duty", data);
+        console.log("service saveHrDutySummary :", result);
+
         return result;
     },
 };

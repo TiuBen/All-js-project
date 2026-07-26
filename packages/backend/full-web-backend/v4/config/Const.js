@@ -37,7 +37,22 @@ const CalcRule = {
         filter: {
             position: Leader_POSITIONS,
         },
-        name: "总小时",
+        name: "领班",
+        time: 0,
+        dayShift: 0,
+        nightShift: 0,
+    },
+    totalPositionTime: {
+        filter: {
+            position: [
+                ...Tower_POSITIONS,
+                ...Ground_POSITIONS,
+                ...Delivery_POSITIONS,
+                ...AOC_POSITIONS,
+                ...Leader_POSITIONS,
+            ],
+        },
+        name: "席位",
         time: 0,
         dayShift: 0,
         nightShift: 0,
@@ -107,4 +122,6 @@ module.exports = {
     Leader_POSITIONS,
     AOC_POSITIONS,
     DD_POSITIONS,
+    RULES,
+    CalcRule,
 };

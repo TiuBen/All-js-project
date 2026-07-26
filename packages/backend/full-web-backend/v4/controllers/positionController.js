@@ -1,7 +1,7 @@
 const service = require("../services/positionService");
 
 exports.getAll = async (req, res, next) => {
-    console.log(" PositionController getAll");
+    // console.log(" PositionController getAll");
 
     try {
         const query = req.query;
@@ -13,7 +13,7 @@ exports.getAll = async (req, res, next) => {
 };
 
 exports.getById = async (req, res, next) => {
-    console.log(" PositionController getById");
+    // console.log(" PositionController getById");
 
     try {
         const id = req.params.id;
@@ -25,7 +25,7 @@ exports.getById = async (req, res, next) => {
 };
 
 exports.create = async (req, res, next) => {
-    console.log(" PositionController create");
+    // console.log(" PositionController create");
 
     try {
         const data = req.body;
@@ -37,7 +37,7 @@ exports.create = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-    console.log(" PositionController update");
+    // console.log(" PositionController update");
 
     try {
         const id = req.params.id;
@@ -50,7 +50,7 @@ exports.update = async (req, res, next) => {
 };
 
 exports.delete = async (req, res, next) => {
-    console.log(" PositionController delete");
+    // console.log(" PositionController delete");
 
     try {
         const id = req.params.id;

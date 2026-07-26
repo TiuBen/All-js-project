@@ -369,8 +369,8 @@ export default function CheckDuration() {
     const { allDetailUsers } = useUserStore();
 
     return (
-        <div className="flex flex-col gap-2 text-sm overflow-x-auto">
-            <table className="w-auto border-collapse text-nowrap">
+        <div className="flex flex-col gap-2 text-sm overflow-x-auto m-auto">
+            <table className="w-auto  border-collapse text-nowrap">
                 <thead>
                     <tr>
                         <th className="border border-black">姓名</th>

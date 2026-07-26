@@ -27,38 +27,18 @@ const StyledLikeExcel = styled.table`
     }
 `;
 
-// tbody > tr {
-//     &:hover {
-//         background-color: #e0e0e0;
-//     }
-// }
-
-function UserRow({ year, month, username, userId }) {
+function UserRow({ year, month, username, userId, nightsCount }) {
     const [dutyStatics, setDutyStatics] = useState({});
-    const [nightsCount, setNightsCount] = useState({});
-    const monthly = dayjs().set("year", year).set("month", month).set("date", 1).format("YYYY-MM");
 
     useEffect(() => {
         // append 可以添加多个相同名称的参数
 
         let q = new URLSearchParams();
-        q.append("username", username);
-        // Append startDate and startTime
-        q.append("startDate", dayjs().set("year", year).set("month", month).set("date", 1).format("YYYY-MM-DD"));
-        q.append("startTime", "00:00:00");
+        q.append("userId", userId);
+        q.append("year", year);
+        q.append("month", month);
 
-        // Append endDate and endTime
-        q.append(
-            "endDate",
-            dayjs()
-                .month(month + 1)
-                .date(1)
-                .format("YYYY-MM-DD")
-        );
-        q.append("endTime", "00:00:01");
-        q.append("calculate", true);
-
-        fetch(`${API_URL.users}/${userId}/dutyStatistics?${q}`, {
+        fetch(`${API_URL.Base}/api/statistics/duty-duration?${q}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -68,19 +48,7 @@ function UserRow({ year, month, username, userId }) {
             .then((data) => {
                 setDutyStatics(data);
             });
-
-
-        fetch(`${API_URL.users}/${userId}/nightCount?${q}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setNightsCount(data);
-            });
-    }, [year, month, username]);
+    }, [year, month, userId]);
 
     return (
         <>
@@ -91,7 +59,7 @@ function UserRow({ year, month, username, userId }) {
                             username: username,
                             userId: userId,
                         },
-                        selectedUserNightCount: { ...nightsCount },
+                        // selectedUserNightCount: { ...nightsCount },
                     });
                 }}
                 className={`${
@@ -103,23 +71,19 @@ function UserRow({ year, month, username, userId }) {
                 {/* //! 姓名 */}
                 <td>{username}</td>
                 {/* 白天 */}
-                <td>{formatDecimal(dutyStatics?.totalCommanderTime?.dayShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalPositionTime?.dayShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalTeacherTime?.dayShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalStudentTime?.dayShift)}</td>
+                <td>{dutyStatics?.totalCommanderTime?.dayShift || ""}</td>
+                <td>{dutyStatics?.positionTime?.dayShift || ""}</td>
+                <td>{dutyStatics?.teacherTime?.dayShift || ""}</td>
+                <td>{dutyStatics?.traineeTime?.dayShift || ""}</td>
                 {/* 夜晚 */}
-                <td>{formatDecimal(dutyStatics?.totalCommanderTime?.nightShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalPositionTime?.nightShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalTeacherTime?.nightShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalStudentTime?.nightShift)}</td>
-                <td>{formatDecimal(dutyStatics?.totalAOCTime?.nightShift + dutyStatics?.totalAOCTime?.dayShift)}</td>
+                <td>{dutyStatics?.totalCommanderTime?.nightShift || ""}</td>
+                <td>{dutyStatics?.positionTime?.nightShift || ""}</td>
+                <td>{dutyStatics?.teacherTime?.nightShift || ""}</td>
+                <td>{dutyStatics?.traineeTime?.nightShift || ""}</td>
+                <td>{dutyStatics?.totalDDTime?.time || ""}</td>
 
-                <td className="bg-blue-400 text-white">{formatDecimal(dutyStatics?.totalTime?.time)}</td>
-                <td>
-                    {(nightsCount?.[username]?.[monthly]?.["夜班段数"] || 0) > 0
-                        ? `${nightsCount?.[username]?.[monthly]?.["夜班段数"]}段`
-                        : ""}
-                </td>
+                <td className="bg-blue-400 text-white">{dutyStatics?.totalTime?.time}</td>
+                <td>{nightsCount?.["summary"]?.["夜班段数"] || ""}</td>
             </tr>
         </>
     );
@@ -127,6 +91,26 @@ function UserRow({ year, month, username, userId }) {
 
 function MonthStatistics({ year, month }) {
     const { users } = useStore();
+    const [nightsCount, setNightsCount] = useState({});
+    useEffect(() => {
+        // append 可以添加多个相同名称的参数
+
+        let q = new URLSearchParams();
+        q.append("year", year);
+        q.append("month", month);
+
+        fetch(`${API_URL.Base}/api/statistics/night-count?${q}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setNightsCount(data);
+            });
+    }, [year, month]);
+
     return (
         <div className="w-[470px] overflow-y-auto">
             <StyledLikeExcel>
@@ -166,7 +150,14 @@ function MonthStatistics({ year, month }) {
                 <tbody>
                     {users.map((item, index) => {
                         return (
-                            <UserRow key={index} year={year} month={month} username={item.username} userId={item.id} />
+                            <UserRow
+                                key={index}
+                                year={year}
+                                month={month}
+                                username={item.username}
+                                userId={item.id}
+                                nightsCount={nightsCount[item.id]}
+                            />
                         );
                     })}
                 </tbody>

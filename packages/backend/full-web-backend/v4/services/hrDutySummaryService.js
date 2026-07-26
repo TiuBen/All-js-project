@@ -91,15 +91,15 @@ const hrDutySummaryService = {
      */
     create(data) {
         return new Promise((resolve, reject) => {
-            const { userId, username, duty_date, value } = data;
+            const { userId, username, duty_date, value, value_text } = data;
 
-            const sql = `INSERT INTO hr_duty_summary (userId, username, duty_date, value) 
-                         VALUES (?, ?, ?, ?)`;
-            const params = [userId, username || null, duty_date, value || null];
+            const sql = `INSERT INTO hr_duty_summary (userId, username, duty_date, value, value_text) 
+                         VALUES (?, ?, ?, ?, ?)`;
+            const params = [userId, username || null, duty_date, value || null, value_text || null];
 
             DutyDb.run(sql, params, function (err) {
                 if (err) reject(err);
-                else resolve({ id: this.lastID, userId, username, duty_date, value });
+                else resolve({ id: this.lastID, userId, username, duty_date, value, value_text });
             });
         });
     },
@@ -111,16 +111,16 @@ const hrDutySummaryService = {
      */
     batchCreate(records) {
         return new Promise((resolve, reject) => {
-            const sql = `INSERT OR REPLACE INTO hr_duty_summary (userId, username, duty_date, value) 
-                         VALUES (?, ?, ?, ?)`;
+            const sql = `INSERT OR REPLACE INTO hr_duty_summary (userId, username, duty_date, value, value_text) 
+                         VALUES (?, ?, ?, ?, ?)`;
 
             DutyDb.serialize(() => {
                 const stmt = DutyDb.prepare(sql);
                 let count = 0;
 
                 records.forEach((record) => {
-                    const { userId, username, duty_date, value } = record;
-                    stmt.run([userId, username || null, duty_date, value || null], function (err) {
+                    const { userId, username, duty_date, value, value_text } = record;
+                    stmt.run([userId, username || null, duty_date, value || null, value_text || null], function (err) {
                         if (err) {
                             reject(err);
                             return;
@@ -146,7 +146,7 @@ const hrDutySummaryService = {
     update(id, data = {}) {
         return new Promise((resolve, reject) => {
             // 只允许更新的字段
-            const allowedFields = ["userId", "username", "duty_date", "value"];
+            const allowedFields = ["userId", "username", "duty_date", "value", "value_text"];
             const updates = {};
             const params = [];
 

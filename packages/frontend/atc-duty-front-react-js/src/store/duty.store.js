@@ -189,41 +189,73 @@ export const useDutyStore = create(
         },
 
         // HR duty 相关
-        selectedUserHrDutySummary: [],
+        selectedUserHrDutySummary: {},
         isSelectedUserHrDutySummaryLoading: true,
-        async getHrDutySummary() {
+        async getHrDutySummary(isAll = false) {
+            console.log("store getHrDutySummary");
+            set({ isSelectedUserHrDutySummaryLoading: true });
             try {
                 const { selectedYear, selectedMonth } = useAppStore.getState();
                 const { selectedUser } = useUserStore.getState();
 
-                if (!selectedYear || !selectedMonth || !selectedUser) {
+                if (!selectedYear || selectedMonth == null) {
                     set({
                         selectedUserHrDutySummary: [],
                         isSelectedUserHrDutySummaryLoading: false,
                     });
-                    const data = await dutyService.getHrDutySummary({
-                        year: selectedYear,
-                        month: selectedMonth,
-                        userId: selectedUser.id,
-                        username: selectedUser.username,
-                    });
-                    set({
-                        selectedUserHrDutySummary: data.data,
-                        isSelectedUserHrDutySummaryLoading: false,
-                    });
+                    return;
                 }
+
+                const q = {
+                    year: selectedYear,
+                    month: selectedMonth,
+                };
+
+                if (isAll === false && selectedUser) {
+                    q.userId = selectedUser.id;
+                    q.username = selectedUser.username;
+                }
+
+                console.log("Request params:", q);
+
+                const rawData = await dutyService.getHrDutySummary(q);
+                const formattedData = {};
+                rawData.forEach((item) => {
+                    const uid = item.userId;
+                    const date = item.duty_date;
+
+                    // 1. 如果该用户还没有在对象中，初始化一个空对象
+                    if (!formattedData[uid]) {
+                        formattedData[uid] = {};
+                    }
+
+                    // 2. 将该日期的数据存入对应用户的对象中
+                    // 只保留你需要的 value 和 value_text
+                    formattedData[uid][date] = {
+                        value: item.value,
+                        value_text: item.value_text,
+                    };
+                });
+
+                set({
+                    selectedUserHrDutySummary: formattedData,
+                    isSelectedUserHrDutySummaryLoading: false,
+                });
             } catch (err) {
                 console.log(err);
                 set({
-                    selectedUserHrDutySummary: [],
+                    selectedUserHrDutySummary: {},
                     isSelectedUserHrDutySummaryLoading: false,
                 });
             }
         },
 
-        async createHrDutySummary(data) {
+        async saveHrDutySummary(data) {
             try {
-                const result = await dutyService.createHrDutySummary(data);
+                const result = await dutyService.saveHrDutySummary(data);
+
+                await get().getHrDutySummary();
+
                 return result;
             } catch (err) {
                 console.log(err);

@@ -12,39 +12,40 @@ import TimelineDutyDialog from "./Dialog/TimelineDutyDialog";
 import { API_URL } from "../utils/const/Const";
 
 function AppMobile() {
-    const { positions, isLoading, error, fetchOnDutyUsers } = useStore();
+    const { positions, isLoading, error, fetchOnDutyUsers, initStore } = useStore();
     const [showDetail, setShowDetail] = useState(false);
 
     // fetchOnDutyUsers(); // 初始拉取一次
 
     useEffect(() => {
         fetchOnDutyUsers();
+        initStore();
     }, []);
 
     // const [messages, setMessages] = useState([]);
 
-    useEffect(() => {
-        const eventSource = new EventSource(`${API_URL.events}`);
+    // useEffect(() => {
+    //     const eventSource = new EventSource(`${API_URL.events}`);
 
-        // 监听 heartbeat
-        // eventSource.addEventListener("heartbeat", (e) => {
-        //     console.log("heartbeat:", e.data);
-        // });
+    //     // 监听 heartbeat
+    //     // eventSource.addEventListener("heartbeat", (e) => {
+    //     //     console.log("heartbeat:", e.data);
+    //     // });
 
-        eventSource.addEventListener("dutyUpdated", (e) => {
-            console.log("dutyUpdated:", e.data);
-            fetchOnDutyUsers();
-        });
+    //     eventSource.addEventListener("dutyUpdated", (e) => {
+    //         console.log("dutyUpdated:", e.data);
+    //         fetchOnDutyUsers();
+    //     });
 
-        eventSource.onerror = (err) => {
-            console.error("SSE error:", err);
-            eventSource.close();
-        };
+    //     eventSource.onerror = (err) => {
+    //         console.error("SSE error:", err);
+    //         eventSource.close();
+    //     };
 
-        return () => {
-            eventSource.close();
-        };
-    }, []);
+    //     return () => {
+    //         eventSource.close();
+    //     };
+    // }, []);
 
     if (error) return <div>failed to load</div>;
     if (isLoading) return <div>loading...</div>;
@@ -52,7 +53,7 @@ function AppMobile() {
     return (
         <Theme accentColor="indigo">
             <DialogContextProvider>
-                <div className="w-screen w-[100dvw] h-screen h-[100dvh] relative flex flex-col overflow-clip  bg-gray-100" >
+                <div className="w-screen w-[100dvw] h-screen h-[100dvh] relative flex flex-col overflow-clip  bg-gray-100">
                     <header
                         className=" sticky w-full top-0  h-[3rem] text-white bg-blue-900 z-50 "
                         style={{ gridRow: "1" }}
@@ -83,7 +84,7 @@ function AppMobile() {
                     <>
                         {!showDetail ? (
                             <div className="flex flex-row flex-wrap gap-4 p-2 m-6 items-start content-start flex-1">
-                                {positions.map((item, index) => {
+                                {positions?.map((item, index) => {
                                     return <Position key={index} {...item} />;
                                 })}
                             </div>

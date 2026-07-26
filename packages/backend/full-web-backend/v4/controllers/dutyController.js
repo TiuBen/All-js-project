@@ -5,12 +5,12 @@ const { sendEvent } = require("../utils/util/see.js");
 const { normalizeDutyQuery } = require("../utils/index.js");
 
 exports.getByQuery = async (req, res, next) => {
-    console.log(" DutyController getByQuery");
+    // console.log(" DutyController getByQuery");
 
     try {
         // 从 query 或 params 取 id（兼容两种方式）
         const query = normalizeDutyQuery(req);
-        console.log(" DutyController getByQuery query:" + JSON.stringify(query));
+        // console.log(" DutyController getByQuery query:" + JSON.stringify(query));
 
         const result = await service.getByQuery(query);
         if (!result) {
@@ -23,7 +23,7 @@ exports.getByQuery = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-    console.log(" DutyController update");
+    // console.log(" DutyController update");
 
     try {
         const id = req.params.id;
@@ -42,7 +42,7 @@ exports.update = async (req, res, next) => {
 };
 
 exports.create = async (req, res, next) => {
-    console.log(" DutyController create");
+    // console.log(" DutyController create");
 
     try {
         const data = req.body;
@@ -60,7 +60,7 @@ exports.create = async (req, res, next) => {
 };
 
 exports.delete = async (req, res, next) => {
-    console.log(" DutyController delete");
+    // console.log(" DutyController delete");
 
     try {
         const id = req.params.id;
@@ -84,12 +84,12 @@ exports.delete = async (req, res, next) => {
  * 支持按 userId, username, startDate, endDate, duty_date 查询
  */
 exports.hrDutyGetByQuery = async (req, res, next) => {
-    console.log(" DutyController hrDutyGetByQuery");
+    // console.log(" DutyController hrDutyGetByQuery");
 
     try {
         const query = req.query;
         const result = await hrDutySummaryService.getByQuery(query);
-        successResponse(res, "Query success", result);
+        res.send(result);
     } catch (error) {
         next(error);
     }
@@ -99,7 +99,7 @@ exports.hrDutyGetByQuery = async (req, res, next) => {
  * 根据ID查询单条考勤汇总记录
  */
 exports.hrDutyGetById = async (req, res, next) => {
-    console.log(" DutyController hrDutyGetById");
+    // console.log(" DutyController hrDutyGetById");
 
     try {
         const { id } = req.params;
@@ -107,7 +107,7 @@ exports.hrDutyGetById = async (req, res, next) => {
         if (!result) {
             return errorResponse(res, "Not found", 404);
         }
-        successResponse(res, "Query success", result);
+        res.send(result);
     } catch (error) {
         next(error);
     }
@@ -119,7 +119,7 @@ exports.hrDutyGetById = async (req, res, next) => {
  * 可选字段: username, value
  */
 exports.hrDutyCreate = async (req, res, next) => {
-    console.log(" DutyController hrDutyCreate");
+    // console.log(" DutyController hrDutyCreate");
 
     try {
         const data = req.body;
@@ -147,7 +147,7 @@ exports.hrDutyCreate = async (req, res, next) => {
  * 请求体: { records: [{ userId, duty_date, username, value }, ...] }
  */
 exports.hrDutyBatchCreate = async (req, res, next) => {
-    console.log(" DutyController hrDutyBatchCreate");
+    // console.log(" DutyController hrDutyBatchCreate");
 
     try {
         const { records } = req.body;
@@ -176,7 +176,7 @@ exports.hrDutyBatchCreate = async (req, res, next) => {
  * 可更新字段: userId, username, duty_date, value
  */
 exports.hrDutyUpdate = async (req, res, next) => {
-    console.log(" DutyController hrDutyUpdate");
+    // console.log(" DutyController hrDutyUpdate");
 
     try {
         const { id } = req.params;
@@ -190,7 +190,7 @@ exports.hrDutyUpdate = async (req, res, next) => {
 
         const result = await hrDutySummaryService.update(id, data);
         sendEvent("hrDutyUpdated", result);
-        successResponse(res, "Updated successfully", result);
+        res.send(result);
     } catch (error) {
         next(error);
     }
@@ -200,7 +200,7 @@ exports.hrDutyUpdate = async (req, res, next) => {
  * 删除考勤汇总记录
  */
 exports.hrDutyDelete = async (req, res, next) => {
-    console.log(" DutyController hrDutyDelete");
+    // console.log(" DutyController hrDutyDelete");
 
     try {
         const { id } = req.params;
@@ -213,7 +213,7 @@ exports.hrDutyDelete = async (req, res, next) => {
 
         const result = await hrDutySummaryService.delete(id);
         sendEvent("hrDutyUpdated", result);
-        successResponse(res, "Deleted successfully", result);
+        res.send(result);
     } catch (error) {
         next(error);
     }

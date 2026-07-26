@@ -32,26 +32,20 @@ const useStore = create((set, get) => ({
     initStore: async () => {
         set({ isLoading: true, error: null });
         try {
-            // const cachedPositions = localStorage.getItem("positions");
-            // if (cachedPositions) {
-            //     set({ positions: JSON.parse(cachedPositions), isLoading: false });
-            // }
-
-            const [positionsRes, usersRes, groupedUsersRes, onDutyUsersRes] = await Promise.all([
+            const [positionsRes, usersRes, onDutyUsersRes] = await Promise.all([
                 fetch(`${API_URL.positions}?display=true`).then((r) => r.json()),
-                fetch(API_URL.users + `?fields=${encodeURIComponent("id,team,username,rank")}`).then((r) => r.json()),
-                fetch(`${API_URL.users}?fields=${encodeURIComponent("id,username,team,position")}&groupBy=team`).then(
-                    (r) => r.json()
-                ),
+                fetch(API_URL.users).then((r) => r.json()),
                 fetch(`${API_URL.duty}?outTime=null`).then((r) => r.json()),
             ]);
-            // const [positionsRes, usersRes, groupedUsersRes] = await Promise.all([
-            //     fetch(`${API_URL.positions}?display=true`).then((r) => r.json()),
-            //     fetch(API_URL.users + `?fields=${encodeURIComponent("id,username")}`).then((r) => r.json()),
-            //     fetch(`${API_URL.users}?fields=${encodeURIComponent("id,username,team,position")}&groupBy=team`).then(
-            //         (r) => r.json()
-            //     ),
-            // ]);
+
+            const _groupedUsers = usersRes.reduce((acc, person) => {
+                const team = person.team;
+                if (!acc[team]) {
+                    acc[team] = [];
+                }
+                acc[team].push(person);
+                return acc;
+            }, []);
 
             // positions
             set({ positions: positionsRes });
@@ -61,63 +55,13 @@ const useStore = create((set, get) => ({
             set({ users: usersRes });
             // localStorage.setItem("users", JSON.stringify(positionsRes));
 
-            // groupedUsers & detailUsers
-            const groupedUsers = groupedUsersRes;
-            const detailUsers = groupedUsersRes
-                .flat()
-                .map(({ id, username, team, position }) => ({ id, username, position }));
-            set({ groupedUsers, detailUsers });
+            set({ groupedUsers: _groupedUsers, detailUsers: usersRes });
             // localStorage.setItem("groupedUsers", JSON.stringify(positionsRes));
 
             // onDutyUsers
             set({ onDutyUsers: onDutyUsersRes });
 
             set({ isLoading: false });
-
-            // fetch(`${API_URL.positions}?display=true`)
-            //     .then((response) => response.json())
-            //     .then((data) => {
-            //         set({ positions: data, isLoading: false });
-            //         localStorage.setItem("positions", JSON.stringify(data)); // 写入缓存
-            //     })
-            //     .catch((error) => {
-            //         console.error("Error:", error);
-            //         set(error);
-            //     });
-
-            // fetch(API_URL.users + `?fields=${encodeURIComponent("id,username")}`)
-            //     .then((response) => response.json())
-            //     .then((data) => {
-            //         set({ users: data });
-            //     })
-            //     .catch((error) => {
-            //         console.error("Error:", error);
-            //         set(error);
-            //     });
-
-            // fetch(`${API_URL.users}?fields=${encodeURIComponent("id,username,team,position")}&groupBy=team`)
-            //     .then((response) => response.json())
-            //     .then((data) => {
-            //         const groupedUsers = data;
-            //         const detailUsers = data
-            //             .flat()
-            //             .map(({ id, username, team, position }) => ({ id, username, position }));
-            //         set({ groupedUsers, detailUsers });
-            //     })
-            //     .catch((error) => {
-            //         console.error("Error:", error);
-            //         set({ error });
-            //     });
-
-            // fetch(`${API_URL.duty}?outTime=null`)
-            //     .then((response) => response.json())
-            //     .then((data) => {
-            //         set({ onDutyUsers: data });
-            //     })
-            //     .catch((error) => {
-            //         console.error("Error:", error);
-            //         set(error);
-            //     });
         } catch (error) {
             set({ error: error.message });
         }
@@ -294,11 +238,9 @@ const useStore = create((set, get) => ({
                 //     set({ onDutyUsers: data });
                 // }
                 set({ onDutyUsers: data });
-
             });
     },
 
-   
     // 获取某个月的数据
 
     // 获取席位

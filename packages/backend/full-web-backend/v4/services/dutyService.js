@@ -6,6 +6,23 @@ const { FinalEditionDutyRowClip } = require("../utils/util/clipDutyRow");
 
 const { queryDuty } = require("../utils/queryDuty.js");
 
+const ALLOWED_COLUMNS = [
+    "id",
+    "userId",
+    "username",
+    "position",
+    "dutyType",
+    "inTime",
+    "outTime",
+    "roleType",
+    "relatedDutyTableRowId",
+    "roleStartTime",
+    "roleEndTime",
+    "roleTimes",
+    "status",
+    "relatedPrepareTableId",
+];
+
 const dutyService = {
     create(data) {
         const { teacherDutyRowId } = data;
@@ -22,8 +39,8 @@ const dutyService = {
 
         delete _tempD.teacherDutyRowId;
 
-        console.log("_tempD");
-        console.log(_tempD);
+        // console.log("_tempD");
+        // console.log(_tempD);
         const filteredData = Object.fromEntries(Object.entries(_tempD).filter(([key]) => key !== "id"));
 
         return new Promise((resolve, reject) => {
@@ -44,7 +61,7 @@ const dutyService = {
     async getByQuery(query) {
         try {
             const dutyRows = await queryDuty(query);
-            console.log("sssss dutyRows length:", dutyRows.length);
+            // console.log("sssss dutyRows length:", dutyRows.length);
 
             if (dutyRows.length > 0) {
                 // 处理每一行数据
@@ -54,7 +71,7 @@ const dutyService = {
                         if (row.inTime && row.outTime) {
                             return FinalEditionDutyRowClip(row);
                         } else {
-                            console.warn(`跳过不完整数据: id=${row.id}, inTime=${row.inTime}, outTime=${row.outTime}`);
+                            // console.warn(`跳过不完整数据: id=${row.id}, inTime=${row.inTime}, outTime=${row.outTime}`);
                             return {
                                 ...row,
                                 segments: [],
@@ -64,7 +81,7 @@ const dutyService = {
                             };
                         }
                     } catch (error) {
-                        console.error("处理单行数据出错:", error, row);
+                        // console.error("处理单行数据出错:", error, row);
                         return row; // 返回原始数据
                     }
                 });
@@ -75,7 +92,7 @@ const dutyService = {
                 return [];
             }
         } catch (error) {
-            console.error("getByQuery 出错:", error);
+            // console.error("getByQuery 出错:", error);
             throw error;
         }
     },

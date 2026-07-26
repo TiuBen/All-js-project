@@ -3,10 +3,10 @@ const { checkRule } = require("../utils/util/checkV3");
 
 //!  这里有点问题，可能需要再改
 async function checkDuration(userId, year, month, inTime, outTime) {
-    console.log("================== Service checkDuration called with year and month: ==================");
+    // console.log("================== Service checkDuration called with year and month: ==================");
 
     const dutyRows = await queryDuty({ userId, inTime, outTime });
-    console.log("查询结果:", dutyRows.length);
+    // console.log("查询结果:", dutyRows.length);
 
     const result24hour = checkRule(dutyRows, {
         windowHours: 24,

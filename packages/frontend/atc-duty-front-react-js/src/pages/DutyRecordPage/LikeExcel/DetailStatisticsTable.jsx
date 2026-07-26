@@ -91,19 +91,6 @@ function DetailStatisticsTable({ dutyStatistics }) {
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">综合协调席</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalZongheTime?.time || ""}
-                        </td>
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalZongheTime?.dayShift || ""}
-                        </td>
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalZongheTime?.nightShift || ""}
-                        </td>
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
-                    </tr>
-                    <tr className="hover:bg-slate-400">
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">现场调度席</td>
-                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
                             {dutyStatistics?.totalAOCTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
@@ -111,6 +98,19 @@ function DetailStatisticsTable({ dutyStatistics }) {
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
                             {dutyStatistics?.totalAOCTime?.nightShift || ""}
+                        </td>
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
+                    </tr>
+                    <tr className="hover:bg-slate-400">
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">现场调度席</td>
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
+                            {dutyStatistics?.totalDDTime?.time || ""}
+                        </td>
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
+                            {dutyStatistics?.totalDDTime?.dayShift || ""}
+                        </td>
+                        <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
+                            {dutyStatistics?.totalDDTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>
@@ -201,13 +201,13 @@ function DetailStatisticsTable({ dutyStatistics }) {
                     <tr className="hover:bg-slate-400">
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">现场调度</td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalAOCTime?.time || ""}
+                            {dutyStatistics?.totalDDTime?.time || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalAOCTime?.dayShift || ""}
+                            {dutyStatistics?.totalDDTime?.dayShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center">
-                            {dutyStatistics?.totalAOCTime?.nightShift || ""}
+                            {dutyStatistics?.totalDDTime?.nightShift || ""}
                         </td>
                         <td className=" border border-slate-600 px-1 text-nowrap text-sm text-center"></td>
                     </tr>

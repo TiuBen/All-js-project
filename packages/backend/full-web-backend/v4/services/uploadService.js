@@ -22,7 +22,7 @@ function getDutyRows(year, month, user) {
         return {
             success: false,
             error: "FILE_NOT_FOUND",
-            message: `未找到 ${year}年${month}月的Excel文件`,
+            message: `未找到 ${year}年${parseInt(month) + 1}月的Excel文件`,
             data: null,
         };
     }

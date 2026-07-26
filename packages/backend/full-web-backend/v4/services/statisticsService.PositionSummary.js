@@ -16,7 +16,7 @@ async function calcPositionSummary(year, month) {
 
         DutyDb.all(sql, [`${endDate} 08:30:00`, `${startDate} 18:00:00`], (err, rows) => {
             if (err) {
-                console.error("查询月度夜班数据失败:", err);
+                // console.error("查询月度夜班数据失败:", err);
                 reject(new Error("数据库查询失败"));
                 return;
             }

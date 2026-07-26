@@ -26,40 +26,122 @@ BEGIN
 END;
 `);
 
-// DutyDb.run(`
-// CREATE TRIGGER IF NOT EXISTS update_related_duty_outTime
-// AFTER UPDATE OF outTime ON duty
-// FOR EACH ROW
-// WHEN NEW.relatedDutyRowId IS NOT NULL
-// BEGIN
-//     -- 获取最后一个relatedDutyRowId
-//     WITH split(id, str, pos) AS (
-//         SELECT 
-//             1, 
-//             NEW.relatedDutyRowId || ';', 
-//             instr(NEW.relatedDutyRowId || ';', ';')
-//         UNION ALL
-//         SELECT 
-//             id + 1,
-//             substr(str, pos + 1),
-//             instr(substr(str, pos + 1), ';')
-//         FROM split
-//         WHERE pos > 0
-//     )
-//     -- 更新最后一个相关记录的outTime
-//     UPDATE duty
-//     SET outTime = strftime('%Y-%m-%d %H:%M:%S', 'now')
-//     WHERE id = (
-//         SELECT substr(str, 1, pos - 1)
-//         FROM split
-//         WHERE id = (SELECT max(id) FROM split WHERE pos > 0)
-//     );
-// END;
-// `);
+DutyDb.run(`
+    CREATE TRIGGER IF NOT EXISTS log_all_duty_updates
+    AFTER UPDATE ON duty
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO duty_audit_log (
+            duty_row_id, 
+            username, 
+            action_type, 
+            old_data, 
+            new_data
+        )
+        VALUES (
+            NEW.id, 
+            NEW.username, 
+            'UPDATE', 
+            json_object(
+                'id', OLD.id,
+                'userId', OLD.userId,
+                'username', OLD.username,
+                'position', OLD.position,
+                'dutyType', OLD.dutyType,
+                'inTime', OLD.inTime,
+                'outTime', OLD.outTime,
+                'roleType', OLD.roleType,
+                'relatedDutyTableRowId', OLD.relatedDutyTableRowId,
+                'roleStartTime', OLD.roleStartTime,
+                'roleEndTime', OLD.roleEndTime,
+                'roleTimes', OLD.roleTimes,
+                'status', OLD.status,
+                'relatedPrepareTableId', OLD.relatedPrepareTableId
+            ),
+            json_object(
+                'id', NEW.id,
+                'userId', NEW.userId,
+                'username', NEW.username,
+                'position', NEW.position,
+                'dutyType', NEW.dutyType,
+                'inTime', NEW.inTime,
+                'outTime', NEW.outTime,
+                'roleType', NEW.roleType,
+                'relatedDutyTableRowId', NEW.relatedDutyTableRowId,
+                'roleStartTime', NEW.roleStartTime,
+                'roleEndTime', NEW.roleEndTime,
+                'roleTimes', NEW.roleTimes,
+                'status', NEW.status,
+                'relatedPrepareTableId', NEW.relatedPrepareTableId
+            )
+        );
+    END;
+    `);
 
 DutyDb.run(`
-DROP TRIGGER IF EXISTS  update_related_duty_outTime;
-`)
+        CREATE TRIGGER IF NOT EXISTS log_all_duty_deletes
+        AFTER DELETE ON duty
+        FOR EACH ROW
+        BEGIN
+            INSERT INTO duty_audit_log (
+                duty_row_id, 
+                username, 
+                action_type, 
+                old_data, 
+                new_data
+            )
+            VALUES (
+                OLD.id, 
+                OLD.username, 
+                'DELETE', 
+                json_object(
+                    'id', OLD.id,
+                    'userId', OLD.userId,
+                    'username', OLD.username,
+                    'position', OLD.position,
+                    'dutyType', OLD.dutyType,
+                    'inTime', OLD.inTime,
+                    'outTime', OLD.outTime,
+                    'roleType', OLD.roleType,
+                    'relatedDutyTableRowId', OLD.relatedDutyTableRowId,
+                    'roleStartTime', OLD.roleStartTime,
+                    'roleEndTime', OLD.roleEndTime,
+                    'roleTimes', OLD.roleTimes,
+                    'status', OLD.status,
+                    'relatedPrepareTableId', OLD.relatedPrepareTableId
+                ),
+                NULL
+            );
+        END;
+        `);
+
+DutyDb.run(`
+    CREATE TABLE IF NOT EXISTS duty_audit_log (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    duty_row_id INTEGER NOT NULL,
+    username TEXT,
+    action_type TEXT NOT NULL,
+    old_data TEXT,
+    new_data TEXT,
+    changed_at DATETIME DEFAULT (strftime('%Y-%m-%d %H:%M:%S', 'now'))
+    );
+`);
+
+DutyDb.exec(`
+    CREATE TABLE IF NOT EXISTS hr_duty_summary (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER,
+        username TEXT DEFAULT NULL,
+        duty_date TEXT NOT NULL,
+        value TEXT DEFAULT NULL,
+        value_text TEXT,
+        UNIQUE(userId, duty_date)
+    );
+    `);
+
+// DutyDb.run(`
+// DROP TRIGGER IF EXISTS  log_all_duty_updates;
+// `);
 
 const userDbPath = path.join(__dirname, "../src/user-face.db");
 
