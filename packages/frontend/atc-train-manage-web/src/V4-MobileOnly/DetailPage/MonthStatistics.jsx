@@ -54,6 +54,7 @@ function UserRow({ year, month, username, userId, nightsCount }) {
         <>
             <tr
                 onClick={() => {
+                    console.log("click user row");
                     useStore.setState({
                         selectedUser: {
                             username: username,

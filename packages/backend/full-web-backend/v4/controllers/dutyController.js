@@ -34,7 +34,7 @@ exports.update = async (req, res, next) => {
         if (!result) {
             return errorResponse(res, "Not found", 404);
         }
-        sendEvent("dutyUpdated", result);
+        // sendEvent("dutyUpdated", result);
         successResponse(res, "Updated successfully", result);
     } catch (error) {
         next(error);
@@ -51,7 +51,7 @@ exports.create = async (req, res, next) => {
         if (!result) {
             res.status(500).json({ error: "DutyController create error" });
         }
-        sendEvent("dutyUpdated", result);
+        // sendEvent("dutyUpdated", result);
 
         res.status(201).send(result);
     } catch (error) {
@@ -68,7 +68,7 @@ exports.delete = async (req, res, next) => {
         if (!result) {
             return errorResponse(res, "Not found", 404);
         }
-        sendEvent("dutyUpdated", result);
+        // sendEvent("dutyUpdated", result);
         successResponse(res, "Deleted successfully", result);
     } catch (error) {
         next(error);
@@ -130,7 +130,7 @@ exports.hrDutyCreate = async (req, res, next) => {
         }
 
         const result = await hrDutySummaryService.create(data);
-        sendEvent("hrDutyUpdated", result);
+        // sendEvent("hrDutyUpdated", result);
         res.status(201).send(result);
     } catch (error) {
         // 处理唯一约束冲突
@@ -164,7 +164,7 @@ exports.hrDutyBatchCreate = async (req, res, next) => {
         }
 
         const result = await hrDutySummaryService.batchCreate(records);
-        sendEvent("hrDutyUpdated", result);
+        // sendEvent("hrDutyUpdated", result);
         res.status(201).send(result);
     } catch (error) {
         next(error);
@@ -189,7 +189,7 @@ exports.hrDutyUpdate = async (req, res, next) => {
         }
 
         const result = await hrDutySummaryService.update(id, data);
-        sendEvent("hrDutyUpdated", result);
+        // sendEvent("hrDutyUpdated", result);
         res.send(result);
     } catch (error) {
         next(error);
@@ -212,7 +212,7 @@ exports.hrDutyDelete = async (req, res, next) => {
         }
 
         const result = await hrDutySummaryService.delete(id);
-        sendEvent("hrDutyUpdated", result);
+        // sendEvent("hrDutyUpdated", result);
         res.send(result);
     } catch (error) {
         next(error);

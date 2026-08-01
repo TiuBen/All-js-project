@@ -77,4 +77,10 @@ export const dutyService = {
 
         return result;
     },
+    async updateHrDutySummary(data) {
+        const result = await http.put(`/duty/hr-duty/${data.id}`, data);
+        console.log("service saveHrDutySummary :", result);
+
+        return result;
+    },
 };

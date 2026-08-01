@@ -94,6 +94,7 @@ function Page() {
                 value: dutyInfo.value,
                 value_text: dutyInfo.value_text,
                 confirmed: true,
+                id: dutyInfo.id,
             };
         });
 
@@ -103,14 +104,30 @@ function Page() {
     // 4. 处理选择事件
     const handleSelect = async (opt) => {
         console.log(`日期 ${selectedDate} 选择了: ${opt.value_text}`);
+        console.log(opt);
+        // 利用 displayDutyMap 判断，如果存在且 value 不为空，说明是已有数据
+        const isExisting = displayDutyMap[selectedDate]?.id !== undefined;
 
-        await saveHrDutySummary({
+        console.log(isExisting ? "触发 PUT 更新逻辑" : "触发 POST 新增逻辑");
+        console.log(displayDutyMap[selectedDate]);
+        const payload = {
             userId: selectedUser.id,
             username: selectedUser.username,
             duty_date: selectedDate,
             value: opt.value,
             value_text: opt.value_text,
-        });
+        };
+        if (isExisting) {
+            // 已有数据，使用 PUT 方法更新
+            // 假设你的 store 里有 updateHrDutySummary 方法，或者 saveHrDutySummary 内部处理了
+            console.log("触发 PUT 更新逻辑");
+            payload.id = displayDutyMap[selectedDate].id;
+            await saveHrDutySummary(payload, "PUT"); // 示例：传入方法标识
+        } else {
+            // 无数据，使用 POST 方法新增
+            console.log("触发 POST 新增逻辑");
+            await saveHrDutySummary(payload, "POST"); // 示例：传入方法标识
+        }
 
         setSelectedDate(null);
     };

@@ -10,28 +10,23 @@ import React, { useState, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 
 function MonthCalender(props) {
-    const {
-        year = new Date().getFullYear(),
-        month = new Date().getMonth(),
-        data,
-        title,
-        onDateTitleButtonClick,
-        cellRender,
-        Cell,
-    } = props;
+    const { year, month, data, title, onDateTitleButtonClick, cellRender, Cell } = props;
     const [thisMonthDateArray, setThisMonthDateArray] = useState([]);
 
     // 生成当前月份的日期数组
     useEffect(() => {
         const generateMonthDates = () => {
-            const daysInMonth = new Date(year, month, 0).getDate(); // 获取当前月份的天数 1-31 天
-            const thisMonthStartDay = new Date(year, month, 0).getDay(); // 获取当前月份的天数 0-6 ，返回一个具体日期中一周的第几天，0 表示星期天。
+            // 注意：new Date(year, month, 0) 获取的是上个月最后一天，
+            // 所以获取天数应该是 new Date(year, month + 1, 0).getDate()
+            // 获取当月第一天是星期几：new Date(year, month, 1).getDay()
+            const daysInMonth = dayjs().year(year).month(month).daysInMonth();
+            const thisMonthStartDay = dayjs().year(year).month(month).date(1).day(); // Use .day() not .getDay()
             const datesArray = [];
 
             const _5rowsRo6Rows = 5; // Math.ceil((daysInMonth + thisMonthStartDay) / 7);
 
             for (let day = 1; day <= 7 * _5rowsRo6Rows; day++) {
-                const _day = dayjs(new Date(year, month, day - thisMonthStartDay)).format("YYYY-MM-DD");
+                const _day = dayjs(new Date(year, month, day - thisMonthStartDay + 1)).format("YYYY-MM-DD");
 
                 datesArray.push(_day);
             }
@@ -42,30 +37,6 @@ function MonthCalender(props) {
         generateMonthDates();
     }, [year, month]);
 
-    // const cellRefs = useRef([]);
-    // const resizeObservers = useRef([]);
-    // useEffect(() => {
-    //     cellRefs.current.forEach((ref, index) => {
-    //         if (ref && !resizeObservers.current[index]) {
-    //             const observer = new ResizeObserver((entries) => {
-    //                 for (let entry of entries) {
-    //                     console.log(`单元格${index}尺寸变化:`, entry.contentRect);
-    //                     // 可以在这里处理尺寸变化
-    //                 }
-    //             });
-    //             observer.observe(ref);
-    //             resizeObservers.current[index] = observer;
-    //         }
-    //     });
-
-    //     return () => {
-    //         // 清理观察器
-    //         resizeObservers.current.forEach((observer) => {
-    //             if (observer) observer.disconnect();
-    //         });
-    //     };
-    // }, [thisMonthDateArray]);
-
     return (
         <div
             aria-roledescription="month-calendar"
@@ -75,7 +46,10 @@ function MonthCalender(props) {
             <div className="col-span-7 ">{title}</div>
             {["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((day, index) => {
                 return (
-                    <div key={index} className="outline outline-1  outline-gray-300 text-nowrap font-bold ">
+                    <div
+                        key={index}
+                        className="outline outline-1  outline-gray-300 text-nowrap font-bold text-center text-blue-800"
+                    >
                         {day}
                     </div>
                 );
@@ -91,7 +65,9 @@ function MonthCalender(props) {
                     >
                         <div
                             className={` text-nowrap hover:font-bold ] px-4  text-center ${
-                                dayjs(date).isSame(Date.now(), "day") ? "bg-blue-600 text-cyan-50 " : ""
+                                dayjs(date).isSame(Date.now(), "day")
+                                    ? "bg-blue-600 text-cyan-50 "
+                                    : "bg-blue-300 text-white"
                             } `}
                         >
                             {dayjs().get("month") !== dayjs(date, ["YYYY-MM-DD", "YYYY-M-D"]).get("month")

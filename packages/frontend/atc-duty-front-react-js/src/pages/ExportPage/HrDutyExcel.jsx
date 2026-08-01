@@ -149,47 +149,45 @@ export default function HrDutyExcel() {
                     <span className="text-sm text-blue-500 animate-pulse">加载中...</span>
                 )}
             </h2>
-            <div className="flex flex-row justify-start items-start text-center text-sm overflow-x-auto">
-                <table className="w-auto border-collapse text-nowrap">
-                    <thead>
-                        <tr>
-                            <th className="border border-gray-300 p-2 w-24 bg-blue-50 sticky left-0 z-30">姓名</th>
-                            {daysArray.map((dateStr, index) => {
-                                const dayJsDate = dayjs(dateStr);
-                                const isWeekend = dayJsDate.day() === 0 || dayJsDate.day() === 6;
-                                return (
-                                    <th
-                                        key={index}
-                                        className={`border border-gray-300 p-1  text-xs font-normal ${
-                                            isWeekend ? "bg-red-50 text-red-500" : "bg-white text-gray-700"
-                                        }`}
-                                    >
-                                        <div>{dayJsDate.date()}</div>
-                                        <div className="text-[10px] opacity-60">
-                                            {["日", "一", "二", "三", "四", "五", "六"][dayJsDate.day()]}
-                                        </div>
-                                    </th>
-                                );
-                            })}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {allDetailUsers.map((user) => {
-                            const userDutyMap = selectedUserHrDutySummary?.[user.id] || {};
-
+            <table className="w-auto border-collapse text-nowrap text-center text-sm overflow-x-auto">
+                <thead>
+                    <tr>
+                        <th className="border border-gray-300 p-2 w-24 bg-blue-50 sticky left-0 z-30">姓名</th>
+                        {daysArray.map((dateStr, index) => {
+                            const dayJsDate = dayjs(dateStr);
+                            const isWeekend = dayJsDate.day() === 0 || dayJsDate.day() === 6;
                             return (
-                                <UserNightCountRow
-                                    key={user.id}
-                                    userId={user.id}
-                                    username={user.username}
-                                    selectedMonthDateArray={daysArray}
-                                    userDutyMap={userDutyMap}
-                                />
+                                <th
+                                    key={index}
+                                    className={`border border-gray-300 p-1  text-xs font-normal ${
+                                        isWeekend ? "bg-red-50 text-red-500" : "bg-white text-gray-700"
+                                    }`}
+                                >
+                                    <div>{dayJsDate.date()}</div>
+                                    <div className="text-[10px] opacity-60">
+                                        {["日", "一", "二", "三", "四", "五", "六"][dayJsDate.day()]}
+                                    </div>
+                                </th>
                             );
                         })}
-                    </tbody>
-                </table>
-            </div>
+                    </tr>
+                </thead>
+                <tbody>
+                    {allDetailUsers.map((user) => {
+                        const userDutyMap = selectedUserHrDutySummary?.[user.id] || {};
+
+                        return (
+                            <UserNightCountRow
+                                key={user.id}
+                                userId={user.id}
+                                username={user.username}
+                                selectedMonthDateArray={daysArray}
+                                userDutyMap={userDutyMap}
+                            />
+                        );
+                    })}
+                </tbody>
+            </table>
         </>
     );
 }

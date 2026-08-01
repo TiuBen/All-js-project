@@ -169,6 +169,9 @@ const hrDutySummaryService = {
 
             const sql = `UPDATE hr_duty_summary SET ${setClause} WHERE id = ?`;
 
+            // console.log(sql);
+            // console.log(params);
+
             DutyDb.run(sql, params, function (err) {
                 if (err) reject(err);
                 else resolve({ id, ...updates });

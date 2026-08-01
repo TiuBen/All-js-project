@@ -219,6 +219,7 @@ export const useDutyStore = create(
                 console.log("Request params:", q);
 
                 const rawData = await dutyService.getHrDutySummary(q);
+                console.log("Raw data:", rawData);
                 const formattedData = {};
                 rawData.forEach((item) => {
                     const uid = item.userId;
@@ -232,10 +233,13 @@ export const useDutyStore = create(
                     // 2. 将该日期的数据存入对应用户的对象中
                     // 只保留你需要的 value 和 value_text
                     formattedData[uid][date] = {
+                        id: item.id, // ✅ 加上这一行，保留数据库主键
+
                         value: item.value,
                         value_text: item.value_text,
                     };
                 });
+                console.log("formattedData", formattedData);
 
                 set({
                     selectedUserHrDutySummary: formattedData,
@@ -250,13 +254,15 @@ export const useDutyStore = create(
             }
         },
 
-        async saveHrDutySummary(data) {
+        async saveHrDutySummary(data, method = "POST") {
             try {
-                const result = await dutyService.saveHrDutySummary(data);
+                if (method === "POST") {
+                    await dutyService.saveHrDutySummary(data);
+                } else if (method === "PUT") {
+                    await dutyService.updateHrDutySummary(data);
+                }
 
                 await get().getHrDutySummary();
-
-                return result;
             } catch (err) {
                 console.log(err);
                 return null;
