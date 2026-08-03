@@ -116,9 +116,9 @@ function SideBar() {
 
     return (
         <aside
-            className={` overflow-y-auto flex flex-row  bg-blue-600  text-blue-50 ${isLeftBarOpen ? "w-[10rem]" : ""} `}
+            className={` overflow-y-auto flex flex-row  bg-blue-600  text-blue-50 ${isLeftBarOpen ? "w-[8rem]" : ""} `}
         >
-            <div className="flex flex-col flex-1 items-start gap-2 p-4 text-accent font-semibold ">
+            <div className="flex flex-col flex-1 items-start gap-2 p-2 text-accent font-semibold ">
                 {items.map((item, index) => {
                     return (
                         <LeftNavItem

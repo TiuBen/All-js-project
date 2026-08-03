@@ -82,7 +82,7 @@ checkExcelExists = async (req, res, next) => {
 };
 
 getDutyRowsController = async (req, res, next) => {
-    console.log("getDutyRowsController");
+    // console.log("getDutyRowsController");
 
     try {
         const { year, month, username } = req.query;

@@ -17,6 +17,7 @@ function Page() {
         isDutyRecordsLoading,
         getDutyRecords,
         excelDutyRecords,
+        sumExcelDutyRecords,
         isExcelDutyRecordsLoading,
         getSelectedYearMonthUserExcelRows,
         excelError,
@@ -76,7 +77,7 @@ function Page() {
     };
 
     const getButtonStyle = () => {
-        const baseStyle = "justify-self-center m-auto border px-4 py-2 rounded transition-colors";
+        const baseStyle = " mx-auto border px-4 py-2 rounded transition-colors";
 
         if (!selectedUser || isExcelDutyRecordsLoading) {
             return `${baseStyle} bg-gray-200 text-gray-400 cursor-not-allowed border-gray-200`;
@@ -243,19 +244,16 @@ function Page() {
                 <YearMonthTab />
             </div>
 
-            <div className="flex flex-row flex-nowrap m-2">
-                <div className="flex-1 flex flex-row flex-nowrap justify-start items-start gap-2 overflow-auto flex-wrap min-h-0 cursor-pointer text-sm">
-                    <div className="flex gap-2 flex-1 flex-row flex-nowrap">
-                        <div className="flex">
-                            <LikeExcel />
-                        </div>
-                        <div className="flex flex-col justify-items-start align-content-start">
-                            {renderExcelStatus()}
-                            {showJsonData && hasExcelData && (
-                                <>
-                                    <table>
+            <div className="flex flex-row flex-nowrap mt-2">
+                <div className="flex-1 flex flex-row flex-nowrap justify-start items-start gap-2 overflow-auto flex-wrap  text-sm min-h-0 ">
+                    <div className="grid grid-cols-[auto_1fr] gap-2 flex-1 items-start ">
+                        <LikeExcel />
+                        {showJsonData && hasExcelData && (
+                            <>
+                                <div>
+                                    <table className="bg-gray-100 ">
                                         {/* 1. 渲染表头：取数组的第一个元素，获取所有的 key */}
-                                        <thead className="bg-gray-100 sticky top-0 h-[2rem]">
+                                        <thead className="bg-gray-100 sticky top-0 h-[2rem] text-xs">
                                             <tr>
                                                 <th className="border border-slate-600 px-2 text-nowrap text-center ">
                                                     序号
@@ -263,7 +261,7 @@ function Page() {
                                                 {Object.keys(excelDutyRecords[0]).map((key) => (
                                                     <th
                                                         key={key}
-                                                        className="border border-slate-600 px-2 text-nowrap text-center "
+                                                        className="border border-slate-600 px-2 text-wrap text-center "
                                                     >
                                                         {key}
                                                     </th>
@@ -272,7 +270,7 @@ function Page() {
                                         </thead>
 
                                         {/* 2. 渲染表体：遍历数组中的每一个对象 */}
-                                        <tbody className="bg-gray-100 ">
+                                        <tbody>
                                             {excelDutyRecords.map((row, rowIndex) => (
                                                 <tr key={rowIndex} className="hover:bg-blue-50 transition-colors">
                                                     {/* 3. 遍历当前对象的所有 value */}
@@ -293,22 +291,55 @@ function Page() {
                                             ))}
                                         </tbody>
                                     </table>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                                </div>
+                                <DetailStatisticsTable dutyStatistics={userDutyDurationStatistics} />
 
-                    <div className=" justify-self-end align-self-end">
-                        <DetailStatisticsTable dutyStatistics={userDutyDurationStatistics} />
+                                <div>
+                                    <table className="bg-gray-100  ">
+                                        {/* 1. 渲染表头：取数组的第一个元素，获取所有的 key */}
+                                        <thead className=" sticky top-0 h-[2rem] text-xs">
+                                            <tr>
+                                                {Object.keys(sumExcelDutyRecords[0]).map((key) => (
+                                                    <th
+                                                        key={key}
+                                                        className="border border-slate-600 px-2 text-center text-wrap  "
+                                                    >
+                                                        {key}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+
+                                        {/* 2. 渲染表体：遍历数组中的每一个对象 */}
+                                        <tbody>
+                                            {sumExcelDutyRecords.map((row, rowIndex) => (
+                                                <tr key={rowIndex} className="hover:bg-blue-50 transition-colors">
+                                                    {Object.values(row).map((value, colIndex) => (
+                                                        <td
+                                                            key={colIndex}
+                                                            className="border border-slate-600 px-2 text-nowrap text-center  "
+                                                        >
+                                                            {value}
+                                                        </td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex flex-col ml-4">
+                <div className="flex flex-col items-start gap-2">
                     <UserRadioButtonList />
 
                     <button onClick={handleButtonClick} disabled={isButtonDisabled} className={getButtonStyle()}>
                         {getButtonText()}
                     </button>
+                    {renderExcelStatus()}
+                    <div className="text-red-400">管制时间不包括调度席位</div>
                 </div>
             </div>
 

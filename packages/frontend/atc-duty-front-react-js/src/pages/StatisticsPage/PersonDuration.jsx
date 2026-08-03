@@ -42,6 +42,7 @@ function UserDutyDurationRow({ userId, username, startDate, endDate, year, month
                 <td className="border border-black px-4">加载中...</td>
                 <td className="border border-black px-4">加载中...</td>
                 <td className="border border-black px-4">加载中...</td>
+                <td className="border border-black px-4">加载中...</td>
             </tr>
         );
 
@@ -49,16 +50,29 @@ function UserDutyDurationRow({ userId, username, startDate, endDate, year, month
         <tr className="hover:bg-slate-400">
             <td className="border border-black w-[5rem] bg-blue-50  px-4">{username}</td>
             <td className="border border-black text-center  px-4">
-                {stats?.totalTime?.time !== 0 ? stats.totalTime?.time?.toFixed(2) : ""}
+                {stats?.totalCommanderTime?.dayShift !== 0 ? stats.totalCommanderTime?.dayShift?.toFixed(2) : ""}
             </td>
             <td className="border border-black text-center  px-4">
-                {stats?.totalTime?.dayShift !== 0 ? stats.totalTime?.dayShift?.toFixed(2) : ""}
+                {stats?.positionTime?.dayShift !== 0 ? stats.positionTime?.dayShift?.toFixed(2) : ""}
             </td>
-            <td className="border border-black text-center px-4">
-                {stats?.totalTime?.nightShift !== 0 ? stats.totalTime?.nightShift?.toFixed(2) : ""}
+            <td className="border border-black text-center  px-4">
+                {stats?.teacherTime?.dayShift !== 0 ? stats.teacherTime?.dayShift?.toFixed(2) : ""}
             </td>
-
-            <td className="border border-black text-center  "></td>
+            <td className="border border-black text-center  px-4">
+                {stats?.totalCommanderTime?.nightShift !== 0 ? stats.totalCommanderTime?.nightShift?.toFixed(2) : ""}
+            </td>
+            <td className="border border-black text-center  px-4">
+                {stats?.positionTime?.nightShift !== 0 ? stats.positionTime?.nightShift?.toFixed(2) : ""}
+            </td>
+            <td className="border border-black text-center  px-4">
+                {stats?.teacherTime?.nightShift !== 0 ? stats.teacherTime?.nightShift?.toFixed(2) : ""}
+            </td>
+            <td className="border border-black text-center  px-4">
+                {stats?.totalPositionTime?.time !== 0 ? stats.totalPositionTime?.time?.toFixed(2) : ""}
+            </td>
+            <td className="border border-black text-center  px-4">
+                {stats?.totalDDTime?.time !== 0 ? stats.totalDDTime?.time?.toFixed(2) : ""}
+            </td>
         </tr>
     );
 }
@@ -83,11 +97,28 @@ export default function PersonDuration() {
             <table className="w-auto border-collapse text-nowrap">
                 <thead>
                     <tr>
+                        <th className="border border-black px-4"></th>
+                        <th className="border border-black px-4 " colSpan={3}>
+                            白班
+                        </th>
+                        <th className="border border-black px-4" colSpan={3}>
+                            夜班
+                        </th>
+                        <th className="border border-black px-4" rowSpan={2}>
+                            管制总小时数
+                        </th>
+                        <th className="border border-black px-4" rowSpan={2}>
+                            调度席
+                        </th>
+                    </tr>
+                    <tr>
                         <th className="border border-black px-4">姓名</th>
-                        <th className="border border-black px-4">总小时</th>
-                        <th className="border border-black px-4">白班小时</th>
-                        <th className="border border-black px-4">夜班小时 (0000-0800)</th>
-                        <th className="border border-black px-4">备注</th>
+                        <th className="border border-black px-4">带班</th>
+                        <th className="border border-black px-4">席位</th>
+                        <th className="border border-black px-4">教员</th>
+                        <th className="border border-black px-4">带班</th>
+                        <th className="border border-black px-4">席位</th>
+                        <th className="border border-black px-4">教员</th>
                     </tr>
                 </thead>
                 <tbody>

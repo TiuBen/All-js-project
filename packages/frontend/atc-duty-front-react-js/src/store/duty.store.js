@@ -105,6 +105,7 @@ export const useDutyStore = create(
 
         // Excel相关
         excelDutyRecords: [],
+        sumExcelDutyRecords: [],
         isExcelDutyRecordsLoading: false,
         excelError: null,
         excelErrorType: null,
@@ -130,17 +131,21 @@ export const useDutyStore = create(
                 excelErrorType: null,
             });
 
-            try {
-                const data = await fileService.getSelectedYearMonthUserExcelRows(
-                    selectedYear,
-                    selectedMonth,
-                    selectedUser.username
-                );
-                set({ excelDutyRecords: data, isExcelDutyRecordsLoading: false });
-            } catch (err) {
-                console.log(err);
-                set({ isExcelDutyRecordsLoading: false, excelDutyRecords: [] });
-            }
+            // try {
+            //     const data = await fileService.getSelectedYearMonthUserExcelRows(
+            //         selectedYear,
+            //         selectedMonth,
+            //         selectedUser.username
+            //     );
+            //     set({
+            //         excelDutyRecords: data.detailRow,
+            //         sumExcelDutyRecords: data.sumRow,
+            //         isExcelDutyRecordsLoading: false,
+            //     });
+            // } catch (err) {
+            //     console.log(err);
+            //     set({ isExcelDutyRecordsLoading: false, excelDutyRecords: [], sumExcelDutyRecords: [] });
+            // }
 
             try {
                 const data = await fileService.getSelectedYearMonthUserExcelRows(
@@ -151,7 +156,8 @@ export const useDutyStore = create(
 
                 if (data.success) {
                     set({
-                        excelDutyRecords: data?.data || [],
+                        excelDutyRecords: data?.data?.detailRow || [],
+                        sumExcelDutyRecords: data?.data?.sumRow || [],
                         isExcelDutyRecordsLoading: false,
                         excelError: null,
                         excelErrorType: null,
@@ -159,6 +165,8 @@ export const useDutyStore = create(
                 } else {
                     set({
                         excelDutyRecords: [],
+                        sumExcelDutyRecords: [],
+
                         isExcelDutyRecordsLoading: false,
                         excelError: data?.message || "获取数据失败",
                         excelErrorType: data?.errorType || "UNKNOWN_ERROR",
@@ -171,6 +179,8 @@ export const useDutyStore = create(
 
                 set({
                     excelDutyRecords: [],
+                    sumExcelDutyRecords: [],
+
                     isExcelDutyRecordsLoading: false,
                     excelError: errorMessage,
                     excelErrorType: errorType,

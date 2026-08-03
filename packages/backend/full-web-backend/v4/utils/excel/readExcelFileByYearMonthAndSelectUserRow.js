@@ -133,9 +133,38 @@ function getRowsByUsername(filePath, username) {
 
             rows.push(row);
         }
-        cache.set(cacheKey, rows);
 
-        return rows;
+        //! 总数部分
+        //! 总数部分
+        const sumHeaders = [];
+        const sumHeaderRow = 1; // 第2行
+        for (let c = 8; c <= 11; c++) {
+            const addr = XLSX.utils.encode_cell({ r: sumHeaderRow, c });
+            const cell = worksheet[addr];
+            sumHeaders.push((cell?.v ?? "").toString().trim());
+        }
+
+        const sumRows = [];
+
+        // 第三行开始
+        for (let r = 2; r <= 20; r++) {
+            const row = {};
+            row[sumHeaders[0]] = getCellValue(worksheet[XLSX.utils.encode_cell({ r, c: 8 })]);
+            row[sumHeaders[1]] = getCellValue(worksheet[XLSX.utils.encode_cell({ r, c: 9 })]);
+            row[sumHeaders[2]] = getCellValue(worksheet[XLSX.utils.encode_cell({ r, c: 10 })]);
+            row[sumHeaders[3]] = getCellValue(worksheet[XLSX.utils.encode_cell({ r, c: 11 })]);
+
+            sumRows.push(row);
+        }
+
+        let all = {};
+        all.detailRow = rows;
+        all.sumRow = sumRows;
+
+        // cache.set(cacheKey, rows);
+        // return rows;
+        cache.set(cacheKey, all);
+        return all;
     } catch (error) {
         // console.error("读取Excel文件时出错:", error);
         throw error;
