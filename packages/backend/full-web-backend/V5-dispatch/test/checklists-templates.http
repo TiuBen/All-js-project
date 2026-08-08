@@ -1,0 +1,22 @@
+# ============================================================
+# 检查单模板接口测试（GET /api/checklists/templates*）
+# 使用 VS Code REST Client 插件
+# ============================================================
+
+@base = http://localhost:5183/api
+
+### 1. 检查单模板列表（元信息）
+GET {{base}}/checklists/templates
+Accept: application/json
+
+### 2. 货运航班模板完整详情（含 flightTypes 树形结构）
+GET {{base}}/checklists/templates/cargo-checklist
+Accept: application/json
+
+### 3. 客运航班模板完整详情（三阶段：始发/过站/航后）
+GET {{base}}/checklists/templates/passenger-checklist
+Accept: application/json
+
+### 4. 不存在的模板（应返回 404）
+GET {{base}}/checklists/templates/not-exist
+Accept: application/json

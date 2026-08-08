@@ -1,0 +1,51 @@
+# ============================================================
+# 航班接口测试（GET /api/flights*）
+# 使用 VS Code REST Client 插件
+# ============================================================
+
+@base = http://localhost:5183/api
+
+### 1. 查询航班列表（不传日期 → 取 fips 最近一天）
+GET {{base}}/flights
+Accept: application/json
+
+### 2. 查询航班列表（按日期精确过滤，该天无数据自动回退最近天）
+GET {{base}}/flights?date=2026-07-31
+Accept: application/json
+
+### 3. 查询航班列表（按日期范围过滤）
+GET {{base}}/flights?from=2026-07-01&to=2026-07-31
+Accept: application/json
+
+### 4. 查询单个航班详情（flights 表）
+GET {{base}}/flights/FL-CARGO-001
+Accept: application/json
+
+### 5. 新增航班
+POST {{base}}/flights
+Content-Type: application/json
+
+{
+  "flightNo": "TEST-001",
+  "origin": "测试城市",
+  "destination": "鄂州",
+  "departureTimeUtc": "2026-08-07T01:00:00Z",
+  "landingTimeUtc": "2026-08-07T03:00:00Z",
+  "flightDate": "2026-08-07",
+  "status": "计划",
+  "aircraftType": "B737",
+  "flightType": "常规航班",
+  "category": "货运航班"
+}
+
+### 6. 更新航班（局部更新）
+PUT {{base}}/flights/TEST-001
+Content-Type: application/json
+
+{
+  "status": "起飞"
+}
+
+### 7. 删除航班
+DELETE {{base}}/flights/TEST-001
+Accept: application/json

@@ -1,0 +1,64 @@
+# ============================================================
+# 检查单填写记录接口测试（/api/checklists/records*）
+# 使用 VS Code REST Client 插件
+# 注意：POST 创建的记录请记录返回的 id，用于后续 GET/PUT
+# ============================================================
+
+@base = http://localhost:5183/api
+
+### 1. 查询填写记录列表（全部，按检查时间倒序）
+GET {{base}}/checklists/records
+Accept: application/json
+
+### 2. 按航班日期精确查询（如 2026-07-31）
+GET {{base}}/checklists/records?date=2026-07-31
+Accept: application/json
+
+### 3. 按航班 ID 查询
+GET {{base}}/checklists/records?flightId=FL-CARGO-001
+Accept: application/json
+
+### 4. 创建填写记录（draft 草稿）
+POST {{base}}/checklists/records
+Content-Type: application/json
+
+{
+  "flightId": "FL-CARGO-001",
+  "flightNo": "Y81111",
+  "aircraftType": "B757",
+  "flightType": "常规航班",
+  "checklistCategory": "货运航班",
+  "checklistTemplateId": "cargo-checklist",
+  "checklistTitle": "货运航班节点保障及合规性监控检查单",
+  "flightDate": "2026-07-31",
+  "header": { "date": "2026-07-31", "flightNo": "Y81111" },
+  "items": {
+    "main-1": { "status": "ok", "time": "09:30", "note": "正常" },
+    "main-2": { "status": "ok", "time": "09:40" }
+  },
+  "videoSupervision": {},
+  "inspector": "测试员",
+  "status": "draft",
+  "checkedAt": "2026-07-31T01:30:00Z"
+}
+
+### 5. 查询单个填写记录（将上面返回的 id 填入）
+GET {{base}}/checklists/records/1
+Accept: application/json
+
+### 6. 更新填写记录（提交：status → submitted）
+PUT {{base}}/checklists/records/1
+Content-Type: application/json
+
+{
+  "status": "submitted",
+  "inspector": "测试员"
+}
+
+### 7. 缺少必填字段（应返回 400）
+POST {{base}}/checklists/records
+Content-Type: application/json
+
+{
+  "flightNo": "NO-ID"
+}

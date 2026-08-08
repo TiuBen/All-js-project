@@ -1,0 +1,20 @@
+{
+  "name": "v5-dispatch-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "parse-excel": "python scripts/excel_to_json.py",
+    "init-db": "node scripts/init_db.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.1"
+  }
+}

@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - packages/frontend/*
+  - packages/backend/full-web-backend/V5-dispatch
 
 catalogs:
   prisma:
