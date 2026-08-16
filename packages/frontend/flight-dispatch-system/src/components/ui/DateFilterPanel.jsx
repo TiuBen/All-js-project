@@ -1,4 +1,4 @@
-import { DayPicker } from 'react-day-picker'
+import { DayPicker, DayButton } from 'react-day-picker'
 import 'react-day-picker/style.css'
 import { zhCN } from 'react-day-picker/locale'
 import dayjs from 'dayjs'
@@ -10,9 +10,36 @@ import { cn } from '../../lib/utils'
  * 通用日期筛选面板：单选日 或 范围选择，状态持久化
  * 中文、周一起始、显示上下月日期
  * @param {string} [notice] 可选提示内容（如"所选日期无数据，已展示最近一天"）
+ * @param {Object} [dayMarkers] 可选：{ 'YYYY-MM-DD': { count, hasAbnormal } }
+ *   - count        当日检查单数量
+ *   - hasAbnormal  当日是否有异常项（true=红底数字，false/undefined=绿底数字）
  */
-export default function DateFilterPanel({ notice }) {
+export default function DateFilterPanel({ notice, dayMarkers }) {
   const { mode, selectedDate, rangeFrom, rangeTo, setMode, setSelectedDate, setRange } = useDateStore()
+
+  // 自定义 DayButton：保留官方组件能力（焦点/交互），在日期右上角叠加红/绿底数字徽标
+  const DayButtonWithMarkers = (props) => {
+    const { day, className, children } = props
+    const key = dayjs(day.date).format('YYYY-MM-DD')
+    const marker = dayMarkers?.[key]
+    const count = marker?.count || 0
+    const show = count > 0 && !day.outside
+    return (
+      <DayButton {...props} className={cn(className, 'relative')}>
+        {children}
+        {show && (
+          <span
+            className={cn(
+              'pointer-events-none absolute -right-1 -top-1 z-10 flex h-[15px] min-w-[15px] items-center justify-center rounded-full px-[3px] text-[9px] font-bold leading-none text-white shadow',
+              marker?.hasAbnormal ? 'bg-red-500' : 'bg-emerald-500'
+            )}
+          >
+            {count > 99 ? '99+' : count}
+          </span>
+        )}
+      </DayButton>
+    )
+  }
 
   return (
     <Card>
@@ -45,6 +72,7 @@ export default function DateFilterPanel({ notice }) {
           locale={zhCN}
           weekStartsOn={1}
           showOutsideDays
+          components={dayMarkers ? { DayButton: DayButtonWithMarkers } : undefined}
           selected={
             mode === 'single'
               ? selectedDate
