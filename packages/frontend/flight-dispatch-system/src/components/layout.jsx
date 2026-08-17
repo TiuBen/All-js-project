@@ -12,7 +12,8 @@ const tabs = [
 ];
 
 export default function Layout({ children }) {
-    const { activeTab, setActiveTab } = useTabsStore();
+    // 高亮由当前路由路径决定（见下方 isActive）；setActiveTab 仅用于点击 tab 时持久化记忆
+    const { setActiveTab } = useTabsStore();
     const drafts = useDraftStore((s) => s.drafts);
     const navigate = useNavigate();
     const location = useLocation();
@@ -45,7 +46,11 @@ export default function Layout({ children }) {
                     <nav className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
-                            const isActive = activeTab === tab.id;
+                            // 以当前路由路径决定高亮（任何入口跳转都准确，不依赖手动同步 activeTab）
+                            const isActive =
+                                tab.id === "flights"
+                                    ? location.pathname === "/"
+                                    : location.pathname.startsWith(tab.path);
                             const draftCount = tab.id === 'checklist' ? Math.min(drafts.length, 5) : 0;
                             return (
                                 <button

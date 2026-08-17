@@ -8,6 +8,8 @@
 import express from 'express';
 import { flightRouter } from './flightRoutes.js';
 import { checklistRouter } from './checklistRoutes.js';
+import { manualFipsRouter } from './manualFipsRoutes.js';
+import { freshAirCargoRouter } from './freshAirCargoRoutes.js';
 import { healthCheck } from '../controllers/healthController.js';
 import * as fipsService from '../services/fipsService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -22,6 +24,12 @@ router.use('/flights', flightRouter);
 
 /** 检查单资源（模板 + 填写记录） */
 router.use('/checklists', checklistRouter);
+
+/** 手动添加航班资源 */
+router.use('/manual-fips', manualFipsRouter);
+
+/** 生鲜货物航班资源 */
+router.use('/fresh-air-cargo', freshAirCargoRouter);
 
 /**
  * GET /api/fips/:id —— 按主键查询 fips 原始行（用于详情 Dialog）

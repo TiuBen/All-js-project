@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { flightsApi, checklistsApi } from "../../api";
 import { useChecklistStore } from "../../store/checklistStore";
 import { useDraftStore } from "../../store/draftStore";
+import { useTabsStore } from "../../store/tabsStore";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge, flightTypeVariant } from "../../components/ui/badge";
@@ -44,6 +45,7 @@ export default function ChecklistPage() {
     const { flightId } = useParams();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { setActiveTab } = useTabsStore(); // 跳转航班列表时同步顶部导航高亮
 
     const store = useChecklistStore();
     const {
@@ -292,7 +294,13 @@ export default function ChecklistPage() {
             <div className="py-16 text-center text-sm text-slate-400">
                 未找到航班信息
                 <div className="mt-3">
-                    <Button variant="outline" onClick={() => navigate("/")}>
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            setActiveTab("flights");
+                            navigate("/");
+                        }}
+                    >
                         返回航班列表
                     </Button>
                 </div>

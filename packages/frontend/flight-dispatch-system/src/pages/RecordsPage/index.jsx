@@ -4,7 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { Badge, flightTypeVariant } from '../../components/ui/badge'
 import DateFilterPanel, { useDateFilterParams } from '../../components/ui/DateFilterPanel'
 import FlightSearchCard from '../../components/search/FlightSearchCard'
-import { Loader2, FileText, RefreshCw } from 'lucide-react'
+import PageLayout from '../../components/layout/PageLayout'
+import { Loader2, FileText } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -46,29 +47,30 @@ export default function RecordsPage() {
   const fmtDate = (iso) => (iso ? dayjs(iso).format('YYYY-MM-DD') : '—')
 
   return (
-    <div className="flex gap-6">
-      {/* 左侧：搜索 + 日期筛选 */}
-      <div className="w-[320px] shrink-0 space-y-4">
-        <FlightSearchCard
-          keyword={keyword}
-          onKeywordChange={setKeyword}
-          matchCount={filtered.length}
-          placeholder="航班号 / 检查单 / 检查人 / 机型..."
-          onRefresh={() => setRefreshKey((k) => k + 1)}
-        />
-        <DateFilterPanel />
-      </div>
-
+    <PageLayout
+      sidebar={
+        <>
+          {/* 左侧：搜索 + 日期筛选 */}
+          <FlightSearchCard
+            keyword={keyword}
+            onKeywordChange={setKeyword}
+            matchCount={filtered.length}
+            placeholder="航班号 / 检查单 / 检查人 / 机型..."
+            onRefresh={() => setRefreshKey((k) => k + 1)}
+          />
+          <DateFilterPanel />
+        </>
+      }
+    >
       {/* 右侧：填写记录列表 */}
-      <div className="flex-1 min-w-0">
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              检查单填写记录 {filtered.length > 0 && <span className="ml-1 text-xs font-normal text-slate-400">共 {filtered.length} 条</span>}
-            </CardTitle>
-            {loading && <Loader2 className="animate-spin text-slate-400" size={16} />}
-          </CardHeader>
-          <div className="overflow-x-auto">
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <CardHeader className="shrink-0">
+          <CardTitle>
+            检查单填写记录 {filtered.length > 0 && <span className="ml-1 text-xs font-normal text-slate-400">共 {filtered.length} 条</span>}
+          </CardTitle>
+          {loading && <Loader2 className="animate-spin text-slate-400" size={16} />}
+        </CardHeader>
+        <div className="min-h-0 flex-1 overflow-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
@@ -126,8 +128,7 @@ export default function RecordsPage() {
               </tbody>
             </table>
           </div>
-        </Card>
-      </div>
-    </div>
+      </Card>
+    </PageLayout>
   )
 }

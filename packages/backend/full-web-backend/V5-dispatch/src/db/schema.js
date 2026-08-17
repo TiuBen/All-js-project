@@ -107,6 +107,61 @@ async function ensureTables() {
     `);
     await p.query(`CREATE INDEX IF NOT EXISTS idx_flights_date ON flights(flight_date);`);
     console.log('[DB] 表 flights 已就绪');
+
+    // ---------- 手动添加航班表（manual-fips） ----------
+    // 保存用户在航班列表页手动添加的航班（字段对齐 fips 表数据项）
+    await p.query(`
+      CREATE TABLE IF NOT EXISTS manual_fips (
+        id SERIAL PRIMARY KEY,
+        task VARCHAR(16),
+        flight_no VARCHAR(32) NOT NULL,
+        origin_station VARCHAR(16),
+        dest_station VARCHAR(16),
+        landing_station VARCHAR(16),
+        in_out_time VARCHAR(32),
+        sobt VARCHAR(32),
+        eobt VARCHAR(32),
+        atot VARCHAR(32),
+        sibt VARCHAR(32),
+        eldt VARCHAR(32),
+        aldt VARCHAR(32),
+        corridor VARCHAR(16),
+        runway VARCHAR(16),
+        stand VARCHAR(16),
+        aircraft_type VARCHAR(32),
+        landing_time VARCHAR(32),
+        created_at TIMESTAMPTZ DEFAULT now()
+      );
+    `);
+    // 兼容已存在的旧表：补充可能缺失的列
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS task VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS origin_station VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS dest_station VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS landing_station VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS in_out_time VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS sobt VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS eobt VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS atot VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS sibt VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS eldt VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS aldt VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS corridor VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS runway VARCHAR(16);`);
+    console.log('[DB] 表 manual_fips 已就绪');
+
+    // ---------- 生鲜货物航班表（fresh_air_cargo） ----------
+    // 关联表：标记 manual_fips 中的航班为生鲜货物
+    //   - manual_fips_id 唯一外键（一条航班最多一个生鲜标记）
+    //   - content JSONB：预留的生鲜航班附加内容（未定，先存 JSON）
+    await p.query(`
+      CREATE TABLE IF NOT EXISTS fresh_air_cargo (
+        id SERIAL PRIMARY KEY,
+        manual_fips_id INTEGER UNIQUE NOT NULL REFERENCES manual_fips(id) ON DELETE CASCADE,
+        content JSONB DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT now()
+      );
+    `);
+    console.log('[DB] 表 fresh_air_cargo 已就绪');
   } catch (err) {
     console.error('[DB] 建表失败：', err.message);
   }

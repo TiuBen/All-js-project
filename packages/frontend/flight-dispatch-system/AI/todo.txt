@@ -1,0 +1,35 @@
+C:\Users\HJW-AMD-PRP\Documents\GitHub\All-js-project\packages\backend\full-web-backend\V5-dispatch\data\checklists\cargo-checklist.json  你看下保持整体结构不变，里面有些时间节点我的检查标准很多可能就是对时间的要求，但是
+
+
+
+{
+  "uuid": "5c5c0c05-d5c5-4c0c-05d5-c5c0c05d5c5c",
+  "source": {
+    "row": 5,
+    "seq": 1,
+  },
+  "type": "main",
+  "name": "",
+  "desc": "预计落地",
+  "auxiliaries": [
+    {
+      "uuid": "5c5c0c05-d5c5-4c0c-05d5-c5c0c05d5c5c",
+      "type": "auxiliary",
+      "name": "预计落地",
+      "desc": "预计落地",
+      "auxiliary": [
+        {
+          "uuid": "5c5c0c05-d5c5-4c0c-05d5-c5c0c05d5c5c",
+          "source": {
+            "row": 5,
+            "seq": 1,
+          },
+          "type": "videoSupervision",
+          "name": "",
+          "desc": "",
+        }
+      ]
+    }
+  ]
+}
+

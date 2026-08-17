@@ -45,4 +45,20 @@ export const fipsApi = {
   getById: (id) => request(`/fips/${id}`),
 }
 
+// 手动添加航班（manual-fips 表）
+export const manualFipsApi = {
+  list: () => request('/manual-fips'),
+  create: (data) => request('/manual-fips', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => request(`/manual-fips/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  remove: (id) => request(`/manual-fips/${id}`, { method: 'DELETE' }),
+}
+
+// 生鲜货物航班标记（fresh_air_cargo 表）
+export const freshAirCargoApi = {
+  list: () => request('/fresh-air-cargo'),
+  mark: (manualFipsId, content = {}) =>
+    request('/fresh-air-cargo/mark', { method: 'POST', body: JSON.stringify({ manualFipsId, content }) }),
+  unmark: (manualFipsId) => request(`/fresh-air-cargo/mark/${manualFipsId}`, { method: 'DELETE' }),
+}
+
 export default API_BASE

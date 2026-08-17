@@ -11,6 +11,7 @@ import { query } from '../db/pool.js';
 import { flightRowToApi } from '../utils/mapper.js';
 import { localDateStr } from '../utils/time.js';
 import * as fipsService from './fipsService.js';
+import * as manualFipsService from './manualFipsService.js';
 
 /**
  * 查询航班列表（数据源：fips 表）
@@ -26,16 +27,64 @@ export async function listFlights(filter = {}) {
 
 /**
  * 查询单个航班详情
- * 优先查 flights 表；若 id 以 fips- 开头（历史航班），则查 fips 表
- * @param {string} id 航班主键（flights 或 fips）
+ * 优先查 flights 表；id 前缀区分数据源：
+ *   - fips-    → fips 表（历史航班）
+ *   - manual-  → manual_fips 表（手动添加航班）
+ * @param {string} id 航班主键
  * @returns {Promise<Object|null>} 航班对象；不存在返回 null
  */
 export async function getFlight(id) {
   if (String(id).startsWith('fips-')) {
     return fipsService.getFlightById(id);
   }
+  if (String(id).startsWith('manual-')) {
+    return getManualFlight(id);
+  }
   const { rows } = await query('SELECT * FROM flights WHERE id = $1', [id]);
   return rows.length ? flightRowToApi(rows[0]) : null;
+}
+
+/**
+ * 手动添加航班（manual_fips 行）→ 前端兼容航班对象
+ * 手动航班只有 航班号/机型/停机位/落地时间，构造前端所需的最小结构
+ * @param {string} id 形如 'manual-1'
+ * @returns {Promise<Object|null>} 兼容对象或 null
+ */
+async function getManualFlight(id) {
+  const row = await manualFipsService.getManualFipsById(String(id).replace(/^manual-/, ''));
+  if (!row) return null;
+  const landing = row.aldt || row.landing_time || null;
+  const landingDate = landing ? String(landing).slice(0, 10) : localDateStr();
+  return {
+    id,
+    flightNo: row.flight_no,
+    aircraftType: row.aircraft_type || '',
+    category: '货运航班', // 手动添加默认按货运检查单处理
+    flightType: '常规航班',
+    origin: '—',
+    destination: '鄂州',
+    flightDate: landingDate,
+    landingTimeUtc: landing,
+    status: '计划',
+    hasChecklist: false,
+    // 原始字段透传
+    raw: {
+      task: row.task,
+      originStation: row.origin_station,
+      destStation: row.dest_station,
+      landingStation: row.landing_station,
+      sobt: row.sobt,
+      eobt: row.eobt,
+      atot: row.atot,
+      sibt: row.sibt,
+      eldt: row.eldt,
+      aldt: row.aldt,
+      corridor: row.corridor,
+      runway: row.runway,
+      stand: row.stand,
+      source: 'manual-fips',
+    },
+  };
 }
 
 /**
