@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5183/api'
+// API 地址：开发环境用相对路径 /api（vite proxy 转发到 localhost:5183）；
+// 生产构建时通过环境变量指定，避免把 localhost 写死进编译产物。
+// 部署命令示例：VITE_API_BASE=/api npm run build   （配合 nginx /api 反代）
+// 或：VITE_API_BASE=https://dd.atc1215.cn/api npm run build
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

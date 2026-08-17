@@ -54,7 +54,7 @@ http {
     server {
         listen 80;
         listen [::]:80;
-        server_name atc1215.cn www.atc1215.cn admin.atc1215.cn new.atc1215.cn jcd.atc1215.cn dd.atc1215.cn;
+        server_name atc1215.cn www.atc1215.cn admin.atc1215.cn new.atc1215.cn jcd.atc1215.cn;
         return 301 https://$host$request_uri;
     }
 
@@ -197,50 +197,6 @@ http {
         location / {
             try_files $uri $uri/ /index.html;
         }
-        location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|map)$ {
-            expires 30d;
-            access_log off;
-        }
-    }
-
-    #################################
-    # dd 航班调度系统
-    # dd.atc1215.cn  → 前端静态页面 + /api 反代到 5183 后端
-    #################################
-    server {
-        listen 443 ssl http2;
-        server_name dd.atc1215.cn;
-
-        ssl_certificate /etc/letsencrypt/live/atc1215.cn/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/atc1215.cn/privkey.pem;
-        include /etc/letsencrypt/options-ssl-nginx.conf;
-        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
-        # TODO: 改成你前端 build 产物实际存放目录（例如 /usr/v5-dispatch-frontend/）
-        root /usr/zhec-dd-front/;
-        index index.html;
-
-        location / {
-            try_files $uri $uri/ /index.html;
-        }
-
-        # V5-dispatch 后端（Express，端口 5183）
-        # 注意：/api 前缀原样透传（不带末尾斜杠的 proxy_pass 会保留路径），
-        # 后端路由以 /api 开头，前端请求 /api/flights 会命中这里
-        location /api {
-            proxy_pass http://127.0.0.1:5183;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_read_timeout 60s;
-            proxy_send_timeout 60s;
-        }
-
-        # 静态文件缓存
         location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|map)$ {
             expires 30d;
             access_log off;

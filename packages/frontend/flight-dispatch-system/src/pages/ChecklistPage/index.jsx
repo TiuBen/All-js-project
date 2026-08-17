@@ -12,6 +12,7 @@ import FlowChart from "../../components/flowchart/FlowChart";
 import DraggableThumb from "../../components/checklist/DraggableThumb";
 import DraftDropdown from "./components/DraftDropdown";
 import FlightInfoCard from "./components/FlightInfoCard";
+import ChecklistTreeView from "../../components/checklist/ChecklistTreeView";
 import { cn } from "../../lib/utils";
 import {
     ArrowLeft,
@@ -81,6 +82,9 @@ export default function ChecklistPage() {
     const [recordStatus, setRecordStatus] = useState(null);
     const [banner, setBanner] = useState(null); // 顶部提示（常驻，不自动消失）
     const [thumbVisible, setThumbVisible] = useState(true); // 右下角缩略图
+    // 查看模式（从记录页点"查看"进入：?recordId=xx&view=1），树形只读展示；点"修改"切回编辑
+    const [viewOnly, setViewOnly] = useState(() => searchParams.get("view") === "1");
+    const [loadedRecord, setLoadedRecord] = useState(null); // 已加载的记录（查看模式用）
     const auxPanelRef = useRef(null);
     const videoPanelRef = useRef(null);
     const mainTableRef = useRef(null); // 主要监控指标滚动容器（滚轮 → 水平移动）
@@ -123,6 +127,7 @@ export default function ChecklistPage() {
                 const recordId = searchParams.get("recordId");
                 if (recordId) {
                     const rec = await checklistsApi.getRecord(recordId);
+                    setLoadedRecord(rec);
                     hydrateFromRecord(rec);
                     setCheckedAt(rec.checked_at || rec.updated_at || null);
                     setRecordStatus(rec.status || null);
@@ -303,6 +308,68 @@ export default function ChecklistPage() {
                     >
                         返回航班列表
                     </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // ===== 查看模式（只读树形展示，点"修改"进入编辑） =====
+    if (viewOnly) {
+        return (
+            <div className="flex h-[calc(100vh-112px)] flex-col gap-2 overflow-hidden">
+                {/* 顶部标题栏 */}
+                <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                            <ArrowLeft size={18} />
+                        </Button>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-base font-bold text-slate-900">
+                                    {flight.flightNo} <span className="font-normal text-slate-400">调度席检查单</span>
+                                </h2>
+                                <Badge variant={flightTypeVariant(flight.flightType)}>{flight.flightType}</Badge>
+                                <Badge>{flight.category}</Badge>
+                                {recordStatus === "submitted" && (
+                                    <Badge variant="success">
+                                        ✓ 已提交
+                                        {checkedAt && (
+                                            <span className="ml-1.5 opacity-80">
+                                                {new Date(checkedAt).toLocaleString("zh-CN", { hour12: false }).slice(0, 16)}
+                                            </span>
+                                        )}
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="mt-0.5 text-xs text-slate-400">
+                                {flight.origin} → {flight.destination} · 机型 {flight.aircraftType} · 日期{" "}
+                                {flight.flightDate}
+                                {loadedRecord?.inspector && <span className="ml-2">· 检查人 {loadedRecord.inspector}</span>}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            size="sm"
+                            onClick={() => {
+                                setViewOnly(false);
+                                navigate(`/checklist/${flight.id}?recordId=${loadedRecord?.id ?? searchParams.get("recordId")}`, { replace: true });
+                            }}
+                        >
+                            <ListChecks size={14} /> 修改
+                        </Button>
+                    </div>
+                </div>
+
+                {/* 树形只读展示 */}
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    {loadedRecord ? (
+                        <ChecklistTreeView template={template} record={loadedRecord} flight={flight} />
+                    ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                            <Loader2 className="mr-2 animate-spin" size={18} /> 正在加载记录…
+                        </div>
+                    )}
                 </div>
             </div>
         );

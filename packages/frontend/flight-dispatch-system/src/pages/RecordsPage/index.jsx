@@ -20,6 +20,8 @@ export default function RecordsPage() {
   const [loading, setLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
   const [keyword, setKeyword] = useState('')
+  // 日历红绿数字：{ 'YYYY-MM-DD': { count, hasAbnormal } }
+  const [dayMarkers, setDayMarkers] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -29,6 +31,28 @@ export default function RecordsPage() {
       .catch((e) => console.error(e))
       .finally(() => setLoading(false))
   }, [filterParams.date, filterParams.from, filterParams.to, refreshKey])
+
+  // 加载全部记录 → 按航班日期统计数量 + 是否有异常项，供日历红/绿数字徽标使用
+  useEffect(() => {
+    checklistsApi
+      .listRecords({})
+      .then((d) => {
+        const markers = {}
+        ;(d.items || []).forEach((r) => {
+          const dstr = r.flight_date
+          if (!dstr) return
+          const cur = markers[dstr] || { count: 0, hasAbnormal: false }
+          cur.count += 1
+          // 检查该记录 items 中是否存在 status === 'abnormal' 的项
+          const items = r.items || {}
+          const hasAb = Object.values(items).some((v) => v && v.status === 'abnormal')
+          if (hasAb) cur.hasAbnormal = true
+          markers[dstr] = cur
+        })
+        setDayMarkers(markers)
+      })
+      .catch((e) => console.error('加载日历标记失败:', e.message))
+  }, [refreshKey])
 
   // 关键词过滤（航班号 / 检查单 / 检查人 / 机型）
   const filtered = useMemo(() => {
@@ -51,14 +75,16 @@ export default function RecordsPage() {
       sidebar={
         <>
           {/* 左侧：搜索 + 日期筛选 */}
-          <FlightSearchCard
-            keyword={keyword}
-            onKeywordChange={setKeyword}
-            matchCount={filtered.length}
-            placeholder="航班号 / 检查单 / 检查人 / 机型..."
-            onRefresh={() => setRefreshKey((k) => k + 1)}
-          />
-          <DateFilterPanel />
+          <div className="w-[320px] shrink-0 space-y-4">
+            <FlightSearchCard
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              matchCount={filtered.length}
+              placeholder="航班号 / 检查单 / 检查人 / 机型..."
+              onRefresh={() => setRefreshKey((k) => k + 1)}
+            />
+            <DateFilterPanel dayMarkers={dayMarkers} />
+          </div>
         </>
       }
     >
@@ -111,7 +137,7 @@ export default function RecordsPage() {
                     <td className="px-4 py-2.5">
                       <button
                         className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:underline"
-                        onClick={() => navigate(`/checklist/${r.flight_id}?recordId=${r.id}`)}
+                        onClick={() => navigate(`/checklist/${r.flight_id}?recordId=${r.id}&view=1`)}
                       >
                         <FileText size={13} /> 查看
                       </button>
