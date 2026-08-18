@@ -141,31 +141,42 @@ export default function ChecklistPage() {
         return () => reset();
     }, [flightId]);
 
-    // 当前检查单的节点结构
+    // 当前检查单的节点结构（新结构：顶层 schema 数组；兼容旧：flightTypes）
     const nodes = useMemo(() => {
         if (!template || !flight) return [];
-        return template.flightTypes?.[flight.flightType || "常规航班"] || [];
+        return template.schema || template.flightTypes?.[flight.flightType || "常规航班"] || [];
     }, [template, flight]);
 
-    const getSeq = (n) => n?.source?.seq ?? n?.seq;
+    // 节点定位键：新结构用全局 id（1~65）；兼容旧结构 source.seq / seq
+    const getNodeId = (n) => n?.id ?? n?.source?.seq ?? n?.seq;
 
-    // 视频监管项已嵌套在 auxiliary.auxiliary[] 中（串联结构）
+    // 视频监管项：新结构在节点顶层 videoSupervision[]（type video）；兼容旧 auxiliaries[].auxiliary[]
     const videoByNode = useMemo(() => {
         const map = {};
         nodes.forEach((n) => {
             const list = [];
-            (n.auxiliaries || []).forEach((a) => {
-                (a.auxiliary || []).forEach((v) => {
-                    list.push({
-                        uuid: v.uuid,
-                        groupTitle: v.group || "",
-                        desc: v.desc,
-                        row: v.source?.row,
-                        auxName: a.name,
-                    });
+            (n.videoSupervision || []).forEach((v) => {
+                list.push({
+                    id: v.id,
+                    uuid: v.uuid,
+                    groupTitle: v.group || "",
+                    desc: v.desc,
                 });
             });
-            if (list.length) map[getSeq(n)] = list;
+            if (!list.length) {
+                (n.auxiliaries || []).forEach((a) => {
+                    (a.auxiliary || []).forEach((v) => {
+                        list.push({
+                            id: v.id,
+                            uuid: v.uuid,
+                            groupTitle: v.group || "",
+                            desc: v.desc,
+                            auxName: a.name,
+                        });
+                    });
+                });
+            }
+            if (list.length) map[getNodeId(n)] = list;
         });
         return map;
     }, [nodes]);
@@ -174,40 +185,40 @@ export default function ChecklistPage() {
     const statusMap = useMemo(() => {
         const map = {};
         nodes.forEach((n) => {
-            const seq = getSeq(n);
-            const st = items[`main-${seq}`]?.status;
-            if (st === "ok") map[seq] = "done";
-            else if (st === "abnormal" || st === "na") map[seq] = "current";
+            const nid = getNodeId(n);
+            const st = items[`main-${nid}`]?.status;
+            if (st === "ok") map[nid] = "done";
+            else if (st === "abnormal" || st === "na") map[nid] = "current";
         });
         return map;
     }, [nodes, items]);
 
     // 当前激活的节点
     const activeNode = useMemo(
-        () => nodes.find((n) => getSeq(n) === currentStep) || nodes[0] || null,
+        () => nodes.find((n) => getNodeId(n) === currentStep) || nodes[0] || null,
         [nodes, currentStep]
     );
-    const activeSeq = activeNode ? getSeq(activeNode) : null;
+    const activeNodeId = activeNode ? getNodeId(activeNode) : null;
 
     // 聚焦节点：更新步骤 + banner（常驻）+ 三栏各自滚动锚定
     const focusNode = (n) => {
-        const seq = getSeq(n);
-        setCurrentStep(seq);
+        const nid = getNodeId(n);
+        setCurrentStep(nid);
         setBanner({
-            title: `节点 ${seq} · ${n.name}`,
+            title: `节点 ${nid} · ${n.name}`,
             desc: n.desc || "无时间要求",
             auxCount: n.auxiliaries?.length || 0,
-            videoCount: videoByNode[seq]?.length || 0,
+            videoCount: videoByNode[nid]?.length || 0,
             responsible: n.responsible,
         });
         // 辅助项滚动到锚点（主要监控不自动滚动，用户手动用滚轮平移）
         if (auxPanelRef.current) {
-            const el = document.getElementById(`aux-anchor-${seq}`);
+            const el = document.getElementById(`aux-anchor-${nid}`);
             if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
         // 第三栏：视频项滚动到锚点
         if (videoPanelRef.current) {
-            const el = document.getElementById(`video-anchor-${seq}`);
+            const el = document.getElementById(`video-anchor-${nid}`);
             if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
     };
@@ -561,14 +572,14 @@ export default function ChecklistPage() {
                             {/* nodes 横向排布（flex row nowrap）：超宽出现横向滚动条，滚轮上下 → 水平移动 */}
                             <div className="flex flex-nowrap items-stretch gap-2 p-2">
                                 {nodes.map((n) => {
-                                    const seq = getSeq(n);
-                                    const mainKey = `main-${seq}`;
+                                    const nid = getNodeId(n);
+                                    const mainKey = `main-${nid}`;
                                     const mainItem = items[mainKey] || {};
-                                    const isActive = currentStep === seq;
+                                    const isActive = currentStep === nid;
                                     return (
                                         <div
                                             key={mainKey}
-                                            id={`main-${seq}`}
+                                            id={`main-${nid}`}
                                             onClick={() => focusNode(n)}
                                             className={cn(
                                                 "flex w-[240px] shrink-0 cursor-pointer flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5 transition-colors hover:bg-primary-50/40",
@@ -585,7 +596,7 @@ export default function ChecklistPage() {
                                                             : "bg-primary-50 text-primary-700"
                                                     )}
                                                 >
-                                                    {seq}
+                                                    {nid}
                                                 </span>
                                                 <span
                                                     className="truncate text-[13px] font-semibold text-slate-800"
@@ -610,9 +621,9 @@ export default function ChecklistPage() {
                                                         辅助 {n.auxiliaries.length}
                                                     </span>
                                                 )}
-                                                {videoByNode[seq]?.length > 0 && (
+                                                {videoByNode[nid]?.length > 0 && (
                                                     <span className="rounded bg-sky-50 px-1 py-0.5 text-[9px] text-sky-600">
-                                                        视频 {videoByNode[seq].length}
+                                                        视频 {videoByNode[nid].length}
                                                     </span>
                                                 )}
                                             </div>
@@ -671,7 +682,7 @@ export default function ChecklistPage() {
                             </div>
                             {activeNode && (
                                 <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                                    {activeSeq}. {activeNode.name}
+                                    {activeNodeId}. {activeNode.name}
                                 </span>
                             )}
                         </div>
@@ -682,12 +693,12 @@ export default function ChecklistPage() {
                             {activeNode ? (
                                 activeNode.auxiliaries?.length ? (
                                     activeNode.auxiliaries.map((a, ai) => {
-                                        const aKey = `aux-${a.row}`;
+                                        const aKey = `aux-${a.id ?? a.row}`;
                                         const aItem = items[aKey] || {};
                                         return (
                                             <div
                                                 key={aKey}
-                                                id={ai === 0 ? `aux-anchor-${activeSeq}` : undefined}
+                                                id={ai === 0 ? `aux-anchor-${activeNodeId}` : undefined}
                                                 className="scroll-mt-2 rounded-lg border border-slate-200 p-2.5"
                                             >
                                                 <div className="flex items-center justify-between gap-2">
@@ -743,7 +754,7 @@ export default function ChecklistPage() {
                                 <Camera size={13} className="text-sky-600" />
                                 视频监管检查重点
                                 <span className="text-[10px] font-normal text-slate-400">
-                                    {videoByNode[activeSeq]?.length || 0} 项
+                                    {videoByNode[activeNodeId]?.length || 0} 项
                                 </span>
                             </div>
                             <span className="flex items-center gap-1 text-[10px] text-slate-400">
@@ -754,14 +765,14 @@ export default function ChecklistPage() {
                             ref={videoPanelRef}
                             className="max-h-[45vh] space-y-2 overflow-y-auto p-2.5 lg:h-full lg:max-h-none"
                         >
-                            {activeNode && videoByNode[activeSeq]?.length ? (
-                                videoByNode[activeSeq].map((v, vi) => {
+                            {activeNode && videoByNode[activeNodeId]?.length ? (
+                                videoByNode[activeNodeId].map((v, vi) => {
                                     const vKey = `video-${v.uuid}`;
                                     const vItem = videoItems[vKey] || {};
                                     return (
                                         <div
                                             key={vKey}
-                                            id={vi === 0 ? `video-anchor-${activeSeq}` : undefined}
+                                            id={vi === 0 ? `video-anchor-${activeNodeId}` : undefined}
                                             className="scroll-mt-2 rounded-lg border border-sky-100 bg-sky-50/40 p-2.5"
                                         >
                                             <div className="flex items-start justify-between gap-2">

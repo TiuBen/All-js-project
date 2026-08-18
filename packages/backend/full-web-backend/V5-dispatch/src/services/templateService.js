@@ -17,14 +17,19 @@ import { config } from '../config/index.js';
 export function loadTemplates() {
   const dir = config.paths.checklists;
   if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith('.json'))
-    .map((f) => {
+  const templates = [];
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.json')) continue;
+    try {
       const raw = fs.readFileSync(path.join(dir, f), 'utf-8');
       const data = JSON.parse(raw);
-      return { id: f.replace(/\.json$/, ''), ...data };
-    });
+      templates.push({ id: f.replace(/\.json$/, ''), ...data });
+    } catch (err) {
+      // 单个模板文件损坏不阻断整体（如临时副本 / 待办文件）
+      console.warn(`[模板] 跳过无法解析的模板文件: ${f} → ${err.message}`);
+    }
+  }
+  return templates;
 }
 
 /**
@@ -37,7 +42,11 @@ export function listTemplateMeta() {
     category: t.category,
     source: t.source,
     generatedAt: t.generatedAt,
-    flightTypeCount: Object.keys(t.flightTypes || {}).length,
+    flightTypeCount: t.flightTypes
+      ? Object.keys(t.flightTypes).length
+      : Array.isArray(t.schema)
+      ? 1 // 新结构：顶层 schema 数组 + checklistName（单航班类型模板）
+      : 0,
   }));
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
+import FlightNoInput from "../../../components/ui/FlightNoInput";
 import { Loader2, X, Plane } from "lucide-react";
 
 /**
@@ -77,14 +78,8 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
 
   if (!open) return null;
 
-  // 航班号强制大写字母+数字；其余字段普通输入
-  const set = (k) => (e) => {
-    let v = e.target.value;
-    if (k === "flightNo") {
-      v = v.toUpperCase().replace(/[^A-Z0-9]/g, ""); // 仅允许大写英文与数字
-    }
-    setForm((f) => ({ ...f, [k]: v }));
-  };
+  // 通用字段更新（航班号大写/过滤由 FlightNoInput 组件负责）
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const reset = () => {
     setForm(EMPTY_FORM);
     setError(null);
@@ -125,13 +120,22 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
         {f.label}
         {f.required && <span className="text-red-500"> *</span>}
       </label>
-      <input
-        className="input w-full px-2 py-1 text-xs"
-        type={f.type || "text"}
-        placeholder={f.placeholder || ""}
-        value={form[f.key]}
-        onChange={set(f.key)}
-      />
+      {/* 航班号用专用组件：强制大写、仅 A-Z0-9（中文/符号不显示） */}
+      {f.key === "flightNo" ? (
+        <FlightNoInput
+          className="w-full px-2 py-1 text-xs"
+          value={form.flightNo}
+          onChange={(v) => setForm((s) => ({ ...s, flightNo: v }))}
+        />
+      ) : (
+        <input
+          className="input w-full px-2 py-1 text-xs"
+          type={f.type || "text"}
+          placeholder={f.placeholder || ""}
+          value={form[f.key]}
+          onChange={set(f.key)}
+        />
+      )}
     </div>
   );
 

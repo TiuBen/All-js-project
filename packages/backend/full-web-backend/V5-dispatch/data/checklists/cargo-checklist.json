@@ -3,2005 +3,821 @@
   "category": "货运航班",
   "source": "货运航班节点保障及合规性监控检查单.xlsx",
   "generatedAt": "2026-08-06T13:59:38.679869",
-  "flightTypes": {
-    "常规航班": [
-      {
-        "uuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
-        "source": {
-          "row": 5,
-          "seq": 1
-        },
-        "type": "main",
-        "name": "预计落地",
-        "desc": "预计落地",
-        "auxiliaries": []
-      },
-      {
-        "uuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
-        "source": {
-          "row": 6,
-          "seq": 2
-        },
-        "type": "main",
-        "name": "入位",
-        "desc": "实际落地时间+10分钟",
-        "auxiliaries": [
-          {
-            "uuid": "63c4783d-4271-4546-8daf-f205f59242f0",
-            "type": "auxiliary",
-            "name": "机务到位",
-            "desc": "入位时间-5分钟",
-            "source": {
-              "row": 6
-            },
-            "auxiliary": [
-              {
-                "uuid": "38d830be-56ca-40a7-aee6-a3975af08822",
-                "source": {
-                  "row": 6
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
-        "source": {
-          "row": 7,
-          "seq": 3
-        },
-        "type": "main",
-        "name": "开始挡轮挡",
-        "desc": "入位时间+0分钟",
-        "auxiliaries": [
-          {
-            "uuid": "6904f6d9-ec2e-4e8d-a671-8c43ad85d750",
-            "type": "auxiliary",
-            "name": "接地面电源",
-            "desc": "需求申请时间+15分钟",
-            "source": {
-              "row": 7
-            },
-            "auxiliary": [
-              {
-                "uuid": "9b8a2c39-a595-4dcf-ae58-9f212de1c485",
-                "source": {
-                  "row": 7
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "人员、车辆、设备、货物、行李在指定区域等待。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
-        "source": {
-          "row": 8,
-          "seq": 4
-        },
-        "type": "main",
-        "name": "开驾驶舱门",
-        "desc": "开始挡轮挡+10分钟",
-        "auxiliaries": [
-          {
-            "uuid": "0fdfcaff-e2bd-4f85-9cbd-5a735132cb76",
-            "type": "auxiliary",
-            "name": "登机梯/客梯车到位",
-            "desc": "入位时间-5分钟",
-            "source": {
-              "row": 8
-            },
-            "auxiliary": [
-              {
-                "uuid": "012c6792-1e74-4957-bc89-5d7e36fd31f7",
-                "source": {
-                  "row": 8
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          },
-          {
-            "uuid": "22a30937-ac79-4f27-b8d4-2bc04c1ebbc4",
-            "type": "auxiliary",
-            "name": "代办到位",
-            "desc": "",
-            "source": {
-              "row": 9
-            },
-            "auxiliary": [
-              {
-                "uuid": "a380059d-8248-4d43-b8eb-8d5e93261636",
-                "source": {
-                  "row": 9
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "廊桥活动端应处于廊桥回位点。（客运）",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          },
-          {
-            "uuid": "6c360b32-f27a-4308-8878-0338f9e740ed",
-            "type": "auxiliary",
-            "name": "海关/边检到位",
-            "desc": "入位时间+0分钟",
-            "source": {
-              "row": 10
-            },
-            "auxiliary": [
-              {
-                "uuid": "12c633df-7081-4bdc-8eeb-baeb5d66c7f0",
-                "source": {
-                  "row": 10
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          },
-          {
-            "uuid": "451e6387-2932-45d6-9eb4-cc27c299edaf",
-            "type": "auxiliary",
-            "name": "开始加油",
-            "desc": "COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）",
-            "source": {
-              "row": 11
-            },
-            "auxiliary": [
-              {
-                "uuid": "709f9faf-6093-45df-88ba-4224d9da68ee",
-                "source": {
-                  "row": 11
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          },
-          {
-            "uuid": "d1b363c6-69ba-4232-860d-eda60fbab601",
-            "type": "auxiliary",
-            "name": "开始加清水/排污水",
-            "desc": "需求申请时间+15分钟",
-            "source": {
-              "row": 12
-            },
-            "auxiliary": [
-              {
-                "uuid": "1821c461-3d32-4616-ab6a-fc59cc0f0ae0",
-                "source": {
-                  "row": 12
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "桥载设备处于复位状态。（客运）",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          },
-          {
-            "uuid": "b61e0c0c-cd93-406a-8ae0-4d08d09bad61",
-            "type": "auxiliary",
-            "name": "平台车到位",
-            "desc": "入位时间-5分钟",
-            "source": {
-              "row": 13
-            },
-            "auxiliary": [
-              {
-                "uuid": "412a57b0-cb50-4e54-a9b9-12dcd8548c14",
-                "source": {
-                  "row": 13
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "6499b169-933c-4aad-a204-859a829f9ef6",
-        "source": {
-          "row": 14,
-          "seq": 5
-        },
-        "type": "main",
-        "name": "开货舱门",
-        "desc": "开驾驶舱门+5分钟",
-        "auxiliaries": [
-          {
-            "uuid": "6d63367c-f805-4a39-b24b-692f21b598bd",
-            "type": "auxiliary",
-            "name": "海关/边检进港登临检查结束",
-            "desc": "开驾驶舱门+15分钟",
-            "source": {
-              "row": 14
-            },
-            "auxiliary": [
-              {
-                "uuid": "ebb26178-b4af-4a07-b020-31a264bc6162",
-                "source": {
-                  "row": 14
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-        "source": {
-          "row": 15,
-          "seq": 6
-        },
-        "type": "main",
-        "name": "开始卸机",
-        "desc": "开货舱门+10分钟",
-        "auxiliaries": [
-          {
-            "uuid": "e3091457-89eb-4b04-b9c6-d81cea5a811d",
-            "type": "auxiliary",
-            "name": "开始卸机",
-            "desc": "",
-            "source": {
-              "row": 15
-            },
-            "auxiliary": [
-              {
-                "uuid": "2d3ca887-78a8-4ed1-b100-ca891e29d657",
-                "source": {
-                  "row": 15
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "安全停泊后，接机人员向靠机操作人员给靠机指令。",
-                "group": "视频监管检查重点（入位前检查）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "f2d47971-dee5-4f97-99af-6a91da5faf93",
-        "source": {
-          "row": 16,
-          "seq": 7
-        },
-        "type": "main",
-        "name": "卸机完成",
-        "desc": "开始卸机+机型标准卸机作业时长",
-        "auxiliaries": [
-          {
-            "uuid": "ad1479db-a34c-4747-91cb-ccbfc4c3bb49",
-            "type": "auxiliary",
-            "name": "进港货物交接",
-            "desc": "入位时间+80分钟",
-            "source": {
-              "row": 16
-            },
-            "auxiliary": []
-          }
-        ]
-      },
-      {
-        "uuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
-        "source": {
-          "row": 17,
-          "seq": 8
-        },
-        "type": "main",
-        "name": "开始装机",
-        "desc": "卸机完成+0分钟（或COBT-机型标准装机作业时长-20分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "1647aa82-dafc-4cdb-b47e-49164cea4ddc",
-            "type": "auxiliary",
-            "name": "出港货物交接",
-            "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-            "source": {
-              "row": 17
-            },
-            "auxiliary": [
-              {
-                "uuid": "e80c39f0-439c-4bf6-a1d2-f6b2a87e9b6e",
-                "source": {
-                  "row": 17
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "e651e4a9-2f73-4eb1-8153-861eac7d1083",
-            "type": "auxiliary",
-            "name": "第一板出港货物到达机坪待装区",
-            "desc": "预计落地时间-90分钟",
-            "source": {
-              "row": 18
-            },
-            "auxiliary": [
-              {
-                "uuid": "371c6ebe-7de0-4464-8ce9-b922ae07cd3a",
-                "source": {
-                  "row": 18
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "6c8b3827-0c8c-4c71-9c41-37e22959b99e",
-            "type": "auxiliary",
-            "name": "全部出港货物到达待装区/机坪",
-            "desc": "预计落地时间-60分钟",
-            "source": {
-              "row": 19
-            },
-            "auxiliary": [
-              {
-                "uuid": "37f0f437-e73c-4808-96a5-2fb74e030023",
-                "source": {
-                  "row": 19
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "红色廊桥活动区，禁止任何车辆和设备进入。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "b2e76d59-5dec-4e71-b7bb-ff5464046bdb",
-            "type": "auxiliary",
-            "name": "装机单接收",
-            "desc": "预计落地时间-5分钟",
-            "source": {
-              "row": 20
-            },
-            "auxiliary": [
-              {
-                "uuid": "5e4d8b81-d362-4384-b713-7e6af0e63c99",
-                "source": {
-                  "row": 20
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "在停机位或作业等待区内挂托盘的车辆不得倒车。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
-        "source": {
-          "row": 21,
-          "seq": 9
-        },
-        "type": "main",
-        "name": "装机完成",
-        "desc": "开始装机+机型标准装机作业时长",
-        "auxiliaries": [
-          {
-            "uuid": "5e8952e7-3cb4-492d-83a4-86a72e2c995a",
-            "type": "auxiliary",
-            "name": "装机完成",
-            "desc": "",
-            "source": {
-              "row": 21
-            },
-            "auxiliary": [
-              {
-                "uuid": "2853ef08-a584-4d7d-bcb9-5624ea846523",
-                "source": {
-                  "row": 21
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
-        "source": {
-          "row": 23,
-          "seq": 10
-        },
-        "type": "main",
-        "name": "关货舱门",
-        "desc": "装机完成+15分钟 （或COBT-5分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "f56931df-41f2-4471-9ff0-6a0d968ddadc",
-            "type": "auxiliary",
-            "name": "出港登临检查开始",
-            "desc": "装机完成（或COBT-20分钟）",
-            "source": {
-              "row": 23
-            },
-            "auxiliary": [
-              {
-                "uuid": "2fc2329a-ebc3-48e2-a3c4-7c62b2f8497c",
-                "source": {
-                  "row": 23
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "faced55f-4b71-4ec6-849d-c2b6bad9a006",
-            "type": "auxiliary",
-            "name": "（视频监管）",
-            "desc": "",
-            "source": {
-              "row": 24
-            },
-            "auxiliary": [
-              {
-                "uuid": "42c27ec3-51b3-47b9-9e83-ebc3af632fb5",
-                "source": {
-                  "row": 24
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "机务人员在航空器周围设置红色反光锥形标志物。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
-        "source": {
-          "row": 25,
-          "seq": 11
-        },
-        "type": "main",
-        "name": "关驾驶舱门",
-        "desc": "关货舱门+0分钟 （或COBT-5分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "eaefd4a7-18e2-4bf1-b3f3-52535dd574d6",
-            "type": "auxiliary",
-            "name": "完成加油",
-            "desc": "COBT-5分钟",
-            "source": {
-              "row": 25
-            },
-            "auxiliary": [
-              {
-                "uuid": "7f168563-27df-4afe-b87c-4478ac68403f",
-                "source": {
-                  "row": 25
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "21f16589-3adb-4b34-ae6d-c53882f266f6",
-            "type": "auxiliary",
-            "name": "结束加清水/排污水",
-            "desc": "COBT-15分钟",
-            "source": {
-              "row": 26
-            },
-            "auxiliary": []
-          },
-          {
-            "uuid": "f262c0e1-7dff-4c6e-a1f5-b48cba44d767",
-            "type": "auxiliary",
-            "name": "出港登临检查结束",
-            "desc": "装机完成+15分钟（或COBT-5分钟）",
-            "source": {
-              "row": 27
-            },
-            "auxiliary": [
-              {
-                "uuid": "f9c8c39d-8b66-4724-a5e7-62b25dd65d7b",
-                "source": {
-                  "row": 27
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "未熄火的车辆，驾驶员应当随车等候。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "f2ee8c9b-bfeb-4229-94b0-cba3e88fa93b",
-            "type": "auxiliary",
-            "name": "出港机组到机下",
-            "desc": "COBT-60分钟",
-            "source": {
-              "row": 28
-            },
-            "auxiliary": [
-              {
-                "uuid": "fe80f196-323f-443a-ae61-e2c412bd8932",
-                "source": {
-                  "row": 28
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "人员佩带工作证件，穿着工作服，并配有反光标识。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "0241073a-18d0-4df4-8e38-2729a661b729",
-        "source": {
-          "row": 29,
-          "seq": 12
-        },
-        "type": "main",
-        "name": "推出",
-        "desc": "关驾驶舱门+5分钟（或COBT+0分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "91bb8c2f-fae0-4ceb-bd23-7a31a2400939",
-            "type": "auxiliary",
-            "name": "牵引车到位",
-            "desc": "COBT-10分钟",
-            "source": {
-              "row": 29
-            },
-            "auxiliary": [
-              {
-                "uuid": "46d30cc9-bc75-48d4-9fc9-3d60a6ae895b",
-                "source": {
-                  "row": 29
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "监装监卸人员对航班的装卸过程进行监控。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "560d315d-4e5a-4357-870e-fa326818c141",
-            "type": "auxiliary",
-            "name": "接气源车",
-            "desc": "COBT-30分钟",
-            "source": {
-              "row": 30
-            },
-            "auxiliary": [
-              {
-                "uuid": "9c3ca523-afea-45de-8fe1-97ea4e52f894",
-                "source": {
-                  "row": 30
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "行李的装卸和保管应有防雨措施。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "9c39c79a-acff-4d34-b5ae-5e68a3285fc4",
-            "type": "auxiliary",
-            "name": "撤气源车/撤地面电源",
-            "desc": "COBT-0分钟",
-            "source": {
-              "row": 31
-            },
-            "auxiliary": [
-              {
-                "uuid": "d3e690bc-b985-4db0-a32b-a320c8d3bd79",
-                "source": {
-                  "row": 31
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "装卸人员按规定要求实施装卸（注：遇有危品运输，轻拿轻放，严格按标签操作）。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "4357fb89-eb96-4bf3-a4a8-91c675282301",
-            "type": "auxiliary",
-            "name": "撤轮档",
-            "desc": "COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）",
-            "source": {
-              "row": 32
-            },
-            "auxiliary": [
-              {
-                "uuid": "c44a3fbc-80e3-4665-a4b6-0f3200694ea3",
-                "source": {
-                  "row": 32
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "对已装舱的行李、货物及锁扣、挡板应进行固定，并确认已关闭、锁牢货舱门。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "f624de97-ef00-4fe7-8608-c4755245f165",
-        "source": {
-          "row": 33,
-          "seq": 13
-        },
-        "type": "main",
-        "name": "滑出",
-        "desc": "推出+5分钟",
-        "auxiliaries": []
-      },
-      {
-        "uuid": "77b2ca02-c0c3-47d5-93fa-4ea68eacf46d",
-        "source": {
-          "row": 34,
-          "seq": 14
-        },
-        "type": "main",
-        "name": "起飞",
-        "desc": "滑出+10分钟",
-        "auxiliaries": [
-          {
-            "uuid": "d64d4cac-02e7-4a1b-b163-19fb83b46701",
-            "type": "auxiliary",
-            "name": "代办离场",
-            "desc": "起飞时间+0分钟",
-            "source": {
-              "row": 34
-            },
-            "auxiliary": []
-          }
-        ]
-      }
-    ],
-    "始发航班": [
-      {
-        "uuid": "ac2824dc-d9e0-4fb6-aa97-bace59ef7e42",
-        "source": {
-          "row": 38,
-          "seq": 1
-        },
-        "type": "main",
-        "name": "开驾驶舱门",
-        "desc": "COBT-机型标准装机作业时长-30分钟",
-        "auxiliaries": [
-          {
-            "uuid": "9378ccee-8fd5-469f-be66-c4c25d60c167",
-            "type": "auxiliary",
-            "name": "机务到位",
-            "desc": "开驾驶舱门-5分钟",
-            "source": {
-              "row": 38
-            },
-            "auxiliary": [
-              {
-                "uuid": "2e8f396e-b30b-43ea-b397-07f1d17992e2",
-                "source": {
-                  "row": 38
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "负责离位监护的机务人员应当确认其他人员、车辆、设备 （除飞机牵引设备外）均已撤离至机位安全区域外，机位保持清洁无影响航空器推出的障碍物。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "40882627-8137-4d0e-a3be-3203224550ea",
-            "type": "auxiliary",
-            "name": "代办到位",
-            "desc": "开驾驶舱门-5分钟",
-            "source": {
-              "row": 39
-            },
-            "auxiliary": []
-          },
-          {
-            "uuid": "dfc151c5-b9a2-4367-a0e3-8ad44bfad60e",
-            "type": "auxiliary",
-            "name": "海关/边检到位",
-            "desc": "开驾驶舱门+0分钟",
-            "source": {
-              "row": 40
-            },
-            "auxiliary": [
-              {
-                "uuid": "85998d73-4cdd-4d7f-89cf-4ec959cc1726",
-                "source": {
-                  "row": 40
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "航空器准备推出作业时，除航空器拖车外，其他车辆均应远离停机位，停放在设备区。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "4a45c2db-a5cc-41cc-9055-8229267c6dd2",
-            "type": "auxiliary",
-            "name": "登机梯/客梯车到位",
-            "desc": "开驾驶舱门-5分钟",
-            "source": {
-              "row": 41
-            },
-            "auxiliary": [
-              {
-                "uuid": "abd22cbd-dc74-466a-bd38-f0dbc588d2d9",
-                "source": {
-                  "row": 41
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障工作结束后，各保障单位应当及时将所用设备放回设备停放区，并摆放整齐。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "8142a813-4745-4015-9e2e-d80898a0fe1c",
-            "type": "auxiliary",
-            "name": "开始加油",
-            "desc": "COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）",
-            "source": {
-              "row": 43
-            },
-            "auxiliary": [
-              {
-                "uuid": "99cedb26-6924-489d-a060-8503a56ce53e",
-                "source": {
-                  "row": 43
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "1.飞机牵引车完成飞机对接，直至开始推出或拖曳前，应当保持车辆处于空档和驻车制动状态；2.飞机牵引车在推出飞机过程中，禁止任何人员上、下车辆；3.当飞机牵引车位于飞机机身下方时，禁止抬升驾驶室。",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "fb667faa-bbc0-483e-aebd-8df1ef4a1afb",
-            "type": "auxiliary",
-            "name": "开始加清水/排污水",
-            "desc": "需求申请时间+15分钟",
-            "source": {
-              "row": 44
-            },
-            "auxiliary": [
-              {
-                "uuid": "14af46f9-4642-4105-9d92-6976c08020bc",
-                "source": {
-                  "row": 44
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "廊桥处在非工作状态时，应当将廊桥停留在廊桥回位点。（客运）",
-                "group": "视频监管检查重点（靠机作业）"
-              }
-            ]
-          },
-          {
-            "uuid": "37b4158e-fac2-41fc-87dd-74749eb06ad6",
-            "type": "auxiliary",
-            "name": "接地面电源",
-            "desc": "需求申请时间+15分钟",
-            "source": {
-              "row": 45
-            },
-            "auxiliary": []
-          },
-          {
-            "uuid": "cca179a8-88ba-48ce-8746-46417282e41e",
-            "type": "auxiliary",
-            "name": "平台车到位",
-            "desc": "开驾驶舱门-5分钟",
-            "source": {
-              "row": 46
-            },
-            "auxiliary": [
-              {
-                "uuid": "7fcecef3-dd1a-4cd6-a01d-2a19ad6115b5",
-                "source": {
-                  "row": 46
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "进入机坪的车辆顶部应安装黄色警示灯，并在工作时开启。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "eb32a32f-8011-4f5e-bb77-a82326318400",
-        "source": {
-          "row": 47,
-          "seq": 9
-        },
-        "type": "main",
-        "name": "开货舱门",
-        "desc": "COBT-机型标准装机作业时长-30分钟",
-        "auxiliaries": [
-          {
-            "uuid": "d749bfb0-69d7-4b02-8096-cc93b7fdec79",
-            "type": "auxiliary",
-            "name": "开货舱门",
-            "desc": "",
-            "source": {
-              "row": 47
-            },
-            "auxiliary": [
-              {
-                "uuid": "a12300d1-05e1-4e47-90ac-b1e4b3bd5eda",
-                "source": {
-                  "row": 47
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "航空器活动区内人员（车辆）应当按照交通标志、标线通行。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "45f17d58-7a99-4296-9ca8-2b6080733ac4",
-        "source": {
-          "row": 48,
-          "seq": 10
-        },
-        "type": "main",
-        "name": "开始装机",
-        "desc": "COBT-机型标准装机作业时长-20分钟",
-        "auxiliaries": [
-          {
-            "uuid": "9deb0aa6-abf1-4cde-a7bb-d1f3ec8a9815",
-            "type": "auxiliary",
-            "name": "出港货物交接",
-            "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-            "source": {
-              "row": 48
-            },
-            "auxiliary": []
-          },
-          {
-            "uuid": "bd94d40e-5f37-4394-9538-e5125ceca57e",
-            "type": "auxiliary",
-            "name": "第一板出港货物到达机坪待装区",
-            "desc": "开驾驶舱门-90分钟",
-            "source": {
-              "row": 49
-            },
-            "auxiliary": [
-              {
-                "uuid": "875133ee-11a6-43e4-b4de-e418e1b502d8",
-                "source": {
-                  "row": 49
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "机坪内禁止吸烟、不得随地丢弃废物。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "e21d00d0-9320-4b13-8ba5-524ef2d09f65",
-            "type": "auxiliary",
-            "name": "全部出港货物到达待装区/机坪",
-            "desc": "开驾驶舱门-60分钟",
-            "source": {
-              "row": 50
-            },
-            "auxiliary": [
-              {
-                "uuid": "f858f7bc-a35e-4751-a4fb-b30a20912647",
-                "source": {
-                  "row": 50
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "装卸平台车、行李传送带车在行驶中不得载运任何货物、行李和其他物品。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "068139ca-8298-4ea1-86e5-22fe190144b2",
-            "type": "auxiliary",
-            "name": "装机单接收",
-            "desc": "开驾驶舱门-5分钟",
-            "source": {
-              "row": 51
-            },
-            "auxiliary": [
-              {
-                "uuid": "c2538513-d8cd-4d9b-8763-26b00683e59f",
-                "source": {
-                  "row": 51
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "行李车拖挂托盘行驶时，挂大托盘不得超过4 个，小托盘不得超过6个。拖挂的货物重量不超过拖车的最高载量。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "e9966276-1450-4d50-a50b-d61537a80a50",
-        "source": {
-          "row": 52,
-          "seq": 14
-        },
-        "type": "main",
-        "name": "装机完成",
-        "desc": "开始装机+机型标准装机作业时长（或COBT-20分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "4681a605-db62-4716-a6fb-7c893cf4cad5",
-            "type": "auxiliary",
-            "name": "装机完成",
-            "desc": "",
-            "source": {
-              "row": 52
-            },
-            "auxiliary": [
-              {
-                "uuid": "f8529689-d43d-46a6-8db6-4d6755262ade",
-                "source": {
-                  "row": 52
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "车辆在机坪行驶路线、固定停放点之外倒车应有人指挥，指挥信号和意图明确。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "f5de2b97-a0a5-4eb8-967a-aa162b867c0a",
-        "source": {
-          "row": 53,
-          "seq": 15
-        },
-        "type": "main",
-        "name": "关货舱门",
-        "desc": "装机完成+15分钟（或COBT-5分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "0b4a965e-45d1-4b3c-a070-32a8b1733e00",
-            "type": "auxiliary",
-            "name": "出港登临检查开始",
-            "desc": "装机完成（或COBT-20分钟）",
-            "source": {
-              "row": 53
-            },
-            "auxiliary": [
-              {
-                "uuid": "b89b2b1e-ce52-4d55-b948-6f8e2cb5c982",
-                "source": {
-                  "row": 53
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "车辆应当停放在机场管理机构指定的设备区或停车位，且按照停车位地面标明的所示方向停放。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "3f12cc21-0c19-4def-b450-4f01aee8b370",
-        "source": {
-          "row": 54,
-          "seq": 16
-        },
-        "type": "main",
-        "name": "关驾驶舱门",
-        "desc": "关货舱门+0分钟 （或COBT-5分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "ba198fb2-d13d-456b-863e-c4994975f59f",
-            "type": "auxiliary",
-            "name": "完成加油",
-            "desc": "COBT-5分钟",
-            "source": {
-              "row": 54
-            },
-            "auxiliary": [
-              {
-                "uuid": "0cd1a73e-ff99-494a-a643-3685945c915c",
-                "source": {
-                  "row": 54
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "保障作业现场各类作业用品应统一存放，或者有人看管。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "5a6408d9-c8bd-4c5c-a4a9-fe5c1929f6b7",
-            "type": "auxiliary",
-            "name": "结束加清水/排污水",
-            "desc": "COBT-15分钟",
-            "source": {
-              "row": 55
-            },
-            "auxiliary": [
-              {
-                "uuid": "daca6f92-bcf6-4880-8b9e-4a26ac933ea8",
-                "source": {
-                  "row": 55
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "装卸作业人员在作业完毕后及时清理现场。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "04b78372-b1f1-4198-9044-dafcde9ff6ef",
-            "type": "auxiliary",
-            "name": "出港登临检查结束",
-            "desc": "装机完成+15分钟（或COBT-5分钟）",
-            "source": {
-              "row": 56
-            },
-            "auxiliary": [
-              {
-                "uuid": "5930aca0-f1c0-495e-9795-f05bf28ca96a",
-                "source": {
-                  "row": 56
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "车辆行驶过程中，货物稳固系妥。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "d673d2d5-35bf-41df-97aa-7a870e14e5b8",
-            "type": "auxiliary",
-            "name": "出港机组到机下",
-            "desc": "COBT-60分钟",
-            "source": {
-              "row": 57
-            },
-            "auxiliary": [
-              {
-                "uuid": "684a8cb8-eeb1-454f-8455-d54e86fdb4db",
-                "source": {
-                  "row": 57
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "工作梯、空托盘、空托板等按要求有序停放在设备位置。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "uuid": "171a49a5-a204-4f3d-815c-c22d3c25c7c1",
-        "source": {
-          "row": 58,
-          "seq": 20
-        },
-        "type": "main",
-        "name": "推出",
-        "desc": "关驾驶舱门+5分钟 （或COBT+0分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "422ce5f7-43bd-4b19-9f84-736c1dc236d6",
-            "type": "auxiliary",
-            "name": "牵引车到位",
-            "desc": "COBT-10分钟",
-            "source": {
-              "row": 58
-            },
-            "auxiliary": [
-              {
-                "uuid": "ea82b391-ebcd-4923-afcb-c08aef26cf79",
-                "source": {
-                  "row": 58
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "车辆、设备上整洁，无杂物。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "42a8353a-251a-46ed-95c3-dc1b0ad4a777",
-            "type": "auxiliary",
-            "name": "接气源车",
-            "desc": "COBT-30分钟",
-            "source": {
-              "row": 59
-            },
-            "auxiliary": [
-              {
-                "uuid": "67d570a1-f295-40cf-b35d-d5bbe07d6cac",
-                "source": {
-                  "row": 59
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "井盖开启时，应当在井旁设置醒目的反光标志物。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "211d8ed3-f4a3-4ef7-bcf6-ed5e1121f876",
-            "type": "auxiliary",
-            "name": "撤气源车/撤地面电源",
-            "desc": "COBT-0分钟",
-            "source": {
-              "row": 60
-            },
-            "auxiliary": [
-              {
-                "uuid": "e2385b79-9afa-4408-9fe8-b9870a8b3b1f",
-                "source": {
-                  "row": 60
-                },
-                "type": "videoSupervision",
-                "name": "",
-                "desc": "无道面损坏造成的残渣碎屑、机器零件、纸张以及其他影响飞行安全的杂物。",
-                "group": "视频监管检查重点（机坪秩序）"
-              }
-            ]
-          },
-          {
-            "uuid": "0d8f8993-8b41-460c-a473-74b1af9a051a",
-            "type": "auxiliary",
-            "name": "撤轮档",
-            "desc": "COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）",
-            "source": {
-              "row": 61
-            },
-            "auxiliary": []
-          }
-        ]
-      },
-      {
-        "uuid": "e6da6c02-c39a-46e8-be3a-e9d29f4c02dc",
-        "source": {
-          "row": 62,
-          "seq": 25
-        },
-        "type": "main",
-        "name": "滑出",
-        "desc": "推出+5分钟（或COBT+5分钟）",
-        "auxiliaries": []
-      },
-      {
-        "uuid": "0a2e1f1a-5411-40ad-a39e-db60a7abd73a",
-        "source": {
-          "row": 63,
-          "seq": 26
-        },
-        "type": "main",
-        "name": "起飞",
-        "desc": "滑出+10分钟（或COBT+15分钟）",
-        "auxiliaries": [
-          {
-            "uuid": "06a78dc9-6ce6-4ecd-b07d-03b1e89d8465",
-            "type": "auxiliary",
-            "name": "代办离场",
-            "desc": "起飞时间+0分钟",
-            "source": {
-              "row": 63
-            },
-            "auxiliary": []
-          }
-        ]
-      }
-    ]
-  },
-  "videoSupervisionGroups": [
+  "checklistName": "常规航班",
+  "schema": [
     {
-      "row": 3,
-      "title": "视频监管重点"
+      "uuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
+      "id": 1,
+      "name": "预计落地",
+      "desc": "预计落地",
+      "auxiliaries": []
     },
     {
-      "row": 5,
-      "title": "视频监管检查重点（入位前检查）"
+      "uuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
+      "id": 2,
+      "name": "入位",
+      "desc": "实际落地时间+10分钟",
+      "timeLink": {
+        "refUuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
+        "offsetMinutes": 10
+      },
+      "auxiliaries": [
+        {
+          "uuid": "63c4783d-4271-4546-8daf-f205f59242f0",
+          "id": 3,
+          "type": "time",
+          "name": "机务到位",
+          "desc": "入位时间-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": -5,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "38d830be-56ca-40a7-aee6-a3975af08822",
+          "id": 4,
+          "type": "video",
+          "name": "",
+          "desc": "机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。",
+          "group": "视频监管检查重点（入位前检查）",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": -5,
+            "calcLogic": "and"
+          }
+        }
+      ]
     },
     {
-      "row": 16,
-      "title": "视频监管检查重点（靠机作业）"
+      "uuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
+      "id": 5,
+      "name": "开始挡轮挡",
+      "desc": "入位时间+0分钟",
+      "timeLink": {
+        "refUuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
+        "refId": 2,
+        "offsetMinutes": 0,
+        "calcLogic": "and"
+      },
+      "auxiliaries": [
+        {
+          "uuid": "6904f6d9-ec2e-4e8d-a671-8c43ad85d750",
+          "id": 6,
+          "type": "time",
+          "name": "接地面电源",
+          "desc": "需求申请时间+15分钟",
+          "timeLink": {
+            "refUuid": null,
+            "refId": null,
+            "offsetMinutes": 0,
+            "calcLogic": null
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "9b8a2c39-a595-4dcf-ae58-9f212de1c485",
+          "id": 7,
+          "type": "video",
+          "name": "",
+          "desc": "人员、车辆、设备、货物、行李在指定区域等待。",
+          "group": "视频监管检查重点（入位前检查）"
+        }
+      ]
     },
     {
-      "row": 45,
-      "title": "视频监管检查重点（机坪秩序）"
+      "uuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
+      "id": 8,
+      "name": "开驾驶舱门",
+      "desc": "开始挡轮挡+10分钟",
+      "timeLink": {
+        "refUuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
+        "refId": 5,
+        "offsetMinutes": 10,
+        "calcLogic": "and"
+      },
+      "auxiliaries": [
+        {
+          "uuid": "0fdfcaff-e2bd-4f85-9cbd-5a735132cb76",
+          "id": 9,
+          "type": "time",
+          "name": "登机梯/客梯车到位",
+          "desc": "入位时间-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": -5,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "22a30937-ac79-4f27-b8d4-2bc04c1ebbc4",
+          "id": 10,
+          "type": "time",
+          "name": "代办到位",
+          "desc": "入位时间-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "6c360b32-f27a-4308-8878-0338f9e740ed",
+          "id": 11,
+          "type": "time",
+          "name": "海关/边检到位",
+          "desc": "入位时间+0分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "451e6387-2932-45d6-9eb4-cc27c299edaf",
+          "id": 12,
+          "type": "time",
+          "name": "开始加油",
+          "desc": "COBT-机型参考加油时间-5分钟",
+          "options": [
+            {
+              "aircraftType": "B747",
+              "offsetMinutes": -100
+            },
+            {
+              "aircraftType": "B777",
+              "offsetMinutes": -70
+            },
+            {
+              "aircraftType": "B767",
+              "offsetMinutes": -60
+            },
+            {
+              "aircraftType": "B757",
+              "offsetMinutes": -60
+            },
+            {
+              "aircraftType": "B737",
+              "offsetMinutes": -60
+            }
+          ],
+          "timeLink": {
+            "refUuid": "COBT",
+            "refId": "",
+            "offsetMinutes": [
+              "options",
+              -5
+            ],
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "d1b363c6-69ba-4232-860d-eda60fbab601",
+          "id": 13,
+          "type": "time",
+          "name": "开始加清水/排污水",
+          "desc": "需求申请时间+15分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 15,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "b61e0c0c-cd93-406a-8ae0-4d08d09bad61",
+          "id": 14,
+          "type": "time",
+          "name": "平台车到位",
+          "desc": "入位时间-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": -5,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "012c6792-1e74-4957-bc89-5d7e36fd31f7",
+          "id": 15,
+          "type": "video",
+          "name": "",
+          "desc": "保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。",
+          "group": "视频监管检查重点（入位前检查）"
+        },
+        {
+          "uuid": "a380059d-8248-4d43-b8eb-8d5e93261636",
+          "id": 16,
+          "type": "video",
+          "name": "",
+          "desc": "廊桥活动端应处于廊桥回位点。（客运）",
+          "group": "视频监管检查重点（入位前检查）"
+        },
+        {
+          "uuid": "12c633df-7081-4bdc-8eeb-baeb5d66c7f0",
+          "id": 17,
+          "type": "video",
+          "name": "",
+          "desc": "使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。",
+          "group": "视频监管检查重点（入位前检查）"
+        },
+        {
+          "uuid": "709f9faf-6093-45df-88ba-4224d9da68ee",
+          "id": 18,
+          "type": "video",
+          "name": "",
+          "desc": "车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。",
+          "group": "视频监管检查重点（入位前检查）"
+        },
+        {
+          "uuid": "1821c461-3d32-4616-ab6a-fc59cc0f0ae0",
+          "id": 19,
+          "type": "video",
+          "name": "",
+          "desc": "桥载设备处于复位状态。（客运）",
+          "group": "视频监管检查重点（入位前检查）"
+        },
+        {
+          "uuid": "412a57b0-cb50-4e54-a9b9-12dcd8548c14",
+          "id": 20,
+          "type": "video",
+          "name": "",
+          "desc": "任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。",
+          "group": "视频监管检查重点（入位前检查）"
+        }
+      ]
+    },
+    {
+      "uuid": "6499b169-933c-4aad-a204-859a829f9ef6",
+      "id": 21,
+      "name": "开货舱门",
+      "desc": "开驾驶舱门+5分钟",
+      "timeLink": {
+        "refUuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
+        "refId": 8,
+        "offsetMinutes": 5,
+        "calcLogic": "and"
+      },
+      "auxiliaries": [
+        {
+          "uuid": "6d63367c-f805-4a39-b24b-692f21b598bd",
+          "id": 22,
+          "type": "time",
+          "name": "海关/边检进港登临检查结束",
+          "desc": "开驾驶舱门+15分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 8,
+            "offsetMinutes": 15,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "ebb26178-b4af-4a07-b020-31a264bc6162",
+          "id": 23,
+          "type": "video",
+          "name": "",
+          "desc": "将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。",
+          "group": "视频监管检查重点（入位前检查）"
+        }
+      ]
+    },
+    {
+      "uuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
+      "id": 24,
+      "name": "开始卸机",
+      "desc": "开货舱门+10分钟",
+      "timeLink": {
+        "refUuid": "6499b169-933c-4aad-a204-859a829f9ef6",
+        "refId": 21,
+        "offsetMinutes": 10,
+        "calcLogic": "and"
+      },
+      "auxiliaries": [],
+      "videoSupervision": [
+        {
+          "uuid": "2d3ca887-78a8-4ed1-b100-ca891e29d657",
+          "id": 26,
+          "type": "video",
+          "name": "",
+          "desc": "安全停泊后，接机人员向靠机操作人员给靠机指令。",
+          "group": "视频监管检查重点（入位前检查）"
+        }
+      ]
+    },
+    {
+      "uuid": "f2d47971-dee5-4f97-99af-6a91da5faf93",
+      "id": 27,
+      "name": "卸机完成",
+      "desc": "开始卸机+机型标准卸机作业时长",
+      "timeLink": {
+        "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
+        "refId": 24,
+        "offsetMinutes": [
+          {
+            "aircraftType": "B747",
+            "offsetMinutes": 80
+          },
+          {
+            "aircraftType": "B777",
+            "offsetMinutes": 80
+          },
+          {
+            "aircraftType": "B767",
+            "offsetMinutes": 75
+          },
+          {
+            "aircraftType": "B757",
+            "offsetMinutes": 50
+          },
+          {
+            "aircraftType": "B737",
+            "offsetMinutes": 40
+          }
+        ],
+        "calcLogic": "and"
+      },
+      "auxiliaries": [
+        {
+          "uuid": "ad1479db-a34c-4747-91cb-ccbfc4c3bb49",
+          "id": 28,
+          "type": "time",
+          "name": "进港货物交接",
+          "desc": "入位时间+80分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 2,
+            "offsetMinutes": 80,
+            "calcLogic": "and"
+          }
+        }
+      ]
+    },
+    {
+      "uuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
+      "id": 29,
+      "name": "开始装机",
+      "desc": "卸机完成+0分钟（或COBT-机型标准装机作业时长-20分钟）",
+      "timeLink": {
+        "option": [
+          {
+            "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
+            "description": "卸机完成+0分钟",
+            "offsetMinutes": 0
+          },
+          {
+            "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
+            "description": "COBT-机型标准装机作业时长-20分钟+0分钟",
+            "offsetMinutes": -20
+          }
+        ],
+        "calcLogic": "or"
+      },
+      "auxiliaries": [
+        {
+          "uuid": "1647aa82-dafc-4cdb-b47e-49164cea4ddc",
+          "id": 30,
+          "type": "time",
+          "name": "出港货物交接",
+          "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
+          "timeLink": [
+            {
+              "refUuid": "",
+              "refId": "",
+              "description": "窄体机CTOT-4小时",
+              "offsetMinutes": -240,
+              "calcLogic": "and"
+            },
+            {
+              "refUuid": "",
+              "refId": "",
+              "description": "宽体机CTOT-6小时",
+              "offsetMinutes": -360,
+              "calcLogic": "and"
+            }
+          ],
+          "calcLogic": "or"
+        },
+        {
+          "uuid": "e651e4a9-2f73-4eb1-8153-861eac7d1083",
+          "id": 31,
+          "type": "time",
+          "name": "第一板出港货物到达机坪待装区",
+          "desc": "预计落地时间-90分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 1,
+            "offsetMinutes": -90,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "6c8b3827-0c8c-4c71-9c41-37e22959b99e",
+          "id": 32,
+          "type": "time",
+          "name": "全部出港货物到达待装区/机坪",
+          "desc": "预计落地时间-60分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 1,
+            "offsetMinutes": -60,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "b2e76d59-5dec-4e71-b7bb-ff5464046bdb",
+          "id": 33,
+          "type": "time",
+          "name": "装机单接收",
+          "desc": "预计落地时间-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": 1,
+            "offsetMinutes": -5,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "e80c39f0-439c-4bf6-a1d2-f6b2a87e9b6e",
+          "id": 34,
+          "type": "video",
+          "name": "",
+          "desc": "液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "371c6ebe-7de0-4464-8ce9-b922ae07cd3a",
+          "id": 35,
+          "type": "video",
+          "name": "",
+          "desc": "保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "37f0f437-e73c-4808-96a5-2fb74e030023",
+          "id": 36,
+          "type": "video",
+          "name": "",
+          "desc": "红色廊桥活动区，禁止任何车辆和设备进入。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "5e4d8b81-d362-4384-b713-7e6af0e63c99",
+          "id": 37,
+          "type": "video",
+          "name": "",
+          "desc": "在停机位或作业等待区内挂托盘的车辆不得倒车。",
+          "group": "视频监管检查重点（靠机作业）"
+        }
+      ]
+    },
+    {
+      "uuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
+      "id": 38,
+      "name": "装机完成",
+      "desc": "开始装机+机型标准装机作业时长",
+      "timeLink": {
+        "refUuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
+        "description": "机型标准装机作业时长",
+        "offsetMinutes": [
+          {
+            "aircraftType": "B747",
+            "offsetMinutes": 80
+          },
+          {
+            "aircraftType": "B777",
+            "offsetMinutes": 80
+          },
+          {
+            "aircraftType": "B767",
+            "offsetMinutes": 75
+          },
+          {
+            "aircraftType": "B757",
+            "offsetMinutes": 50
+          },
+          {
+            "aircraftType": "B737",
+            "offsetMinutes": 40
+          }
+        ]
+      },
+      "auxiliaries": [],
+      "videoSupervision": [
+        {
+          "uuid": "2853ef08-a584-4d7d-bcb9-5624ea846523",
+          "id": 40,
+          "type": "video",
+          "name": "",
+          "desc": "在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。",
+          "group": "视频监管检查重点（靠机作业）"
+        }
+      ]
+    },
+    {
+      "uuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
+      "id": 41,
+      "name": "关货舱门",
+      "desc": "装机完成+15分钟 （或COBT-5分钟）",
+      "timeLink": [
+        {
+          "refUuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
+          "description": "装机完成+15分钟",
+          "offsetMinutes": 15
+        },
+        {
+          "refUuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
+          "description": "COBT-5分钟",
+          "offsetMinutes": -5
+        }
+      ],
+      "auxiliaries": [
+        {
+          "uuid": "f56931df-41f2-4471-9ff0-6a0d968ddadc",
+          "id": 42,
+          "type": "time",
+          "name": "出港登临检查开始",
+          "desc": "装机完成（或COBT-20分钟）",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "2fc2329a-ebc3-48e2-a3c4-7c62b2f8497c",
+          "id": 44,
+          "type": "video",
+          "name": "",
+          "desc": "保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "42c27ec3-51b3-47b9-9e83-ebc3af632fb5",
+          "id": 45,
+          "type": "video",
+          "name": "",
+          "desc": "机务人员在航空器周围设置红色反光锥形标志物。",
+          "group": "视频监管检查重点（靠机作业）"
+        }
+      ]
+    },
+    {
+      "uuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
+      "id": 46,
+      "name": "关驾驶舱门",
+      "desc": "关货舱门+0分钟 （或COBT-5分钟）",
+      "timeLink": [
+        {
+          "refUuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
+          "description": "装机完成+15分钟",
+          "offsetMinutes": 15
+        },
+        {
+          "refUuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
+          "description": "COBT-5分钟",
+          "offsetMinutes": -5
+        }
+      ],
+      "auxiliaries": [
+        {
+          "uuid": "eaefd4a7-18e2-4bf1-b3f3-52535dd574d6",
+          "id": 47,
+          "type": "time",
+          "name": "完成加油",
+          "desc": "COBT-5分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "21f16589-3adb-4b34-ae6d-c53882f266f6",
+          "id": 48,
+          "type": "time",
+          "name": "结束加清水/排污水",
+          "desc": "COBT-15分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "f262c0e1-7dff-4c6e-a1f5-b48cba44d767",
+          "id": 49,
+          "type": "time",
+          "name": "出港登临检查结束",
+          "desc": "装机完成+15分钟（或COBT-5分钟）",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "f2ee8c9b-bfeb-4229-94b0-cba3e88fa93b",
+          "id": 50,
+          "type": "time",
+          "name": "出港机组到机下",
+          "desc": "COBT-60分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "7f168563-27df-4afe-b87c-4478ac68403f",
+          "id": 51,
+          "type": "video",
+          "name": "",
+          "desc": "保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "f9c8c39d-8b66-4724-a5e7-62b25dd65d7b",
+          "id": 52,
+          "type": "video",
+          "name": "",
+          "desc": "未熄火的车辆，驾驶员应当随车等候。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "fe80f196-323f-443a-ae61-e2c412bd8932",
+          "id": 53,
+          "type": "video",
+          "name": "",
+          "desc": "人员佩带工作证件，穿着工作服，并配有反光标识。",
+          "group": "视频监管检查重点（靠机作业）"
+        }
+      ]
+    },
+    {
+      "uuid": "0241073a-18d0-4df4-8e38-2729a661b729",
+      "id": 54,
+      "name": "推出",
+      "desc": "关驾驶舱门+5分钟（或COBT+0分钟）",
+      "timeLink": [
+        {
+          "refUuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
+          "description": "关驾驶舱门+5分钟",
+          "offsetMinutes": 5
+        },
+        {
+          "refUuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
+          "description": "COBT+0分钟",
+          "offsetMinutes": 0
+        }
+      ],
+      "auxiliaries": [
+        {
+          "uuid": "91bb8c2f-fae0-4ceb-bd23-7a31a2400939",
+          "id": 55,
+          "type": "time",
+          "name": "牵引车到位",
+          "desc": "COBT-10分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "560d315d-4e5a-4357-870e-fa326818c141",
+          "id": 56,
+          "type": "time",
+          "name": "接气源车",
+          "desc": "COBT-30分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "9c39c79a-acff-4d34-b5ae-5e68a3285fc4",
+          "id": 57,
+          "type": "time",
+          "name": "撤气源车/撤地面电源",
+          "desc": "COBT-0分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        },
+        {
+          "uuid": "4357fb89-eb96-4bf3-a4a8-91c675282301",
+          "id": 58,
+          "type": "time",
+          "name": "撤轮档",
+          "desc": "COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        }
+      ],
+      "videoSupervision": [
+        {
+          "uuid": "46d30cc9-bc75-48d4-9fc9-3d60a6ae895b",
+          "id": 59,
+          "type": "video",
+          "name": "",
+          "desc": "监装监卸人员对航班的装卸过程进行监控。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "9c3ca523-afea-45de-8fe1-97ea4e52f894",
+          "id": 60,
+          "type": "video",
+          "name": "",
+          "desc": "行李的装卸和保管应有防雨措施。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "d3e690bc-b985-4db0-a32b-a320c8d3bd79",
+          "id": 61,
+          "type": "video",
+          "name": "",
+          "desc": "装卸人员按规定要求实施装卸（注：遇有危品运输，轻拿轻放，严格按标签操作）。",
+          "group": "视频监管检查重点（靠机作业）"
+        },
+        {
+          "uuid": "c44a3fbc-80e3-4665-a4b6-0f3200694ea3",
+          "id": 62,
+          "type": "video",
+          "name": "",
+          "desc": "对已装舱的行李、货物及锁扣、挡板应进行固定，并确认已关闭、锁牢货舱门。",
+          "group": "视频监管检查重点（靠机作业）"
+        }
+      ]
+    },
+    {
+      "uuid": "f624de97-ef00-4fe7-8608-c4755245f165",
+      "id": 63,
+      "name": "滑出",
+      "desc": "推出+5分钟",
+      "timeLink": {
+        "refUuid": "0241073a-18d0-4df4-8e38-2729a661b729",
+        "offsetMinutes": 5
+      },
+      "auxiliaries": []
+    },
+    {
+      "uuid": "77b2ca02-c0c3-47d5-93fa-4ea68eacf46d",
+      "id": 64,
+      "name": "起飞",
+      "desc": "滑出+10分钟",
+      "timeLink": {
+        "refUuid": "f624de97-ef00-4fe7-8608-c4755245f165",
+        "offsetMinutes": 10
+      },
+      "auxiliaries": [
+        {
+          "uuid": "d64d4cac-02e7-4a1b-b163-19fb83b46701",
+          "id": 65,
+          "type": "time",
+          "name": "代办离场",
+          "desc": "起飞时间+0分钟",
+          "timeLink": {
+            "refUuid": "",
+            "refId": "",
+            "offsetMinutes": 0,
+            "calcLogic": "and"
+          }
+        }
+      ]
     }
-  ],
-  "originatingFillForm": [
-    [
-      "（2）始发航班",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "序号",
-      "主要监控指标",
-      "标准描述",
-      "辅助监控指标",
-      "标准描述",
-      "",
-      "",
-      ""
-    ],
-    [
-      "1",
-      "开驾驶舱门",
-      "COBT-机型标准装机作业时长-30分钟",
-      "机务到位",
-      "开驾驶舱门-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "2",
-      "",
-      "",
-      "代办到位",
-      "开驾驶舱门-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "3",
-      "",
-      "",
-      "海关/边检到位",
-      "开驾驶舱门+0分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "4",
-      "",
-      "",
-      "登机梯/客梯车到位",
-      "开驾驶舱门-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "5",
-      "",
-      "",
-      "开始加油",
-      "COBT-机型参考加油时间-5分钟（B747参考加油时间100分钟；B777参考加油时间70分钟； B737/B757/B767参考加油时间60分钟）",
-      "",
-      "",
-      ""
-    ],
-    [
-      "6",
-      "",
-      "",
-      "开始加清水/排污水",
-      "需求申请时间+15分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "7",
-      "",
-      "",
-      "接地面电源",
-      "需求申请时间+15分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "8",
-      "",
-      "",
-      "平台车到位",
-      "开驾驶舱门-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "9",
-      "开货舱门",
-      "COBT-机型标准装机作业时长-30分钟",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "10",
-      "开始装机",
-      "COBT-机型标准装机作业时长-20分钟",
-      "出港货物交接",
-      "窄体机CTOT-4小时；宽体机CTOT-6小时",
-      "",
-      "",
-      ""
-    ],
-    [
-      "11",
-      "",
-      "",
-      "第一板出港货物到达机坪待装区",
-      "开驾驶舱门-90分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "12",
-      "",
-      "",
-      "全部出港货物到达待装区/机坪",
-      "开驾驶舱门-60分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "13",
-      "",
-      "",
-      "装机单接收",
-      "开驾驶舱门-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "14",
-      "装机完成",
-      "开始装机+机型标准装机作业时长（或COBT-20分钟）",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "15",
-      "关货舱门",
-      "装机完成+15分钟（或COBT-5分钟）",
-      "出港登临检查开始",
-      "装机完成（或COBT-20分钟）",
-      "",
-      "",
-      ""
-    ],
-    [
-      "16",
-      "",
-      "",
-      "完成加油",
-      "COBT-5分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "17",
-      "",
-      "",
-      "结束加清水/排污水",
-      "COBT-15分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "18",
-      "关驾驶舱门",
-      "关货舱门+0分钟",
-      "出港登临检查结束",
-      "装机完成+15分钟（或COBT-5分钟）",
-      "",
-      "",
-      ""
-    ],
-    [
-      "19",
-      "",
-      "",
-      "出港机组到机下",
-      "COBT-60分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "20",
-      "推出",
-      "关驾驶舱门+5分钟 （或COBT+0分钟）",
-      "撤地面电源",
-      "COBT-0分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "21",
-      "",
-      "",
-      "牵引车到位",
-      "COBT-10分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "22",
-      "",
-      "",
-      "接气源车",
-      "COBT-30分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "23",
-      "",
-      "",
-      "撤气源车",
-      "COBT-0分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "24",
-      "",
-      "",
-      "撤轮档",
-      "COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）",
-      "",
-      "",
-      ""
-    ],
-    [
-      "25",
-      "滑出",
-      "推出+5分钟（或COBT+5分钟）",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "26",
-      "起飞",
-      "滑出+10分钟（或COBT+15分钟）",
-      "代办离场",
-      "起飞时间+0分钟",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
-    [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      ""
-    ]
-  ],
-  "assessment": {
-    "航空器保障": [
-      {
-        "seq": 1,
-        "name": "预计落地时间修正",
-        "desc": "在报文预计落地时间前1小时，如果签派预计落地时间与报文预计落地时间误差超过20分钟，及时通知机场运行指挥中心。",
-        "responsible": "代办"
-      },
-      {
-        "seq": 2,
-        "name": "挡轮挡",
-        "desc": "挡轮挡操作时间不超过机型标准操作时间",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 3,
-        "name": "机务到位",
-        "desc": "飞机入位前5分钟到位（过站） 开驾驶舱门前5分钟（始发）",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 4,
-        "name": "电源车到位",
-        "desc": "机组提出申请后15分钟内到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 5,
-        "name": "撤地面电源",
-        "desc": "撤离操作（接到撤离指令到电源插头与飞机脱离连接）不超过2分钟",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 6,
-        "name": "气源车到位",
-        "desc": "机组提出申请后15分钟内到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 7,
-        "name": "撤气源车",
-        "desc": "撤离操作不超过5分钟",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 8,
-        "name": "牵引车到位",
-        "desc": "COBT前10分钟到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 9,
-        "name": "撤轮挡",
-        "desc": "机组闪灯后2分钟内完成撤轮档操作",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 10,
-        "name": "推出",
-        "desc": "接到推出指令后5分钟内推出到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 11,
-        "name": "加清水",
-        "desc": "机组提出申请后的15分钟内到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 12,
-        "name": "排污水",
-        "desc": "机组提出申请后的15分钟内到位",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 13,
-        "name": "加油保障",
-        "desc": "COBT前5分钟完成加油",
-        "responsible": "中航油"
-      },
-      {
-        "seq": 14,
-        "name": "客梯车保障",
-        "desc": "飞机入位前５分钟到位；",
-        "responsible": "空港产投"
-      },
-      {
-        "seq": 15,
-        "name": "登机梯保障",
-        "desc": "飞机入位前５分钟到位；",
-        "responsible": "集团物流公司"
-      }
-    ],
-    "机坪保障": [
-      {
-        "seq": 24,
-        "name": "进港海关/边检到位",
-        "desc": "入位时间+0分钟",
-        "responsible": "海关/边检"
-      },
-      {
-        "seq": 25,
-        "name": "出港海关/边检到位",
-        "desc": "装机完成",
-        "responsible": "海关/边检"
-      },
-      {
-        "seq": 26,
-        "name": "代办到位",
-        "desc": "入位时间-5分钟",
-        "responsible": "代办"
-      },
-      {
-        "seq": 27,
-        "name": "代办离场",
-        "desc": "起飞时间+0分钟",
-        "responsible": "代办"
-      },
-      {
-        "seq": 28,
-        "name": "出港机组到机下",
-        "desc": "COBT-60分钟",
-        "responsible": "机组"
-      }
-    ],
-    "货物保障": [
-      {
-        "seq": 16,
-        "name": "卸机作业",
-        "desc": "B747",
-        "responsible": "集团物流公司",
-        "aircraftTypes": [
-          {
-            "type": "B747",
-            "duration": "卸机作业时长80分钟",
-            "shunfeng": "顺丰卸机作业75分钟"
-          },
-          {
-            "type": "B777",
-            "duration": "卸机作业时长80分钟",
-            "shunfeng": "顺丰卸机作业75分钟"
-          },
-          {
-            "type": "B767",
-            "duration": "卸机作业时长75分钟",
-            "shunfeng": "顺丰卸机作业60分钟"
-          },
-          {
-            "type": "B757",
-            "duration": "卸机作业时长50分钟",
-            "shunfeng": "顺丰卸机作业50分钟"
-          },
-          {
-            "type": "B737",
-            "duration": "卸机作业时长40分钟",
-            "shunfeng": "顺丰卸机作业40分钟"
-          }
-        ]
-      },
-      {
-        "seq": 17,
-        "name": "装机作业",
-        "desc": "B747",
-        "responsible": "集团物流公司",
-        "aircraftTypes": [
-          {
-            "type": "B747",
-            "duration": "装机作业时长80分钟",
-            "shunfeng": "顺丰装机作业75分钟"
-          },
-          {
-            "type": "B777",
-            "duration": "装机作业时长80分钟",
-            "shunfeng": "顺丰装机作业75分钟"
-          },
-          {
-            "type": "B767",
-            "duration": "装机作业时长75分钟",
-            "shunfeng": "顺丰装机作业60分钟"
-          },
-          {
-            "type": "B757",
-            "duration": "装机作业时长50分钟",
-            "shunfeng": "顺丰装机作业50分钟"
-          },
-          {
-            "type": "B737",
-            "duration": "装机作业时长40分钟",
-            "shunfeng": "顺丰装机作业40分钟"
-          }
-        ]
-      },
-      {
-        "seq": 18,
-        "name": "装卸机作业",
-        "desc": "B747",
-        "responsible": "集团物流公司",
-        "aircraftTypes": [
-          {
-            "type": "B747",
-            "duration": "作业时长120分钟",
-            "shunfeng": "顺丰作业时长120分钟"
-          },
-          {
-            "type": "B777",
-            "duration": "作业时长120分钟",
-            "shunfeng": "顺丰作业时长120分钟"
-          },
-          {
-            "type": "B767",
-            "duration": "作业时长80分钟",
-            "shunfeng": "顺丰作业时长80分钟"
-          },
-          {
-            "type": "B757",
-            "duration": "作业时长60分钟",
-            "shunfeng": "顺丰作业时长60分钟"
-          },
-          {
-            "type": "B737",
-            "duration": "作业时长40分钟",
-            "shunfeng": "顺丰作业时长40分钟"
-          }
-        ]
-      },
-      {
-        "seq": 19,
-        "name": "出港货物交接",
-        "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-        "responsible": "货站",
-        "aircraftTypes": [
-          {
-            "type": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-            "duration": "",
-            "shunfeng": ""
-          }
-        ]
-      },
-      {
-        "seq": 20,
-        "name": "全部出港货物到达待装区/机坪",
-        "desc": "预计落地时间-60分钟（过站） 开驾驶舱门-60分钟（始发）",
-        "responsible": "集团物流公司",
-        "aircraftTypes": [
-          {
-            "type": "预计落地时间-60分钟（过站） 开驾驶舱门-60分钟（始发）",
-            "duration": "",
-            "shunfeng": ""
-          }
-        ]
-      },
-      {
-        "seq": 21,
-        "name": "装机单接收",
-        "desc": "预计落地时间-5分钟",
-        "responsible": "代办",
-        "aircraftTypes": [
-          {
-            "type": "预计落地时间-5分钟",
-            "duration": "",
-            "shunfeng": ""
-          }
-        ]
-      },
-      {
-        "seq": 22,
-        "name": "进港货物交接",
-        "desc": "入位时间+80分钟",
-        "responsible": "集团物流公司",
-        "aircraftTypes": [
-          {
-            "type": "入位时间+80分钟",
-            "duration": "",
-            "shunfeng": ""
-          }
-        ]
-      }
-    ]
-  },
-  "cargoSupport": {
-    "过站航班货物保障": [
-      {
-        "seq": 4,
-        "name": "出港货物交接",
-        "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-        "responsible": "货站"
-      },
-      {
-        "seq": 5,
-        "name": "全部出港货物到达待装区/机坪",
-        "desc": "预计落地时间-60分钟",
-        "responsible": "集团物流公司"
-      },
-      {
-        "seq": 6,
-        "name": "装机单接收",
-        "desc": "预计落地时间-5分钟",
-        "responsible": "代办"
-      },
-      {
-        "seq": 7,
-        "name": "进港货物交接",
-        "desc": "入位时间+80分钟",
-        "responsible": "集团物流公司"
-      },
-      {
-        "seq": 8,
-        "name": "平台车到位",
-        "desc": "入位时间-5分钟",
-        "responsible": "集团物流公司"
-      }
-    ],
-    "始发航班货物保障": [
-      {
-        "seq": 2,
-        "name": "出港货物交接",
-        "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-        "responsible": "集团物流公司"
-      },
-      {
-        "seq": 3,
-        "name": "全部出港货物到达待装区/机坪",
-        "desc": "开驾驶舱门-60分钟",
-        "responsible": "代办"
-      },
-      {
-        "seq": 4,
-        "name": "装机单接收",
-        "desc": "开驾驶舱门-5分钟",
-        "responsible": "集团物流公司"
-      },
-      {
-        "seq": 5,
-        "name": "平台车到位",
-        "desc": "开驾驶舱门-5分钟",
-        "responsible": "集团物流公司"
-      }
-    ]
-  }
+  ]
 }

@@ -56,8 +56,9 @@ export default function FlowChart({ nodes, statusMap = {}, currentStep = null, s
     }, [nodes, size]);
 
     const getNodeStatus = (n) => {
-        const seq = n.source?.seq ?? n.seq;
-        return statusMap[seq] || statusMap[`main-${seq}`] || "todo";
+        // 节点定位键：新结构用全局 id；兼容旧结构 source.seq / seq
+        const key = n.id ?? n.source?.seq ?? n.seq;
+        return statusMap[key] || statusMap[`main-${key}`] || "todo";
     };
 
     if (nodes.length === 0) {
@@ -92,13 +93,13 @@ export default function FlowChart({ nodes, statusMap = {}, currentStep = null, s
                 {/* 节点 + 连线 */}
                 {layout.positions.map((p, i) => {
                     const status = getNodeStatus(p);
-                    const isCurrent = currentStep !== null && (p.source?.seq ?? p.seq) === currentStep;
+                    const isCurrent = currentStep !== null && (p.id ?? p.source?.seq ?? p.seq) === currentStep;
                     const color = isCurrent ? "#f59e0b" : statusColor[status] || statusColor.todo;
                     const isTop = i % 2 === 0;
                     const connectY = layout.yCenter;
 
                     return (
-                        <g key={p.source?.seq ?? p.seq}>
+                        <g key={p.id ?? p.source?.seq ?? p.seq}>
                             {/* 节点 → 主干线 的连接线 */}
                             <line
                                 x1={p.x + p.w / 2}
@@ -149,7 +150,7 @@ export default function FlowChart({ nodes, statusMap = {}, currentStep = null, s
                                     fontWeight={status === "current" ? 700 : 500}
                                     fill={status === "todo" ? "#64748b" : color}
                                 >
-                                    {p.source?.seq ?? p.seq}. {p.name}
+                                    {(p.id ?? p.source?.seq ?? p.seq)}. {p.name}
                                 </text>
                             </g>
 
