@@ -19,14 +19,26 @@ export default function DateFilterPanel({ notice, dayMarkers }) {
 
   // 自定义 DayButton：保留官方组件能力（焦点/交互），在日期右上角叠加红/绿底数字徽标
   const DayButtonWithMarkers = (props) => {
-    const { day, className, children } = props
+    const { day, className, children, selected } = props
     const key = dayjs(day.date).format('YYYY-MM-DD')
     const marker = dayMarkers?.[key]
     const count = marker?.count || 0
     const show = count > 0 && !day.outside
+    // 今天：蓝色加粗字体；当前月（非 outside）：字体稍粗
+    const isToday = dayjs(day.date).isSame(dayjs(), 'day')
     return (
       <DayButton {...props} className={cn(className, 'relative')}>
-        {children}
+        {/* 日期数字：当前月稍粗，今天加粗（蓝色仅未选中） */}
+        <span
+          className={cn(
+            'relative z-[1]',
+            !day.outside && 'font-medium',
+            isToday && 'font-bold',
+            isToday && !selected && 'text-blue-600',
+          )}
+        >
+          {children}
+        </span>
         {show && (
           <span
             className={cn(

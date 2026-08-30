@@ -1,0 +1,766 @@
+{
+  "checklistName": "passage-checklist1",
+  "title": "客运航班节点保障及合规性监控检查单",
+  "schemaVersion": "3.0-test",
+  "category": "客运航班",
+  "flightType": "航空器始发",
+  "variables": {
+    "actualLanding": {
+      "name": "实际落地时间",
+      "refType": "var"
+    },
+    "estimatedLanding": {
+      "name": "预计落地时间",
+      "refType": "var"
+    },
+    "cobt": {
+      "name": "实际离港时间（CTOT）",
+      "refType": "var"
+    },
+    "ctot": {
+      "name": "计划离港时间（CTOT）",
+      "refType": "var"
+    },
+    "aircraftType": {
+      "name": "机型",
+      "refType": "var"
+    },
+    "demandGroundPower": {
+      "name": "地面电源需求",
+      "refType": "var"
+    },
+    "demandWater": {
+      "name": "清水需求",
+      "refType": "var"
+    }
+  },
+  "parameters": [
+    {
+      "code": "STAIR_CONNECT",
+      "name": "客梯对接提前时间（分钟）",
+      "values": {
+        "B747": 120,
+        "B787": 120,
+        "B777": 120,
+        "B767": 120,
+        "B757": 90,
+        "B737": 90
+      }
+    },
+    {
+      "code": "CARGO_LOAD_TIME",
+      "name": "客梯车对接提前时间（分钟）",
+      "values": {
+        "B747": 120,
+        "B787": 120,
+        "B777": 120,
+        "B767": 120,
+        "B757": 70,
+        "B737": 70
+      }
+    },
+    {
+      "code": "CABIN_OPEN_OFFSET",
+      "name": "客舱门开启提前（分钟）",
+      "values": {
+        "B747": 1,
+        "B787": 1,
+        "B777": 1,
+        "B757": 1,
+        "B737": 1
+      }
+    },
+    {
+      "code": "BRIDGE_DOCK_OFFSET",
+      "name": "廊桥接靠提前（分钟）",
+      "values": {
+        "B747": 60,
+        "B787": 60,
+        "B777": 60,
+        "B767": 50,
+        "B757": 45,
+        "B737": 45
+      }
+    },
+    {
+      "code": "WATER_OFFSET",
+      "name": "清水操作提前（分钟）",
+      "values": {
+        "B747": 15,
+        "B787": 15,
+        "B777": 15,
+        "B757": 15,
+        "B737": 15
+      }
+    },
+    {
+      "code": "CATERING_OFFSET",
+      "name": "餐食配供提前（分钟）",
+      "values": {
+        "B747": 30,
+        "B787": 30,
+        "B777": 30,
+        "B757": 30,
+        "B737": 30
+      }
+    },
+    {
+      "code": "REFUEL_OFFSET",
+      "name": "机轮加油提前（分钟）",
+      "values": {
+        "B747": 5,
+        "B787": 5,
+        "B777": 5,
+        "B757": 5,
+        "B737": 5
+      }
+    },
+    {
+      "code": "LOADING_OFFSET",
+      "name": "装卸人员到位提前（分钟）",
+      "values": {
+        "B747": 5,
+        "B787": 5,
+        "B777": 5,
+        "B757": 5,
+        "B737": 5
+      }
+    },
+    {
+      "code": "CARGO_LOADING_OFFSET",
+      "name": "货邮装载提前（分钟）",
+      "values": {
+        "B747": 5,
+        "B787": 5,
+        "B777": 5,
+        "B757": 5,
+        "B737": 5
+      }
+    },
+    {
+      "code": "CABIN_CLOSE_OFFSET",
+      "name": "客舱门关闭提前（分钟）",
+      "values": {
+        "B747": 5,
+        "B787": 5,
+        "B777": 5,
+        "B757": 5,
+        "B737": 5
+      }
+    },
+    {
+      "code": "BRIDGE_RETREAT_OFFSET",
+      "name": "客桥撤离开始（分钟）",
+      "values": {
+        "B747": 3,
+        "B787": 3,
+        "B777": 3,
+        "B757": 3,
+        "B737": 3
+      }
+    },
+    {
+      "code": "TUG_READY_OFFSET",
+      "name": "牵引车到位提前（分钟）",
+      "values": {
+        "B747": 10,
+        "B787": 10,
+        "B777": 10,
+        "B757": 10,
+        "B737": 10
+      }
+    },
+    {
+      "code": "PUSHBACK_LIMIT",
+      "name": "推出时限（分钟）",
+      "values": {
+        "B747": 3,
+        "B787": 3,
+        "B777": 3,
+        "B757": 3,
+        "B737": 3
+      }
+    }
+  ],
+  "schema": [
+    {
+      "uuid": "eea0c533-ad34-444c-9b0e-930da916d53f",
+      "id": 1,
+      "eventId": "E001",
+      "code": "廊桥对接",
+      "category": "main",
+      "name": "廊桥对接",
+      "desc": "对接时间不晚于计划/目标离港时间：500座以上：120分钟  151-250座：90分钟  61-150座：90分钟  60座以下：90分钟",
+      "responsibleDepartment": "PASSAGE",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "STAIR_CONNECT",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "7459143e-2b04-4830-aa0c-2487a4b263b8",
+      "id": 2,
+      "eventId": "E002",
+      "code": "客梯车对接",
+      "category": "main",
+      "name": "客梯车对接",
+      "desc": "对接时间不晚于计划/目标离港时间：500座以上：120分钟  251-500座：70分钟  151-250座：70分钟  60-150座：60分钟  60座以下：60分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "CARGO_LOAD_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "ed700dad-cd1a-4222-9a4f-29b52fc21a19",
+      "id": 3,
+      "eventId": "E003",
+      "code": "客舱门开启",
+      "category": "main",
+      "name": "客舱门开启",
+      "desc": "客梯或客梯车对接完成后1分钟内开启客舱门",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "CABIN_OPEN_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "9c152e51-4e5f-4c4b-847e-a152dfdd7cd7",
+      "id": 4,
+      "eventId": "E004",
+      "code": "摆渡车到位",
+      "category": "main",
+      "name": "摆渡车到位",
+      "desc": "首辆摆渡车到位时间不晚于计划/目标离港时间前：   500座以上：60分钟   251-500座：50分钟   151-250座：45分钟   61-150座：45分钟   60座以下：45分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "BRIDGE_DOCK_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "ebdc4586-4392-4833-9cca-d02013a19696",
+      "id": 5,
+      "eventId": "E005",
+      "code": "清水操作",
+      "category": "main",
+      "name": "清水操作",
+      "desc": "清水操作完成时间不晚于计划/目标离港时间前15分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "WATER_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "411dbfc3-dd83-4c0d-9b30-80680b473da2",
+      "id": 6,
+      "eventId": "E006",
+      "code": "餐食及机供品配供",
+      "category": "main",
+      "name": "餐食及机供品配供",
+      "desc": "餐食及机供品配供应在开始登机前完成",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "CATERING_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "cada2d41-d26d-4884-ad12-b904edec5b17",
+      "id": 7,
+      "eventId": "E007",
+      "code": "航油加注",
+      "category": "main",
+      "name": "航油加注",
+      "desc": "航油加注应在开始登机前5分钟完成",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "REFUEL_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "522e01e3-127f-4a4f-80e2-0fa5608f21ea",
+      "id": 8,
+      "eventId": "E008",
+      "code": "装卸人员及装卸设备",
+      "category": "main",
+      "name": "装卸人员及装卸设备",
+      "desc": "在航班计划 / 预计到港时间前5分钟到位",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "LOADING_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "466a4618-f275-493d-acf9-108f0627cf84",
+      "id": 9,
+      "eventId": "E009",
+      "code": "货邮_行李装载",
+      "category": "main",
+      "name": "货邮、行李装载",
+      "desc": "货邮、行李装载应在计划/目标离港时间前5分钟完成",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "CARGO_LOADING_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "e87cbed8-d566-497a-b041-89d89a9e2e49",
+      "id": 10,
+      "eventId": "E010",
+      "code": "客舱门关闭",
+      "category": "main",
+      "name": "客舱门关闭",
+      "desc": "客舱门关闭时间不晚于计划/目标离港时间前5分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "CABIN_CLOSE_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "6da4902a-cd8c-4b87-aa15-7f01cdc42e05",
+      "id": 11,
+      "eventId": "E011",
+      "code": "廊桥撤离",
+      "category": "main",
+      "name": "廊桥撤离",
+      "desc": "廊桥撤离应在客舱门关闭后开始",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "BRIDGE_RETREAT_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "13ee833e-1fef-49a0-ba5e-0c64d8d554d4",
+      "id": 12,
+      "eventId": "E012",
+      "code": "牵引车_机务到位",
+      "category": "main",
+      "name": "牵引车、机务到位",
+      "desc": "牵引车、机务到位时间不晚于计划/目标离港时间前10分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "TUG_READY_OFFSET",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "addf8ac8-255e-48de-86ed-dadf5a0f636f",
+      "id": 13,
+      "eventId": "E013",
+      "code": "航空器推出",
+      "category": "main",
+      "name": "航空器推出",
+      "desc": "从接到指令到航空器开始推出作业时间不超过3分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "ctot"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "PUSHBACK_LIMIT",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "07f1196b-eaa3-4d45-8de4-a4a4c5b428d2",
+      "id": 14,
+      "eventId": "E014",
+      "code": "VIDEO_CABIN_INSPECTION",
+      "category": "video",
+      "name": "视频监管检查重点（入位舱检查）",
+      "desc": "针对客梯对接、客舱门开启、廊桥接靠、餐食配供、机轮加油、客舱门关闭等节点的入位舱视频监管要求",
+      "formula": null,
+      "auxiliaries": [],
+      "videoSupervision": [
+        {
+          "uuid": "29e505d9-94d3-45f3-8899-2747126ab601",
+          "group": "入位舱检查",
+          "desc": "机务人员在航班预计到达5分钟前接人员对机位适用性进行检查",
+          "source": "image"
+        },
+        {
+          "uuid": "65485925-1943-4557-af8b-cdbebb03e13c",
+          "group": "入位舱检查",
+          "desc": "人员、车辆、设备、货物、行李在指定区域等候",
+          "source": "image"
+        },
+        {
+          "uuid": "824fc544-d9db-4259-b4e0-4e8dee6545b6",
+          "group": "入位舱检查",
+          "desc": "保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守",
+          "source": "image"
+        },
+        {
+          "uuid": "e85ae63f-4e7a-4ae3-8ff6-ffea78b3f029",
+          "group": "入位舱检查",
+          "desc": "廊桥活动端处于廊桥固定点。（客运）",
+          "source": "image"
+        },
+        {
+          "uuid": "56a4f3bf-caed-4ed0-861a-5153dead831f",
+          "group": "入位舱检查",
+          "desc": "使用目视检查引导系统时，操作人员应在目视检查引导系统急停装置前逗留，遵循特殊反应使用停止按钮，并及时转换人工引导。",
+          "source": "image"
+        },
+        {
+          "uuid": "689dbd98-419a-41e2-a8fd-5d82fac7ff00",
+          "group": "入位舱检查",
+          "desc": "车辆、设备必须制定或固定，并设置轮胎、液压装置处于限位状态。",
+          "source": "image"
+        },
+        {
+          "uuid": "ff42eae6-f8f6-4f98-88de-0c799f2aeac7",
+          "group": "入位舱检查",
+          "desc": "桥载设备处于擎位状态。（客运）",
+          "source": "image"
+        },
+        {
+          "uuid": "6f55ba13-6896-4b83-9913-a1917e90669f",
+          "group": "入位舱检查",
+          "desc": "任何车辆、人员不得从航空器对接人员（或拖行引导系统）之间穿行",
+          "source": "image"
+        },
+        {
+          "uuid": "09bcb67e-852b-46a3-a401-489ae5fc3c5e",
+          "group": "入位舱检查",
+          "desc": "将飞机引导/拖推到指定的机位，开放盖板后、警示绳",
+          "source": "image"
+        },
+        {
+          "uuid": "ac93c124-5b8a-4266-8d4f-0047b7b0a036",
+          "group": "入位舱检查",
+          "desc": "安全停稳后，接机人员应将接机人员交给乘务长",
+          "source": "image"
+        },
+        {
+          "uuid": "330d1f9a-2dc4-45e8-b50f-f08d826f3a5f",
+          "group": "入位舱检查",
+          "desc": "保障车辆、设备在允许区域停放或地面保障作业时，其他车辆、设备不得进入该作业区域。",
+          "source": "image"
+        },
+        {
+          "uuid": "0b7611ca-6031-4952-b0f7-aa34ff8363eb",
+          "group": "入位舱检查",
+          "desc": "红色着装活动区，禁止任何车辆和设备进入。",
+          "source": "image"
+        },
+        {
+          "uuid": "f01b5bb6-9b88-4789-be0c-3f0e50d76e95",
+          "group": "入位舱检查",
+          "desc": "在停机位或作业等待区域内拦车的车辆不得停车。",
+          "source": "image"
+        },
+        {
+          "uuid": "ea896ccd-14be-4198-b4b6-42e2ca7a8ec4",
+          "group": "入位舱检查",
+          "desc": "在航空器处于安全航站楼后，登机或候车对乘降飞机，机接人员应立机后端。",
+          "source": "image"
+        }
+      ]
+    },
+    {
+      "uuid": "a7af9aa9-7cd9-4b8e-8981-cdf5c4c0aeb3",
+      "id": 15,
+      "eventId": "E015",
+      "code": "VIDEO_AIRPORT_ORDER",
+      "category": "video",
+      "name": "视频监管检查重点（机坪秩序）",
+      "desc": "针对航空器推出、货邮装载、装卸人员等节点的机坪秩序视频监管要求",
+      "formula": null,
+      "auxiliaries": [],
+      "videoSupervision": [
+        {
+          "uuid": "6250cb78-6b56-48a9-86a3-1607ff521af0",
+          "group": "机坪秩序",
+          "desc": "进入机坪的车辆顶部应安装黄色警示灯，并在工作时开启。",
+          "source": "image"
+        },
+        {
+          "uuid": "da9db51a-5ae7-480f-82e1-8c0b68a83524",
+          "group": "机坪秩序",
+          "desc": "航空器活动区内人员（车辆）应当按照交通标志、标线通行。",
+          "source": "image"
+        },
+        {
+          "uuid": "86afab83-0e85-431b-b71e-82f3aa7e5f9a",
+          "group": "机坪秩序",
+          "desc": "机坪内禁止吸烟、不得随地丢弃废物。",
+          "source": "image"
+        },
+        {
+          "uuid": "08665d55-c51d-44c1-a31e-be452e34bd92",
+          "group": "机坪秩序",
+          "desc": "装卸平台托盘行驶时，挂大托盘不得超过 4 个，小托盘不得超过 6 个，拖挂的货物重量不超过拖车的整车重量。",
+          "source": "image"
+        },
+        {
+          "uuid": "359e7e65-e9a3-4997-adba-7a4e5332e6db",
+          "group": "机坪秩序",
+          "desc": "车辆在机坪内行驶路线、固定摆放点之外倒车应有人指挥，指挥信号和手势明显。",
+          "source": "image"
+        },
+        {
+          "uuid": "e03b80a7-0670-4d6a-b779-5a2ef4e1d23a",
+          "group": "机坪秩序",
+          "desc": "车辆应按停放在机坪管理标指规定的设备区域停车位，且按照停车位地面标线的停车方向停放。",
+          "source": "image"
+        },
+        {
+          "uuid": "0062c724-f96d-452d-82c6-afb998383889",
+          "group": "机坪秩序",
+          "desc": "保障作业现场各类作业用品应统一存放，或者有人看管。",
+          "source": "image"
+        },
+        {
+          "uuid": "12be16f1-a3cf-4836-8258-2ec2e5f6035b",
+          "group": "机坪秩序",
+          "desc": "被制作人员在作业完毕后及时清理现场。",
+          "source": "image"
+        },
+        {
+          "uuid": "69132c9d-712d-4d09-9c37-1c4bb0f13631",
+          "group": "机坪秩序",
+          "desc": "车辆行驶过程中，货物稳固无索",
+          "source": "image"
+        },
+        {
+          "uuid": "1771773d-7544-4002-a1a3-d5d0b6dee5c1",
+          "group": "机坪秩序",
+          "desc": "车辆、设备上整齐、无杂物",
+          "source": "image"
+        },
+        {
+          "uuid": "e6fb30af-c28c-4281-a2c7-f0044595cc41",
+          "group": "机坪秩序",
+          "desc": "工作梯、登机梯、空机坪等设备有要求停放在设备位置",
+          "source": "image"
+        },
+        {
+          "uuid": "c0897390-5c2f-4a56-9f4c-eff31c1907c4",
+          "group": "机坪秩序",
+          "desc": "并离开起时，应当在外壳设置醒目的反光标志物。",
+          "source": "image"
+        },
+        {
+          "uuid": "59f495ec-a2bf-45e1-980b-a07bc24e62dc",
+          "group": "机坪秩序",
+          "desc": "无盖罩而不适用的轮胎装置，机器零件、吸铁以及其他影响飞行的安全的物品",
+          "source": "image"
+        }
+      ]
+    },
+    {
+      "uuid": "e8a0f0e0-9817-4890-9736-2bcfc786af5b",
+      "id": 16,
+      "eventId": "E016",
+      "code": "FLIGHT_GUARANTEE",
+      "category": "guarantee",
+      "name": "航班保障",
+      "desc": "各级相关保障单位应及时做好航班保障工作，不得因保障原因影响后续航班的正常运行",
+      "formula": null,
+      "auxiliaries": [],
+      "videoSupervision": [],
+      "responsible": "所有单位"
+    }
+  ]
+}

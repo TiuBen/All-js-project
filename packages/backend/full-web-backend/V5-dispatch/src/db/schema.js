@@ -130,6 +130,8 @@ async function ensureTables() {
         stand VARCHAR(16),
         aircraft_type VARCHAR(32),
         landing_time VARCHAR(32),
+        checklist_category VARCHAR(32),
+        checklist_uuid VARCHAR(64),
         created_at TIMESTAMPTZ DEFAULT now()
       );
     `);
@@ -147,6 +149,11 @@ async function ensureTables() {
     await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS aldt VARCHAR(32);`);
     await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS corridor VARCHAR(16);`);
     await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS runway VARCHAR(16);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS checklist_category VARCHAR(32);`);
+    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS checklist_uuid VARCHAR(64);`);
+    // fips 历史表同样补这两列（幂等；表不存在则跳过）
+    await p.query(`ALTER TABLE IF EXISTS fips ADD COLUMN IF NOT EXISTS checklist_category VARCHAR(32);`);
+    await p.query(`ALTER TABLE IF EXISTS fips ADD COLUMN IF NOT EXISTS checklist_uuid VARCHAR(64);`);
     console.log('[DB] 表 manual_fips 已就绪');
 
     // ---------- 生鲜货物航班表（fresh_air_cargo） ----------

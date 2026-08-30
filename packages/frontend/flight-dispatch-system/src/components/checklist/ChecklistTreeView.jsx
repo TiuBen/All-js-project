@@ -1,21 +1,25 @@
 import { useMemo, useState } from "react";
 import { cn } from "../../lib/utils";
 import { CheckCircle2, CircleDot, Circle, ChevronDown, ChevronRight, Camera, Columns3, Columns2, List } from "lucide-react";
+import { statusStyle, StatusIcon } from "./statusView";
+import AuxiliaryList from "./AuxiliaryList";
+import VideoList from "./VideoList";
 
 /**
  * ============================================================
  * ChecklistTreeView —— 已填检查单的树形只读展示组件
  * ------------------------------------------------------------
  * 用 <ul> 树形结构展示一条已填好的检查单记录：
- *   主监控指标(节点) → 辅助监控指标 → 视频监管项
+ *   主监控指标(节点) → 辅助监控指标(AuxiliaryList) → 视频监管项(VideoList)
  *   - 状态为 ok        → 正常字体色（深灰），绿勾
  *   - 状态为 abnormal  → 红色字体 + 红点
  *   - 未填/na          → 灰色
  * 默认全部折叠；顶部可切换 1栏 / 2栏 / 3栏 布局（默认 3 栏）。
+ * 已适配 v3 模板结构（schema 顶层 + id 定位 + videoSupervision 顶层），兼容旧结构。
  * ============================================================
  */
 export default function ChecklistTreeView({ template, record, flight }) {
-  // 展开状态：Set<mainSeq>（包含 = 展开），默认全部折叠
+  // 展开状态：Set<节点定位键>（包含 = 展开），默认全部折叠
   const [expanded, setExpanded] = useState(() => new Set());
   // 栏数：1 | 2 | 3（默认 3）
   const [cols, setCols] = useState(3);
@@ -24,21 +28,28 @@ export default function ChecklistTreeView({ template, record, flight }) {
   const items = record?.items || {};
   const videoItems = record?.video_supervision || {};
   const flightType = record?.flight_type || flight?.flightType || "常规航班";
-  const nodes = template?.flightTypes?.[flightType] || [];
+  // 新结构：schema 顶层；兼容旧：flightTypes
+  const nodes = template?.schema || template?.flightTypes?.[flightType] || [];
 
-  const getSeq = (n) => n?.source?.seq ?? n?.seq;
+  // 节点定位键：新结构用 id；兼容旧结构 source.seq / seq
+  const getNodeId = (n) => n?.id ?? n?.source?.seq ?? n?.seq;
 
-  // 收集视频项（嵌套在 aux.auxiliary[]）
+  // 视频项：新结构节点顶层 videoSupervision[]；兼容旧 auxiliaries[].auxiliary[]
   const videoByNode = useMemo(() => {
     const map = {};
     nodes.forEach((n) => {
       const list = [];
-      (n.auxiliaries || []).forEach((a) => {
-        (a.auxiliary || []).forEach((v) => {
-          list.push({ uuid: v.uuid, groupTitle: v.group || "", desc: v.desc, row: v.source?.row, auxName: a.name });
-        });
+      (n.videoSupervision || []).forEach((v) => {
+        list.push({ uuid: v.uuid, groupTitle: v.group || "", desc: v.desc });
       });
-      if (list.length) map[getSeq(n)] = list;
+      if (!list.length) {
+        (n.auxiliaries || []).forEach((a) => {
+          (a.auxiliary || []).forEach((v) => {
+            list.push({ uuid: v.uuid, groupTitle: v.group || "", desc: v.desc });
+          });
+        });
+      }
+      if (list.length) map[getNodeId(n)] = list;
     });
     return map;
   }, [nodes]);
@@ -53,34 +64,22 @@ export default function ChecklistTreeView({ template, record, flight }) {
       else pending++;
     };
     nodes.forEach((n) => {
-      const seq = getSeq(n);
-      countItem(items[`main-${seq}`]);
+      const nid = getNodeId(n);
+      countItem(items[`main-${nid}`]);
       (n.auxiliaries || []).forEach((a) => {
-        const aKey = `aux-${a.source?.row ?? a.row}`;
+        const aKey = `aux-${a.id ?? a.row ?? a.source?.row}`;
         countItem(items[aKey] || items[`aux-${a.row}`]);
       });
-      (videoByNode[seq] || []).forEach((v) => countItem(videoItems[`video-${v.uuid}`]));
+      (videoByNode[nid] || []).forEach((v) => countItem(videoItems[`video-${v.uuid}`]));
     });
     return { ok, abnormal, pending };
   }, [nodes, items, videoItems, videoByNode]);
 
-  // 单项状态样式
-  const statusStyle = (item) => {
-    if (!item?.status) return "text-slate-400";
-    if (item.status === "abnormal") return "text-red-600";
-    return "text-slate-700";
-  };
-  const statusIcon = (item) => {
-    if (!item?.status) return <Circle size={13} className="text-slate-300" />;
-    if (item.status === "abnormal") return <CircleDot size={13} className="text-red-500" />;
-    return <CheckCircle2 size={13} className="text-emerald-500" />;
-  };
-
-  const toggleExpand = (seq) => {
+  const toggleExpand = (nid) => {
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(seq)) next.delete(seq);
-      else next.add(seq);
+      if (next.has(nid)) next.delete(nid);
+      else next.add(nid);
       return next;
     });
   };
@@ -126,17 +125,12 @@ export default function ChecklistTreeView({ template, record, flight }) {
         {nodes.length === 0 ? (
           <div className="py-10 text-center text-sm text-slate-400">该航班类型的检查单暂未配置</div>
         ) : (
-          <ul
-            className={cn(colCls)}
-            style={{ columnGap: "0.75rem" }}
-          >
+          <ul className={cn(colCls)} style={{ columnGap: "0.75rem" }}>
             {nodes.map((n) => {
-              const seq = getSeq(n);
-              const mainKey = `main-${seq}`;
+              const nid = getNodeId(n);
+              const mainKey = `main-${nid}`;
               const mainItem = items[mainKey] || {};
-              const auxiliaries = n.auxiliaries || [];
-              const videos = videoByNode[seq] || [];
-              const isExpanded = expanded.has(seq);
+              const isExpanded = expanded.has(nid);
               return (
                 <li
                   key={mainKey}
@@ -145,7 +139,7 @@ export default function ChecklistTreeView({ template, record, flight }) {
                   {/* ===== 主监控指标 ===== */}
                   <div
                     className="flex cursor-pointer items-center gap-2 rounded-t-lg px-3 py-2 hover:bg-slate-100/60"
-                    onClick={() => toggleExpand(seq)}
+                    onClick={() => toggleExpand(nid)}
                   >
                     {isExpanded ? (
                       <ChevronDown size={14} className="shrink-0 text-slate-400" />
@@ -153,7 +147,7 @@ export default function ChecklistTreeView({ template, record, flight }) {
                       <ChevronRight size={14} className="shrink-0 text-slate-400" />
                     )}
                     <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-50 text-[11px] font-bold text-primary-700">
-                      {seq}
+                      {nid}
                     </span>
                     <span className={cn("min-w-0 truncate text-[13px] font-semibold", statusStyle(mainItem))} title={n.name}>
                       {n.name}
@@ -162,7 +156,9 @@ export default function ChecklistTreeView({ template, record, flight }) {
                       <span className="shrink-0 rounded bg-violet-50 px-1 py-0.5 text-[9px] text-violet-600">{n.responsible}</span>
                     )}
                     {mainItem.time && <span className="ml-auto shrink-0 tabular-nums text-xs text-slate-500">{mainItem.time}</span>}
-                    <span className="shrink-0">{statusIcon(mainItem)}</span>
+                    <span className="shrink-0">
+                      <StatusIcon item={mainItem} />
+                    </span>
                   </div>
                   {mainItem.note && (
                     <div className="whitespace-normal break-words px-11 pb-1 text-[11px] text-slate-500">{mainItem.note}</div>
@@ -170,75 +166,10 @@ export default function ChecklistTreeView({ template, record, flight }) {
 
                   {/* ===== 子项：辅助监控指标 + 视频监管项 ===== */}
                   {isExpanded && (
-                    <ul className="space-y-1 px-2 pb-2 pt-1">
-                      {auxiliaries.map((a, ai) => {
-                        const aKey = `aux-${a.source?.row ?? a.row}`;
-                        const aItem = items[aKey] || items[`aux-${a.row}`] || {};
-                        const aVideos = a.auxiliary || [];
-                        return (
-                          <li key={`${seq}-aux-${ai}`} className="rounded-md border border-slate-100 bg-white">
-                            {/* 标题行：名称 + 时间 + 状态图标（不再挤压描述） */}
-                            <div className="flex items-center gap-2 px-3 py-1.5">
-                              <span className="pl-2 text-[11px] text-slate-400">↳</span>
-                              <span className={cn("min-w-0 flex-1 truncate text-[12px] font-medium", statusStyle(aItem))} title={a.name}>
-                                {a.name}
-                              </span>
-                              {aItem.time && <span className="shrink-0 tabular-nums text-[11px] text-slate-500">{aItem.time}</span>}
-                              <span className="shrink-0">{statusIcon(aItem)}</span>
-                            </div>
-                            {/* 描述行：独立行，支持换行 */}
-                            {a.desc && (
-                              <div className="whitespace-normal break-words px-3 pb-1 pl-9 text-[10px] leading-snug text-slate-500">
-                                {a.desc}
-                              </div>
-                            )}
-                            {aItem.note && (
-                              <div className="whitespace-normal break-words px-3 pb-1 pl-9 text-[11px] text-slate-500">
-                                {aItem.note}
-                              </div>
-                            )}
-
-                            {/* ===== 视频监管项（第三层） ===== */}
-                            {aVideos.length > 0 && (
-                              <ul className="space-y-1 px-5 pb-1.5">
-                                {aVideos.map((v, vi) => {
-                                  const vKey = `video-${v.uuid}`;
-                                  const vItem = videoItems[vKey] || {};
-                                  return (
-                                    <li key={`${seq}-${ai}-${vi}`} className="rounded border border-sky-50 bg-sky-50/30 px-2.5 py-1">
-                                      {/* 分组标题行 */}
-                                      {(v.groupTitle || vItem.status) && (
-                                        <div className="flex items-center gap-1.5">
-                                          <Camera size={11} className="shrink-0 text-sky-400" />
-                                          {v.groupTitle && (
-                                            <span className="shrink-0 rounded bg-sky-100 px-1 py-0.5 text-[9px] font-medium text-sky-600">
-                                              {v.groupTitle}
-                                            </span>
-                                          )}
-                                          <span className="ml-auto shrink-0">{statusIcon(vItem)}</span>
-                                        </div>
-                                      )}
-                                      {/* 描述行：独立行，支持换行（修复长文本不换行 bug） */}
-                                      <div className={cn("mt-1 whitespace-normal break-words text-[11px] leading-snug", statusStyle(vItem))}>
-                                        {v.desc}
-                                      </div>
-                                      {vItem.note && (
-                                        <div className="mt-0.5 whitespace-normal break-words text-[10px] text-slate-500">
-                                          {vItem.note}
-                                        </div>
-                                      )}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            )}
-                          </li>
-                        );
-                      })}
-                      {auxiliaries.length === 0 && (
-                        <li className="px-3 py-1 text-[11px] text-slate-400">该节点无辅助监控指标</li>
-                      )}
-                    </ul>
+                    <>
+                      <AuxiliaryList auxiliaries={n.auxiliaries || []} items={items} />
+                      <VideoList videos={videoByNode[nid] || []} videoItems={videoItems} />
+                    </>
                   )}
                 </li>
               );

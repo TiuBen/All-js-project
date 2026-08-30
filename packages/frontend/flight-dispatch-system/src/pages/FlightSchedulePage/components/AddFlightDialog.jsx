@@ -16,17 +16,63 @@ import { Loader2, X, Plane } from "lucide-react";
  */
 
 // 基础信息（普通输入）
+// uppercase: alpha=仅大写字母 A-Z（起飞/目的/落地站）；alnum=大写字母+数字 A-Z0-9（走廊口/停机位）
 const BASE_FIELDS = [
   { key: "task", label: "任务" },
   { key: "flightNo", label: "航班号", required: true },
-  { key: "originStation", label: "起飞站" },
-  { key: "destStation", label: "目的站" },
-  { key: "landingStation", label: "落地站" },
-  { key: "corridor", label: "走廊口" },
-  { key: "runway", label: "跑道" },
-  { key: "stand", label: "停机位" },
-  { key: "aircraftType", label: "机型" },
+  { key: "checklistCategory", label: "航班类别", select: true, options: null }, // 货运/客运，决定检查单模板
+  { key: "originStation", label: "起飞站", uppercase: "alpha" },
+  { key: "destStation", label: "目的站", uppercase: "alpha" },
+  { key: "landingStation", label: "落地站", uppercase: "alpha" },
+  { key: "corridor", label: "走廊口", uppercase: "alnum" },
+  { key: "runway", label: "跑道", select: true, options: null }, // 四选一：01L/01R/19L/19R
+  { key: "stand", label: "停机位", uppercase: "alnum" },
+  { key: "aircraftType", label: "机型", required: true, select: true, options: null }, // 机型必填：自动计算时间依赖
 ];
+
+// 航班类别选项（决定检查单模板：货运 → cargo-checklist / 客运 → passenger-checklist）
+const CHECKLIST_CATEGORY_OPTIONS = [
+  { value: "货运航班", label: "货运航班" },
+  { value: "客运航班", label: "客运航班" },
+];
+const DEFAULT_CHECKLIST_CATEGORY = "货运航班";
+
+// 机型选项（值对齐模板 variables.aircraftType.options 风格，显示带中文标注）
+const AIRCRAFT_TYPE_OPTIONS = [
+  { value: "B747", label: "747" },
+  { value: "B787", label: "787" },
+  { value: "B777", label: "777" },
+  { value: "B767", label: "767（330）" },
+  { value: "B757", label: "757", default: true },
+  { value: "B737", label: "737（320）" },
+];
+const DEFAULT_AIRCRAFT_TYPE = AIRCRAFT_TYPE_OPTIONS.find((o) => o.default)?.value || "B757";
+
+// 跑道选项（仅 01L / 01R / 19L / 19R 四选一）
+const RUNWAY_OPTIONS = [
+  { value: "", label: "选择跑道" },
+  { value: "01L", label: "01L" },
+  { value: "01R", label: "01R" },
+  { value: "19L", label: "19L" },
+  { value: "19R", label: "19R" },
+];
+
+// 输入同步修正：强制大写，并按模式过滤（alpha=仅 A-Z；alnum=A-Z0-9）
+const normalizeUpper = (raw, mode) => {
+  const upper = String(raw ?? "").toUpperCase();
+  return mode === "alpha" ? upper.replace(/[^A-Z]/g, "") : upper.replace(/[^A-Z0-9]/g, "");
+};
+
+// 大写约束输入框（输入时同步修正）
+function UppercaseField({ value, onChange, mode }) {
+  return (
+    <input
+      className="input w-full px-2 py-1 text-xs"
+      value={value}
+      onChange={(e) => onChange(normalizeUpper(e.target.value, mode))}
+    />
+  );
+}
 
 // 时间信息（LOC 本地时间）
 const TIME_FIELDS = [
@@ -40,13 +86,18 @@ const TIME_FIELDS = [
 ];
 
 const EMPTY_FORM = Object.fromEntries(
-  [...BASE_FIELDS, ...TIME_FIELDS].map((f) => [f.key, ""])
+  [...BASE_FIELDS, ...TIME_FIELDS].map((f) => {
+    if (f.key === "aircraftType") return [f.key, DEFAULT_AIRCRAFT_TYPE];
+    if (f.key === "checklistCategory") return [f.key, DEFAULT_CHECKLIST_CATEGORY];
+    return [f.key, ""];
+  })
 );
 
 // snake_case 行 → camelCase 表单（编辑模式初始化）
 const rowToForm = (row) => ({
   task: row?.task || "",
   flightNo: row?.flight_no || "",
+  checklistCategory: row?.checklist_category || DEFAULT_CHECKLIST_CATEGORY,
   originStation: row?.origin_station || "",
   destStation: row?.dest_station || "",
   landingStation: row?.landing_station || "",
@@ -60,7 +111,7 @@ const rowToForm = (row) => ({
   corridor: row?.corridor || "",
   runway: row?.runway || "",
   stand: row?.stand || "",
-  aircraftType: row?.aircraft_type || "",
+  aircraftType: row?.aircraft_type || DEFAULT_AIRCRAFT_TYPE,
 });
 
 export default function AddFlightDialog({ open, onClose, onSaved, initial = null }) {
@@ -119,6 +170,9 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
       <label className="mb-1 block text-[11px] font-medium text-slate-500">
         {f.label}
         {f.required && <span className="text-red-500"> *</span>}
+        {f.key === "aircraftType" && (
+          <span className="ml-1 text-[10px] text-amber-600">（自动计算时间依赖）</span>
+        )}
       </label>
       {/* 航班号用专用组件：强制大写、仅 A-Z0-9（中文/符号不显示） */}
       {f.key === "flightNo" ? (
@@ -126,6 +180,32 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
           className="w-full px-2 py-1 text-xs"
           value={form.flightNo}
           onChange={(v) => setForm((s) => ({ ...s, flightNo: v }))}
+        />
+      ) : f.select ? (
+        /* 下拉：航班类别 / 跑道 / 机型（options 按字段 key 选择） */
+        <select
+          className="input w-full px-2 py-1 text-xs"
+          value={form[f.key]}
+          onChange={set(f.key)}
+        >
+          {(
+            f.key === "checklistCategory"
+              ? CHECKLIST_CATEGORY_OPTIONS
+              : f.key === "runway"
+                ? RUNWAY_OPTIONS
+                : AIRCRAFT_TYPE_OPTIONS
+          ).map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      ) : f.uppercase ? (
+        /* 大写约束：起飞/目的/落地站（字母）/ 走廊口、停机位（字母+数字） */
+        <UppercaseField
+          value={form[f.key]}
+          onChange={(v) => setForm((s) => ({ ...s, [f.key]: v }))}
+          mode={f.uppercase}
         />
       ) : (
         <input

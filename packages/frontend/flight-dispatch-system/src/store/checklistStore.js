@@ -40,6 +40,9 @@ export const useChecklistStore = create((set, get) => ({
       items: { ...s.items, [key]: { ...(s.items[key] || {}), [field]: value } },
     })),
 
+  // 批量覆盖 items（时间公式自动计算用：一次性写入多节点时间）
+  setItems: (items) => set({ items }),
+
   setVideoValue: (key, field, value) =>
     set((s) => ({
       videoItems: { ...s.videoItems, [key]: { ...(s.videoItems[key] || {}), [field]: value } },
@@ -82,6 +85,16 @@ export const useChecklistStore = create((set, get) => ({
     try {
       const templateId = s.template.id || (s.template.category === '客运航班' ? 'passenger-checklist' : 'cargo-checklist')
       const nowIso = new Date().toISOString()
+      // header 注入模板元信息（模仿 new-test2 顶层结构：记录自描述用哪个模板/版本）
+      const headerWithTemplate = {
+        ...s.header,
+        template: {
+          uuid: s.template.uuid || null,
+          category: s.template.category || null,
+          checklistName: s.template.checklistName || null,
+          schemaVersion: s.template.schemaVersion || null,
+        },
+      }
       const payload = {
         flightId: s.flight.id,
         flightNo: s.flight.flightNo,
@@ -91,7 +104,7 @@ export const useChecklistStore = create((set, get) => ({
         checklistTemplateId: templateId,
         checklistTitle: s.template.title || s.template.category,
         flightDate: s.flight.flightDate || null,
-        header: s.header,
+        header: headerWithTemplate,
         items: s.items,
         videoSupervision: s.videoItems,
         inspector: s.inspector,
@@ -101,7 +114,7 @@ export const useChecklistStore = create((set, get) => ({
       let record
       if (s.recordId) {
         record = await checklistsApi.updateRecord(s.recordId, {
-          header: s.header,
+          header: headerWithTemplate,
           items: s.items,
           videoSupervision: s.videoItems,
           inspector: s.inspector,

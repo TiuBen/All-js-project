@@ -4,85 +4,233 @@
   "source": "货运航班节点保障及合规性监控检查单.xlsx",
   "generatedAt": "2026-08-06T13:59:38.679869",
   "checklistName": "常规航班",
+  "schemaVersion": "3.0-test",
+  "variables": {
+    "estimatedLanding": {
+      "name": "预计落地时间",
+      "type": "datetime",
+      "source": "upstream",
+      "required": true,
+      "description": "报文预计落地时刻"
+    },
+    "actualLanding": {
+      "name": "实际落地时间",
+      "type": "datetime",
+      "source": "upstream",
+      "required": true,
+      "description": "航空器实际落地时刻"
+    },
+    "cobt": {
+      "name": "计算撤轮挡时间",
+      "type": "datetime",
+      "source": "upstream",
+      "description": "Calculated Off-Block Time"
+    },
+    "ctot": {
+      "name": "计算起飞时间",
+      "type": "datetime",
+      "source": "upstream",
+      "description": "Calculated Take-Off Time"
+    },
+    "aircraftType": {
+      "name": "机型",
+      "type": "enum",
+      "source": "upstream",
+      "options": [
+        "B747",
+        "B777",
+        "B767",
+        "B757",
+        "B737"
+      ]
+    },
+    "demandGroundPower": {
+      "name": "地面电源需求申请时间",
+      "type": "datetime",
+      "source": "manual",
+      "description": "机组提出地面电源需求的时刻"
+    },
+    "demandWater": {
+      "name": "加清水/排污水需求申请时间",
+      "type": "datetime",
+      "source": "manual",
+      "description": "机组提出加清水/排污水需求的时刻"
+    }
+  },
+  "parameters": [
+    {
+      "code": "FUEL_TIME",
+      "name": "机型参考加油时间",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准加油作业时长",
+      "values": {
+        "B747": 100,
+        "B777": 70,
+        "B767": 60,
+        "B757": 60,
+        "B737": 60
+      }
+    },
+    {
+      "code": "UNLOAD_TIME",
+      "name": "标准卸机作业时长",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准卸机作业时长",
+      "values": {
+        "B747": 80,
+        "B777": 80,
+        "B767": 75,
+        "B757": 50,
+        "B737": 40
+      }
+    },
+    {
+      "code": "LOAD_TIME",
+      "name": "标准装机作业时长",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准装机作业时长",
+      "values": {
+        "B747": 80,
+        "B777": 80,
+        "B767": 75,
+        "B757": 50,
+        "B737": 40
+      }
+    },
+    {
+      "code": "CHOCK_TIME",
+      "name": "标准撤轮挡时间",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准撤轮挡作业时长",
+      "values": {
+        "B747": 4,
+        "B777": 4,
+        "B767": 3,
+        "B757": 3,
+        "B737": 2
+      }
+    }
+  ],
   "schema": [
     {
       "uuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
       "id": 1,
+      "eventId": "E001",
+      "code": "LANDING",
+      "category": "main",
       "name": "预计落地",
       "desc": "预计落地",
+      "formula": {
+        "type": "ref",
+        "target": "var",
+        "ref": "estimatedLanding"
+      },
       "auxiliaries": []
     },
     {
       "uuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
       "id": 2,
+      "eventId": "E002",
+      "code": "IN_POSITION",
+      "category": "main",
       "name": "入位",
       "desc": "实际落地时间+10分钟",
-      "timeLink": {
-        "refUuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
-        "offsetMinutes": 10
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "actualLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
           "uuid": "63c4783d-4271-4546-8daf-f205f59242f0",
-          "id": 3,
-          "type": "time",
+          "id": 201,
+          "code": "MECHANIC_ARRIVAL",
+          "type": "auxiliary",
           "name": "机务到位",
           "desc": "入位时间-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": -5,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "38d830be-56ca-40a7-aee6-a3975af08822",
-          "id": 4,
+          "id": 251,
           "type": "video",
           "name": "",
           "desc": "机务人员在航班预计到达前5分钟接机人员对机位适用性进行检查。",
-          "group": "视频监管检查重点（入位前检查）",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": -5,
-            "calcLogic": "and"
-          }
+          "group": "视频监管检查重点（入位前检查）"
         }
       ]
     },
     {
       "uuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
-      "id": 5,
+      "id": 3,
+      "eventId": "E003",
+      "code": "START_CHOCK",
+      "category": "main",
       "name": "开始挡轮挡",
       "desc": "入位时间+0分钟",
-      "timeLink": {
-        "refUuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
-        "refId": 2,
-        "offsetMinutes": 0,
-        "calcLogic": "and"
+      "formula": {
+        "type": "ref",
+        "target": "event",
+        "ref": "E002",
+        "time": "actual"
       },
       "auxiliaries": [
         {
           "uuid": "6904f6d9-ec2e-4e8d-a671-8c43ad85d750",
-          "id": 6,
-          "type": "time",
+          "id": 301,
+          "code": "CONNECT_GROUND_POWER",
+          "type": "auxiliary",
           "name": "接地面电源",
           "desc": "需求申请时间+15分钟",
-          "timeLink": {
-            "refUuid": null,
-            "refId": null,
-            "offsetMinutes": 0,
-            "calcLogic": null
+          "formula": {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "demandGroundPower"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
-          "uuid": "9b8a2c39-a595-4dcf-ae58-9f212de1c485",
-          "id": 7,
+          "uuid": "9b8a2c39-a595-4dcf-58d4-5e2f212de1c485",
+          "id": 351,
           "type": "video",
           "name": "",
           "desc": "人员、车辆、设备、货物、行李在指定区域等待。",
@@ -92,124 +240,173 @@
     },
     {
       "uuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
-      "id": 8,
+      "id": 4,
+      "eventId": "E004",
+      "code": "OPEN_COCKPIT_DOOR",
+      "category": "main",
       "name": "开驾驶舱门",
       "desc": "开始挡轮挡+10分钟",
-      "timeLink": {
-        "refUuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
-        "refId": 5,
-        "offsetMinutes": 10,
-        "calcLogic": "and"
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E003",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
           "uuid": "0fdfcaff-e2bd-4f85-9cbd-5a735132cb76",
-          "id": 9,
-          "type": "time",
+          "id": 401,
+          "code": "BOARDING_LADDER_ARRIVAL",
+          "type": "auxiliary",
           "name": "登机梯/客梯车到位",
           "desc": "入位时间-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": -5,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "22a30937-ac79-4f27-b8d4-2bc04c1ebbc4",
-          "id": 10,
-          "type": "time",
+          "id": 402,
+          "code": "HANDLING_AGENT_ARRIVAL",
+          "type": "auxiliary",
           "name": "代办到位",
           "desc": "入位时间-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "6c360b32-f27a-4308-8878-0338f9e740ed",
-          "id": 11,
-          "type": "time",
+          "id": 403,
+          "code": "CUSTOMS_IMMIGRATION_ARRIVAL",
+          "type": "auxiliary",
           "name": "海关/边检到位",
           "desc": "入位时间+0分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "ref",
+            "target": "event",
+            "ref": "E002",
+            "time": "actual"
           }
         },
         {
           "uuid": "451e6387-2932-45d6-9eb4-cc27c299edaf",
-          "id": 12,
-          "type": "time",
+          "id": 404,
+          "code": "START_FUELING",
+          "type": "auxiliary",
           "name": "开始加油",
           "desc": "COBT-机型参考加油时间-5分钟",
-          "options": [
-            {
-              "aircraftType": "B747",
-              "offsetMinutes": -100
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
             },
-            {
-              "aircraftType": "B777",
-              "offsetMinutes": -70
-            },
-            {
-              "aircraftType": "B767",
-              "offsetMinutes": -60
-            },
-            {
-              "aircraftType": "B757",
-              "offsetMinutes": -60
-            },
-            {
-              "aircraftType": "B737",
-              "offsetMinutes": -60
+            "right": {
+              "type": "binary",
+              "operator": "+",
+              "left": {
+                "type": "lookup",
+                "param": "FUEL_TIME",
+                "key": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "aircraftType"
+                }
+              },
+              "right": {
+                "type": "literal",
+                "value": 5,
+                "unit": "minutes"
+              }
             }
-          ],
-          "timeLink": {
-            "refUuid": "COBT",
-            "refId": "",
-            "offsetMinutes": [
-              "options",
-              -5
-            ],
-            "calcLogic": "and"
           }
         },
         {
           "uuid": "d1b363c6-69ba-4232-860d-eda60fbab601",
-          "id": 13,
-          "type": "time",
+          "id": 405,
+          "code": "START_WATER_SERVICE",
+          "type": "auxiliary",
           "name": "开始加清水/排污水",
           "desc": "需求申请时间+15分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 15,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "demandWater"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "b61e0c0c-cd93-406a-8ae0-4d08d09bad61",
-          "id": 14,
-          "type": "time",
+          "id": 406,
+          "code": "PLATFORM_LOADER_ARRIVAL",
+          "type": "auxiliary",
           "name": "平台车到位",
           "desc": "入位时间-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": -5,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "012c6792-1e74-4957-bc89-5d7e36fd31f7",
-          "id": 15,
+          "id": 451,
           "type": "video",
           "name": "",
           "desc": "保障作业车辆在等待时，驾驶员应随车等候，所有设备应有人看守。",
@@ -217,7 +414,7 @@
         },
         {
           "uuid": "a380059d-8248-4d43-b8eb-8d5e93261636",
-          "id": 16,
+          "id": 452,
           "type": "video",
           "name": "",
           "desc": "廊桥活动端应处于廊桥回位点。（客运）",
@@ -225,7 +422,7 @@
         },
         {
           "uuid": "12c633df-7081-4bdc-8eeb-baeb5d66c7f0",
-          "id": 17,
+          "id": 453,
           "type": "video",
           "name": "",
           "desc": "使用目视泊位引导系统时，接机人员应在目视泊位引导系统紧急停止装置前值守，遇特殊情况应使用停止按钮，并及时转换人工引导。",
@@ -233,7 +430,7 @@
         },
         {
           "uuid": "709f9faf-6093-45df-88ba-4224d9da68ee",
-          "id": 18,
+          "id": 454,
           "type": "video",
           "name": "",
           "desc": "车辆、设备必须制动或固定，并设置轮挡，液压装置处于回收状态。",
@@ -241,7 +438,7 @@
         },
         {
           "uuid": "1821c461-3d32-4616-ab6a-fc59cc0f0ae0",
-          "id": 19,
+          "id": 455,
           "type": "video",
           "name": "",
           "desc": "桥载设备处于复位状态。（客运）",
@@ -249,7 +446,7 @@
         },
         {
           "uuid": "412a57b0-cb50-4e54-a9b9-12dcd8548c14",
-          "id": 20,
+          "id": 456,
           "type": "video",
           "name": "",
           "desc": "任何车辆、人员不得从航空器和接机人员（或泊位引导系统）之间穿行。",
@@ -259,34 +456,56 @@
     },
     {
       "uuid": "6499b169-933c-4aad-a204-859a829f9ef6",
-      "id": 21,
+      "id": 5,
+      "eventId": "E005",
+      "code": "OPEN_CARGO_DOOR",
+      "category": "main",
       "name": "开货舱门",
       "desc": "开驾驶舱门+5分钟",
-      "timeLink": {
-        "refUuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
-        "refId": 8,
-        "offsetMinutes": 5,
-        "calcLogic": "and"
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E004",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
           "uuid": "6d63367c-f805-4a39-b24b-692f21b598bd",
-          "id": 22,
-          "type": "time",
+          "id": 501,
+          "code": "CUSTOMS_ARRIVAL_CHECK_COMPLETE",
+          "type": "auxiliary",
           "name": "海关/边检进港登临检查结束",
           "desc": "开驾驶舱门+15分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 8,
-            "offsetMinutes": 15,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E004",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "ebb26178-b4af-4a07-b020-31a264bc6162",
-          "id": 23,
+          "id": 551,
           "type": "video",
           "name": "",
           "desc": "将飞机引导/拖靠到指定的机位，并放置轮挡、警示锥。",
@@ -296,20 +515,32 @@
     },
     {
       "uuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-      "id": 24,
+      "id": 6,
+      "eventId": "E006",
+      "code": "START_UNLOAD",
+      "category": "main",
       "name": "开始卸机",
       "desc": "开货舱门+10分钟",
-      "timeLink": {
-        "refUuid": "6499b169-933c-4aad-a204-859a829f9ef6",
-        "refId": 21,
-        "offsetMinutes": 10,
-        "calcLogic": "and"
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E005",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": [
         {
           "uuid": "2d3ca887-78a8-4ed1-b100-ca891e29d657",
-          "id": 26,
+          "id": 651,
           "type": "video",
           "name": "",
           "desc": "安全停泊后，接机人员向靠机操作人员给靠机指令。",
@@ -319,141 +550,223 @@
     },
     {
       "uuid": "f2d47971-dee5-4f97-99af-6a91da5faf93",
-      "id": 27,
+      "id": 7,
+      "eventId": "E007",
+      "code": "UNLOAD_COMPLETE",
+      "category": "main",
       "name": "卸机完成",
       "desc": "开始卸机+机型标准卸机作业时长",
-      "timeLink": {
-        "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-        "refId": 24,
-        "offsetMinutes": [
-          {
-            "aircraftType": "B747",
-            "offsetMinutes": 80
-          },
-          {
-            "aircraftType": "B777",
-            "offsetMinutes": 80
-          },
-          {
-            "aircraftType": "B767",
-            "offsetMinutes": 75
-          },
-          {
-            "aircraftType": "B757",
-            "offsetMinutes": 50
-          },
-          {
-            "aircraftType": "B737",
-            "offsetMinutes": 40
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E006",
+          "time": "actual"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "UNLOAD_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
           }
-        ],
-        "calcLogic": "and"
+        }
       },
       "auxiliaries": [
         {
           "uuid": "ad1479db-a34c-4747-91cb-ccbfc4c3bb49",
-          "id": 28,
-          "type": "time",
+          "id": 701,
+          "code": "INBOUND_CARGO_HANDOVER",
+          "type": "auxiliary",
           "name": "进港货物交接",
           "desc": "入位时间+80分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 2,
-            "offsetMinutes": 80,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 80,
+              "unit": "minutes"
+            }
           }
         }
       ]
     },
     {
       "uuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
-      "id": 29,
+      "id": 8,
+      "eventId": "E008",
+      "code": "START_LOAD",
+      "category": "main",
       "name": "开始装机",
       "desc": "卸机完成+0分钟（或COBT-机型标准装机作业时长-20分钟）",
-      "timeLink": {
-        "option": [
+      "formula": {
+        "type": "function",
+        "name": "min",
+        "args": [
           {
-            "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-            "description": "卸机完成+0分钟",
-            "offsetMinutes": 0
+            "type": "ref",
+            "target": "event",
+            "ref": "E007",
+            "time": "actual"
           },
           {
-            "refUuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-            "description": "COBT-机型标准装机作业时长-20分钟+0分钟",
-            "offsetMinutes": -20
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "binary",
+              "operator": "+",
+              "left": {
+                "type": "lookup",
+                "param": "LOAD_TIME",
+                "key": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "aircraftType"
+                }
+              },
+              "right": {
+                "type": "literal",
+                "value": 20,
+                "unit": "minutes"
+              }
+            }
           }
-        ],
-        "calcLogic": "or"
+        ]
       },
       "auxiliaries": [
         {
           "uuid": "1647aa82-dafc-4cdb-b47e-49164cea4ddc",
-          "id": 30,
-          "type": "time",
+          "id": 801,
+          "code": "OUTBOUND_CARGO_HANDOVER",
+          "type": "auxiliary",
           "name": "出港货物交接",
           "desc": "窄体机CTOT-4小时；宽体机CTOT-6小时",
-          "timeLink": [
-            {
-              "refUuid": "",
-              "refId": "",
-              "description": "窄体机CTOT-4小时",
-              "offsetMinutes": -240,
-              "calcLogic": "and"
-            },
-            {
-              "refUuid": "",
-              "refId": "",
-              "description": "宽体机CTOT-6小时",
-              "offsetMinutes": -360,
-              "calcLogic": "and"
-            }
-          ],
-          "calcLogic": "or"
+          "formula": {
+            "type": "choice",
+            "options": [
+              {
+                "condition": "窄体机",
+                "formula": {
+                  "type": "binary",
+                  "operator": "-",
+                  "left": {
+                    "type": "ref",
+                    "target": "var",
+                    "ref": "ctot"
+                  },
+                  "right": {
+                    "type": "literal",
+                    "value": 240,
+                    "unit": "minutes"
+                  }
+                }
+              },
+              {
+                "condition": "宽体机",
+                "formula": {
+                  "type": "binary",
+                  "operator": "-",
+                  "left": {
+                    "type": "ref",
+                    "target": "var",
+                    "ref": "ctot"
+                  },
+                  "right": {
+                    "type": "literal",
+                    "value": 360,
+                    "unit": "minutes"
+                  }
+                }
+              }
+            ]
+          }
         },
         {
           "uuid": "e651e4a9-2f73-4eb1-8153-861eac7d1083",
-          "id": 31,
-          "type": "time",
+          "id": 802,
+          "code": "FIRST_PALLET_ARRIVAL",
+          "type": "auxiliary",
           "name": "第一板出港货物到达机坪待装区",
           "desc": "预计落地时间-90分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 1,
-            "offsetMinutes": -90,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 90,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "6c8b3827-0c8c-4c71-9c41-37e22959b99e",
-          "id": 32,
-          "type": "time",
+          "id": 803,
+          "code": "ALL_OUTBOUND_CARGO_ARRIVAL",
+          "type": "auxiliary",
           "name": "全部出港货物到达待装区/机坪",
           "desc": "预计落地时间-60分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 1,
-            "offsetMinutes": -60,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 60,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "b2e76d59-5dec-4e71-b7bb-ff5464046bdb",
-          "id": 33,
-          "type": "time",
+          "id": 804,
+          "code": "LOADING_MANIFEST_RECEIVE",
+          "type": "auxiliary",
           "name": "装机单接收",
           "desc": "预计落地时间-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": 1,
-            "offsetMinutes": -5,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "e80c39f0-439c-4bf6-a1d2-f6b2a87e9b6e",
-          "id": 34,
+          "id": 851,
           "type": "video",
           "name": "",
           "desc": "液压升降车辆或设备对接航空器时，应当在液压升降筒或脚架升降到工作位置后，方可开始作业。",
@@ -461,7 +774,7 @@
         },
         {
           "uuid": "371c6ebe-7de0-4464-8ce9-b922ae07cd3a",
-          "id": 35,
+          "id": 852,
           "type": "video",
           "name": "",
           "desc": "保障车辆、设备在为航空器提供地面保障作业时，其他车辆、设备不得进入该机位作业区域。",
@@ -469,7 +782,7 @@
         },
         {
           "uuid": "37f0f437-e73c-4808-96a5-2fb74e030023",
-          "id": 36,
+          "id": 853,
           "type": "video",
           "name": "",
           "desc": "红色廊桥活动区，禁止任何车辆和设备进入。",
@@ -477,7 +790,7 @@
         },
         {
           "uuid": "5e4d8b81-d362-4384-b713-7e6af0e63c99",
-          "id": 37,
+          "id": 854,
           "type": "video",
           "name": "",
           "desc": "在停机位或作业等待区内挂托盘的车辆不得倒车。",
@@ -487,40 +800,36 @@
     },
     {
       "uuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
-      "id": 38,
+      "id": 9,
+      "eventId": "E009",
+      "code": "LOAD_COMPLETE",
+      "category": "main",
       "name": "装机完成",
       "desc": "开始装机+机型标准装机作业时长",
-      "timeLink": {
-        "refUuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
-        "description": "机型标准装机作业时长",
-        "offsetMinutes": [
-          {
-            "aircraftType": "B747",
-            "offsetMinutes": 80
-          },
-          {
-            "aircraftType": "B777",
-            "offsetMinutes": 80
-          },
-          {
-            "aircraftType": "B767",
-            "offsetMinutes": 75
-          },
-          {
-            "aircraftType": "B757",
-            "offsetMinutes": 50
-          },
-          {
-            "aircraftType": "B737",
-            "offsetMinutes": 40
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E008",
+          "time": "actual"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "LOAD_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
           }
-        ]
+        }
       },
       "auxiliaries": [],
       "videoSupervision": [
         {
           "uuid": "2853ef08-a584-4d7d-bcb9-5624ea846523",
-          "id": 40,
+          "id": 951,
           "type": "video",
           "name": "",
           "desc": "在航空器处于安全靠泊状态后，登机梯或客梯车对接完飞机，接机人员应向航空器两侧的保障作业人员发出可以实施保障作业的指令，保障作业人员接到此指令后，方可开始保障作业。",
@@ -530,40 +839,87 @@
     },
     {
       "uuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
-      "id": 41,
+      "id": 10,
+      "eventId": "E010",
+      "code": "CLOSE_CARGO_DOOR",
+      "category": "main",
       "name": "关货舱门",
-      "desc": "装机完成+15分钟 （或COBT-5分钟）",
-      "timeLink": [
-        {
-          "refUuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
-          "description": "装机完成+15分钟",
-          "offsetMinutes": 15
-        },
-        {
-          "refUuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
-          "description": "COBT-5分钟",
-          "offsetMinutes": -5
-        }
-      ],
+      "desc": "装机完成+15分钟（或COBT-5分钟）",
+      "formula": {
+        "type": "function",
+        "name": "min",
+        "args": [
+          {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E009",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
+          },
+          {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
+          }
+        ]
+      },
       "auxiliaries": [
         {
           "uuid": "f56931df-41f2-4471-9ff0-6a0d968ddadc",
-          "id": 42,
-          "type": "time",
+          "id": 1001,
+          "code": "OUTBOUND_INSPECTION_START",
+          "type": "auxiliary",
           "name": "出港登临检查开始",
           "desc": "装机完成（或COBT-20分钟）",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "function",
+            "name": "min",
+            "args": [
+              {
+                "type": "ref",
+                "target": "event",
+                "ref": "E009",
+                "time": "actual"
+              },
+              {
+                "type": "binary",
+                "operator": "-",
+                "left": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "cobt"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 20,
+                  "unit": "minutes"
+                }
+              }
+            ]
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "2fc2329a-ebc3-48e2-a3c4-7c62b2f8497c",
-          "id": 44,
+          "id": 1051,
           "type": "video",
           "name": "",
           "desc": "保障车辆、设备在为航空器提供地面保障作业时，不得影响相邻机位及机位滑行通道的使用，其他车辆、设备不得进入该机位作业区域。在机位安全区内行驶或对接飞机过程中，驾驶员禁止使用对讲机或其他移动通讯设备。",
@@ -571,7 +927,7 @@
         },
         {
           "uuid": "42c27ec3-51b3-47b9-9e83-ebc3af632fb5",
-          "id": 45,
+          "id": 1052,
           "type": "video",
           "name": "",
           "desc": "机务人员在航空器周围设置红色反光锥形标志物。",
@@ -581,79 +937,153 @@
     },
     {
       "uuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
-      "id": 46,
+      "id": 11,
+      "eventId": "E011",
+      "code": "CLOSE_COCKPIT_DOOR",
+      "category": "main",
       "name": "关驾驶舱门",
-      "desc": "关货舱门+0分钟 （或COBT-5分钟）",
-      "timeLink": [
-        {
-          "refUuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
-          "description": "装机完成+15分钟",
-          "offsetMinutes": 15
-        },
-        {
-          "refUuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
-          "description": "COBT-5分钟",
-          "offsetMinutes": -5
-        }
-      ],
+      "desc": "关货舱门+0分钟（或COBT-5分钟）",
+      "formula": {
+        "type": "function",
+        "name": "min",
+        "args": [
+          {
+            "type": "ref",
+            "target": "event",
+            "ref": "E010",
+            "time": "actual"
+          },
+          {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
+          }
+        ]
+      },
       "auxiliaries": [
         {
           "uuid": "eaefd4a7-18e2-4bf1-b3f3-52535dd574d6",
-          "id": 47,
-          "type": "time",
+          "id": 1101,
+          "code": "FUELING_COMPLETE",
+          "type": "auxiliary",
           "name": "完成加油",
           "desc": "COBT-5分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "21f16589-3adb-4b34-ae6d-c53882f266f6",
-          "id": 48,
-          "type": "time",
+          "id": 1102,
+          "code": "WATER_SERVICE_COMPLETE",
+          "type": "auxiliary",
           "name": "结束加清水/排污水",
           "desc": "COBT-15分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "f262c0e1-7dff-4c6e-a1f5-b48cba44d767",
-          "id": 49,
-          "type": "time",
+          "id": 1103,
+          "code": "OUTBOUND_INSPECTION_COMPLETE",
+          "type": "auxiliary",
           "name": "出港登临检查结束",
           "desc": "装机完成+15分钟（或COBT-5分钟）",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "function",
+            "name": "min",
+            "args": [
+              {
+                "type": "binary",
+                "operator": "+",
+                "left": {
+                  "type": "ref",
+                  "target": "event",
+                  "ref": "E009",
+                  "time": "actual"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 15,
+                  "unit": "minutes"
+                }
+              },
+              {
+                "type": "binary",
+                "operator": "-",
+                "left": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "cobt"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 5,
+                  "unit": "minutes"
+                }
+              }
+            ]
           }
         },
         {
           "uuid": "f2ee8c9b-bfeb-4229-94b0-cba3e88fa93b",
-          "id": 50,
-          "type": "time",
+          "id": 1104,
+          "code": "OUTBOUND_CREW_ARRIVAL",
+          "type": "auxiliary",
           "name": "出港机组到机下",
           "desc": "COBT-60分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 60,
+              "unit": "minutes"
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "7f168563-27df-4afe-b87c-4478ac68403f",
-          "id": 51,
+          "id": 1151,
           "type": "video",
           "name": "",
           "desc": "保障车辆对接航空器后，应处在制动状态，并设置轮挡（升降平台车除外）。",
@@ -661,7 +1091,7 @@
         },
         {
           "uuid": "f9c8c39d-8b66-4724-a5e7-62b25dd65d7b",
-          "id": 52,
+          "id": 1152,
           "type": "video",
           "name": "",
           "desc": "未熄火的车辆，驾驶员应当随车等候。",
@@ -669,7 +1099,7 @@
         },
         {
           "uuid": "fe80f196-323f-443a-ae61-e2c412bd8932",
-          "id": 53,
+          "id": 1153,
           "type": "video",
           "name": "",
           "desc": "人员佩带工作证件，穿着工作服，并配有反光标识。",
@@ -679,79 +1109,127 @@
     },
     {
       "uuid": "0241073a-18d0-4df4-8e38-2729a661b729",
-      "id": 54,
+      "id": 12,
+      "eventId": "E012",
+      "code": "PUSHBACK",
+      "category": "main",
       "name": "推出",
       "desc": "关驾驶舱门+5分钟（或COBT+0分钟）",
-      "timeLink": [
-        {
-          "refUuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
-          "description": "关驾驶舱门+5分钟",
-          "offsetMinutes": 5
-        },
-        {
-          "refUuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
-          "description": "COBT+0分钟",
-          "offsetMinutes": 0
-        }
-      ],
+      "formula": {
+        "type": "function",
+        "name": "min",
+        "args": [
+          {
+            "type": "binary",
+            "operator": "+",
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E011",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
+          },
+          {
+            "type": "ref",
+            "target": "var",
+            "ref": "cobt"
+          }
+        ]
+      },
       "auxiliaries": [
         {
           "uuid": "91bb8c2f-fae0-4ceb-bd23-7a31a2400939",
-          "id": 55,
-          "type": "time",
+          "id": 1201,
+          "code": "TOW_TRUCK_ARRIVAL",
+          "type": "auxiliary",
           "name": "牵引车到位",
           "desc": "COBT-10分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 10,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "560d315d-4e5a-4357-870e-fa326818c141",
-          "id": 56,
-          "type": "time",
+          "id": 1202,
+          "code": "CONNECT_AIR_CART",
+          "type": "auxiliary",
           "name": "接气源车",
           "desc": "COBT-30分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 30,
+              "unit": "minutes"
+            }
           }
         },
         {
           "uuid": "9c39c79a-acff-4d34-b5ae-5e68a3285fc4",
-          "id": 57,
-          "type": "time",
+          "id": 1203,
+          "code": "DISCONNECT_AIR_AND_POWER",
+          "type": "auxiliary",
           "name": "撤气源车/撤地面电源",
           "desc": "COBT-0分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "ref",
+            "target": "var",
+            "ref": "cobt"
           }
         },
         {
           "uuid": "4357fb89-eb96-4bf3-a4a8-91c675282301",
-          "id": 58,
-          "type": "time",
+          "id": 1204,
+          "code": "REMOVE_CHOCKS",
+          "type": "auxiliary",
           "name": "撤轮档",
-          "desc": "COBT-机型标准撤轮挡时间（B747/B777为4分钟；B757/B767为3分钟；B737为2分钟）",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "desc": "COBT-机型标准撤轮挡时间",
+          "formula": {
+            "type": "binary",
+            "operator": "-",
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "lookup",
+              "param": "CHOCK_TIME",
+              "key": {
+                "type": "ref",
+                "target": "var",
+                "ref": "aircraftType"
+              }
+            }
           }
         }
       ],
       "videoSupervision": [
         {
           "uuid": "46d30cc9-bc75-48d4-9fc9-3d60a6ae895b",
-          "id": 59,
+          "id": 1251,
           "type": "video",
           "name": "",
           "desc": "监装监卸人员对航班的装卸过程进行监控。",
@@ -759,7 +1237,7 @@
         },
         {
           "uuid": "9c3ca523-afea-45de-8fe1-97ea4e52f894",
-          "id": 60,
+          "id": 1252,
           "type": "video",
           "name": "",
           "desc": "行李的装卸和保管应有防雨措施。",
@@ -767,7 +1245,7 @@
         },
         {
           "uuid": "d3e690bc-b985-4db0-a32b-a320c8d3bd79",
-          "id": 61,
+          "id": 1253,
           "type": "video",
           "name": "",
           "desc": "装卸人员按规定要求实施装卸（注：遇有危品运输，轻拿轻放，严格按标签操作）。",
@@ -775,7 +1253,7 @@
         },
         {
           "uuid": "c44a3fbc-80e3-4665-a4b6-0f3200694ea3",
-          "id": 62,
+          "id": 1254,
           "type": "video",
           "name": "",
           "desc": "对已装舱的行李、货物及锁扣、挡板应进行固定，并确认已关闭、锁牢货舱门。",
@@ -785,36 +1263,65 @@
     },
     {
       "uuid": "f624de97-ef00-4fe7-8608-c4755245f165",
-      "id": 63,
+      "id": 13,
+      "eventId": "E013",
+      "code": "TAXI_OUT",
+      "category": "main",
       "name": "滑出",
       "desc": "推出+5分钟",
-      "timeLink": {
-        "refUuid": "0241073a-18d0-4df4-8e38-2729a661b729",
-        "offsetMinutes": 5
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E012",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": []
     },
     {
       "uuid": "77b2ca02-c0c3-47d5-93fa-4ea68eacf46d",
-      "id": 64,
+      "id": 14,
+      "eventId": "E014",
+      "code": "TAKEOFF",
+      "category": "main",
       "name": "起飞",
       "desc": "滑出+10分钟",
-      "timeLink": {
-        "refUuid": "f624de97-ef00-4fe7-8608-c4755245f165",
-        "offsetMinutes": 10
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E013",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
           "uuid": "d64d4cac-02e7-4a1b-b163-19fb83b46701",
-          "id": 65,
-          "type": "time",
+          "id": 1401,
+          "code": "HANDLING_AGENT_DEPARTURE",
+          "type": "auxiliary",
           "name": "代办离场",
           "desc": "起飞时间+0分钟",
-          "timeLink": {
-            "refUuid": "",
-            "refId": "",
-            "offsetMinutes": 0,
-            "calcLogic": "and"
+          "formula": {
+            "type": "ref",
+            "target": "event",
+            "ref": "E014",
+            "time": "actual"
           }
         }
       ]

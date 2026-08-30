@@ -5,7 +5,6 @@
   "generatedAt": "2026-08-06T13:59:38.679869",
   "checklistName": "常规航班",
   "schemaVersion": "3.0-test",
-
   "variables": {
     "estimatedLanding": {
       "name": "预计落地时间",
@@ -37,7 +36,13 @@
       "name": "机型",
       "type": "enum",
       "source": "upstream",
-      "options": ["B747", "B777", "B767", "B757", "B737"]
+      "options": [
+        "B747",
+        "B777",
+        "B767",
+        "B757",
+        "B737"
+      ]
     },
     "demandGroundPower": {
       "name": "地面电源需求申请时间",
@@ -52,7 +57,6 @@
       "description": "机组提出加清水/排污水需求的时刻"
     }
   },
-
   "parameters": [
     {
       "code": "FUEL_TIME",
@@ -111,7 +115,6 @@
       }
     }
   ],
-
   "schema": [
     {
       "uuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
@@ -139,8 +142,16 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "var", "ref": "actualLanding" },
-        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "actualLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
@@ -153,8 +164,17 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "event", "ref": "E002", "time": "actual" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -194,8 +214,16 @@
           "formula": {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "var", "ref": "demandGroundPower" },
-            "right": { "type": "literal", "value": 15, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "demandGroundPower"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -221,8 +249,17 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E003", "time": "actual" },
-        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E003",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
@@ -235,8 +272,17 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "event", "ref": "E002", "time": "actual" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -249,8 +295,17 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "event", "ref": "E002", "time": "actual" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -277,16 +332,28 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
             "right": {
               "type": "binary",
               "operator": "+",
               "left": {
                 "type": "lookup",
                 "param": "FUEL_TIME",
-                "key": { "type": "ref", "target": "var", "ref": "aircraftType" }
+                "key": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "aircraftType"
+                }
               },
-              "right": { "type": "literal", "value": 5, "unit": "minutes" }
+              "right": {
+                "type": "literal",
+                "value": 5,
+                "unit": "minutes"
+              }
             }
           }
         },
@@ -300,8 +367,16 @@
           "formula": {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "var", "ref": "demandWater" },
-            "right": { "type": "literal", "value": 15, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "demandWater"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -314,8 +389,17 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "event", "ref": "E002", "time": "actual" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -381,8 +465,17 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E004", "time": "actual" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E004",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {
@@ -395,8 +488,17 @@
           "formula": {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "event", "ref": "E004", "time": "actual" },
-            "right": { "type": "literal", "value": 15, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E004",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -422,8 +524,17 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E005", "time": "actual" },
-        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E005",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": [
@@ -448,11 +559,20 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E006", "time": "actual" },
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E006",
+          "time": "actual"
+        },
         "right": {
           "type": "lookup",
           "param": "UNLOAD_TIME",
-          "key": { "type": "ref", "target": "var", "ref": "aircraftType" }
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
         }
       },
       "auxiliaries": [
@@ -466,8 +586,17 @@
           "formula": {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "event", "ref": "E002", "time": "actual" },
-            "right": { "type": "literal", "value": 80, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E002",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 80,
+              "unit": "minutes"
+            }
           }
         }
       ]
@@ -481,23 +610,40 @@
       "name": "开始装机",
       "desc": "卸机完成+0分钟（或COBT-机型标准装机作业时长-20分钟）",
       "formula": {
-        "type": "function",
-        "name": "min",
+        "type": "functions",
+        "relation": "or",
         "args": [
-          { "type": "ref", "target": "event", "ref": "E007", "time": "actual" },
+          {
+            "type": "ref",
+            "target": "event",
+            "ref": "E007",
+            "time": "actual"
+          },
           {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
             "right": {
               "type": "binary",
               "operator": "+",
               "left": {
                 "type": "lookup",
                 "param": "LOAD_TIME",
-                "key": { "type": "ref", "target": "var", "ref": "aircraftType" }
+                "key": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "aircraftType"
+                }
               },
-              "right": { "type": "literal", "value": 20, "unit": "minutes" }
+              "right": {
+                "type": "literal",
+                "value": 20,
+                "unit": "minutes"
+              }
             }
           }
         ]
@@ -518,8 +664,16 @@
                 "formula": {
                   "type": "binary",
                   "operator": "-",
-                  "left": { "type": "ref", "target": "var", "ref": "ctot" },
-                  "right": { "type": "literal", "value": 240, "unit": "minutes" }
+                  "left": {
+                    "type": "ref",
+                    "target": "var",
+                    "ref": "ctot"
+                  },
+                  "right": {
+                    "type": "literal",
+                    "value": 240,
+                    "unit": "minutes"
+                  }
                 }
               },
               {
@@ -527,8 +681,16 @@
                 "formula": {
                   "type": "binary",
                   "operator": "-",
-                  "left": { "type": "ref", "target": "var", "ref": "ctot" },
-                  "right": { "type": "literal", "value": 360, "unit": "minutes" }
+                  "left": {
+                    "type": "ref",
+                    "target": "var",
+                    "ref": "ctot"
+                  },
+                  "right": {
+                    "type": "literal",
+                    "value": 360,
+                    "unit": "minutes"
+                  }
                 }
               }
             ]
@@ -544,8 +706,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-            "right": { "type": "literal", "value": 90, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 90,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -558,8 +728,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-            "right": { "type": "literal", "value": 60, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 60,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -572,8 +750,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "estimatedLanding"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -623,11 +809,20 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E008", "time": "actual" },
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E008",
+          "time": "actual"
+        },
         "right": {
           "type": "lookup",
           "param": "LOAD_TIME",
-          "key": { "type": "ref", "target": "var", "ref": "aircraftType" }
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftType"
+          }
         }
       },
       "auxiliaries": [],
@@ -657,14 +852,31 @@
           {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "event", "ref": "E009", "time": "actual" },
-            "right": { "type": "literal", "value": 15, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E009",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           },
           {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         ]
       },
@@ -680,12 +892,25 @@
             "type": "function",
             "name": "min",
             "args": [
-              { "type": "ref", "target": "event", "ref": "E009", "time": "actual" },
+              {
+                "type": "ref",
+                "target": "event",
+                "ref": "E009",
+                "time": "actual"
+              },
               {
                 "type": "binary",
                 "operator": "-",
-                "left": { "type": "ref", "target": "var", "ref": "cobt" },
-                "right": { "type": "literal", "value": 20, "unit": "minutes" }
+                "left": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "cobt"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 20,
+                  "unit": "minutes"
+                }
               }
             ]
           }
@@ -722,12 +947,25 @@
         "type": "function",
         "name": "min",
         "args": [
-          { "type": "ref", "target": "event", "ref": "E010", "time": "actual" },
+          {
+            "type": "ref",
+            "target": "event",
+            "ref": "E010",
+            "time": "actual"
+          },
           {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         ]
       },
@@ -742,8 +980,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -756,8 +1002,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 15, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 15,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -774,14 +1028,31 @@
               {
                 "type": "binary",
                 "operator": "+",
-                "left": { "type": "ref", "target": "event", "ref": "E009", "time": "actual" },
-                "right": { "type": "literal", "value": 15, "unit": "minutes" }
+                "left": {
+                  "type": "ref",
+                  "target": "event",
+                  "ref": "E009",
+                  "time": "actual"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 15,
+                  "unit": "minutes"
+                }
               },
               {
                 "type": "binary",
                 "operator": "-",
-                "left": { "type": "ref", "target": "var", "ref": "cobt" },
-                "right": { "type": "literal", "value": 5, "unit": "minutes" }
+                "left": {
+                  "type": "ref",
+                  "target": "var",
+                  "ref": "cobt"
+                },
+                "right": {
+                  "type": "literal",
+                  "value": 5,
+                  "unit": "minutes"
+                }
               }
             ]
           }
@@ -796,8 +1067,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 60, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 60,
+              "unit": "minutes"
+            }
           }
         }
       ],
@@ -843,10 +1122,23 @@
           {
             "type": "binary",
             "operator": "+",
-            "left": { "type": "ref", "target": "event", "ref": "E011", "time": "actual" },
-            "right": { "type": "literal", "value": 5, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "event",
+              "ref": "E011",
+              "time": "actual"
+            },
+            "right": {
+              "type": "literal",
+              "value": 5,
+              "unit": "minutes"
+            }
           },
-          { "type": "ref", "target": "var", "ref": "cobt" }
+          {
+            "type": "ref",
+            "target": "var",
+            "ref": "cobt"
+          }
         ]
       },
       "auxiliaries": [
@@ -860,8 +1152,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 10, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 10,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -874,8 +1174,16 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
-            "right": { "type": "literal", "value": 30, "unit": "minutes" }
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
+            "right": {
+              "type": "literal",
+              "value": 30,
+              "unit": "minutes"
+            }
           }
         },
         {
@@ -901,11 +1209,19 @@
           "formula": {
             "type": "binary",
             "operator": "-",
-            "left": { "type": "ref", "target": "var", "ref": "cobt" },
+            "left": {
+              "type": "ref",
+              "target": "var",
+              "ref": "cobt"
+            },
             "right": {
               "type": "lookup",
               "param": "CHOCK_TIME",
-              "key": { "type": "ref", "target": "var", "ref": "aircraftType" }
+              "key": {
+                "type": "ref",
+                "target": "var",
+                "ref": "aircraftType"
+              }
             }
           }
         }
@@ -956,8 +1272,17 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E012", "time": "actual" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E012",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": []
     },
@@ -972,8 +1297,17 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "event", "ref": "E013", "time": "actual" },
-        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E013",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [
         {

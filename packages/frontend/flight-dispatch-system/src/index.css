@@ -8,20 +8,30 @@
     opacity: 0;
     transform: translate(-50%, -12px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
   }
 }
+
 .animate-banner-in {
   animation: banner-in 0.25s ease-out;
 }
 
 /* 数码管时钟呼吸效果 */
 @keyframes clock-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
+
 .clock-pulse {
   animation: clock-pulse 1s ease-in-out infinite;
 }
@@ -36,18 +46,23 @@
   .card {
     @apply bg-white rounded-lg border border-slate-200 shadow-sm;
   }
+
   .btn {
     @apply inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-primary {
     @apply btn bg-primary-600 text-white hover:bg-primary-700;
   }
+
   .btn-outline {
     @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
   }
+
   .btn-ghost {
     @apply btn text-slate-600 hover:bg-slate-100;
   }
+
   .input {
     @apply w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500;
   }
@@ -57,7 +72,8 @@
 .time-text {
   font-family: 'Consolas', 'Courier New', monospace;
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1.5;
   white-space: nowrap;
 }

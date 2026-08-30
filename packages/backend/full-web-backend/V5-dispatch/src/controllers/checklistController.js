@@ -91,3 +91,14 @@ export const updateRecord = asyncHandler(async (req, res) => {
   }
   res.json(record);
 });
+
+/**
+ * 删除填写记录
+ */
+export const deleteRecord = asyncHandler(async (req, res) => {
+  const deleted = await checklistService.deleteRecord(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: 'record not found' });
+  }
+  res.json({ success: true });
+});

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { flightsApi, checklistsApi } from "../../api";
@@ -7,40 +7,31 @@ import { useDraftStore } from "../../store/draftStore";
 import { useTabsStore } from "../../store/tabsStore";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Badge, flightTypeVariant } from "../../components/ui/badge";
+import { Badge } from "../../components/ui/badge";
 import FlowChart from "../../components/flowchart/FlowChart";
-import DraggableThumb from "../../components/checklist/DraggableThumb";
-import DraftDropdown from "./components/DraftDropdown";
-import FlightInfoCard from "./components/FlightInfoCard";
+import DraggableThumb from "./components/DraggableThumb";
 import ChecklistTreeView from "../../components/checklist/ChecklistTreeView";
+import FlightInfoCard from "./components/FlightInfoCard";
+import MainMonitoringPanel from "./components/MainMonitoringPanel";
+import AuxiliaryPanel from "./components/AuxiliaryPanel";
+import VideoPanel from "./components/VideoPanel";
+import ChecklistToolbar from "./components/ChecklistToolbar";
+import useTimeFormulas from "./useTimeFormulas";
 import { cn } from "../../lib/utils";
 import {
     ArrowLeft,
-    Save,
     Loader2,
-    Workflow,
     ListChecks,
-    ExternalLink,
-    MonitorPlay,
-    Camera,
-    CheckCircle2,
-    Circle,
-    CircleDot,
-    Map,
     MapPin,
     Bell,
     X,
 } from "lucide-react";
 
-const STATUS_OPTIONS = [
-    { value: "", label: "待检查" },
-    { value: "ok", label: "正常" },
-    { value: "abnormal", label: "异常" },
-    { value: "na", label: "不适用" },
-];
-
 // 东八区：本地 = UTC + 8 小时
 const TZ_OFFSET_HOURS = 8;
+
+// 检查单类型配置（下拉菜单 5 类 + 默认类型规则）——独立配置文件可编辑
+import { TYPE_BUTTONS, TYPE_BY_LABEL, resolveDefaultType } from "./checklistTypeConfig";
 
 export default function ChecklistPage() {
     const { flightId } = useParams();
@@ -64,6 +55,7 @@ export default function ChecklistPage() {
         setHeaderField,
         setInspector,
         setItemValue,
+        setItems,
         setVideoValue,
         setCurrentStep,
         hydrateFromRecord,
@@ -82,36 +74,13 @@ export default function ChecklistPage() {
     const [recordStatus, setRecordStatus] = useState(null);
     const [banner, setBanner] = useState(null); // 顶部提示（常驻，不自动消失）
     const [thumbVisible, setThumbVisible] = useState(true); // 右下角缩略图
+    // 当前检查单类型（决定节点集）：货运常规/始发/过站、客运始发/过站…
+    const [activeType, setActiveType] = useState("常规航班");
     // 查看模式（从记录页点"查看"进入：?recordId=xx&view=1），树形只读展示；点"修改"切回编辑
     const [viewOnly, setViewOnly] = useState(() => searchParams.get("view") === "1");
     const [loadedRecord, setLoadedRecord] = useState(null); // 已加载的记录（查看模式用）
     const auxPanelRef = useRef(null);
     const videoPanelRef = useRef(null);
-    const mainTableRef = useRef(null); // 主要监控指标滚动容器（滚轮 → 水平移动）
-
-    // 主要监控指标：当内容横向溢出时，鼠标滚轮上下滚动 → 水平移动（幅度 0.4 + smooth 平滑）
-    // 用 callback ref：元素每次挂载/卸载都会自动绑定/解绑（避免视图切换后 handler 丢失）
-    const onMainWheel = useCallback((e) => {
-        const el = mainTableRef.current;
-        if (!el) return;
-        if (el.scrollWidth > el.clientWidth + 1) {
-            e.preventDefault();
-            el.scrollBy({ left: e.deltaY, behavior: "smooth" });
-        }
-    }, []);
-
-    const setMainTableRef = useCallback(
-        (el) => {
-            if (mainTableRef.current) {
-                mainTableRef.current.removeEventListener("wheel", onMainWheel);
-            }
-            mainTableRef.current = el;
-            if (el) {
-                el.addEventListener("wheel", onMainWheel, { passive: false });
-            }
-        },
-        [onMainWheel]
-    );
 
     // 加载航班 + 模板 + 已有记录
     useEffect(() => {
@@ -121,8 +90,18 @@ export default function ChecklistPage() {
             try {
                 const f = await flightsApi.get(flightId);
                 setFlight(f);
+                // 模板 id：按航班类别
                 const tplId = f.category === "客运航班" ? "passenger-checklist" : "cargo-checklist";
                 await loadTemplate(tplId);
+                const tpl = useChecklistStore.getState().template;
+                if (tpl?.flightTypes) {
+                    // 旧结构模板：客运默认首个类型（航空器始发）
+                    setActiveType(Object.keys(tpl.flightTypes)[0] || "常规航班");
+                } else if (f.category !== "客运航班") {
+                    // 货运（新结构 schema）：按配置的前缀规则选默认类型（CSS → 顺航；其他 → 过站货航）
+                    const defaultLabel = resolveDefaultType(f.flightNo);
+                    setActiveType(TYPE_BY_LABEL[defaultLabel]?.flightType || "过站航班");
+                }
 
                 const recordId = searchParams.get("recordId");
                 if (recordId) {
@@ -139,16 +118,17 @@ export default function ChecklistPage() {
             }
         })();
         return () => reset();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flightId]);
 
-    // 当前检查单的节点结构（新结构：顶层 schema 数组；兼容旧：flightTypes）
+    // 当前检查单的节点结构（新结构：顶层 schema 数组优先；兼容旧：flightTypes[activeType]）
     const nodes = useMemo(() => {
         if (!template || !flight) return [];
-        return template.schema || template.flightTypes?.[flight.flightType || "常规航班"] || [];
-    }, [template, flight]);
+        return template.schema || template.flightTypes?.[activeType] || [];
+    }, [template, flight, activeType]);
 
-    // 节点定位键：新结构用全局 id（1~65）；兼容旧结构 source.seq / seq
-    const getNodeId = (n) => n?.id ?? n?.source?.seq ?? n?.seq;
+    // v3 公式时间计算：formulaCtx + 自动计算 effect（手动优先）
+    const { formulaCtx, getNodeId } = useTimeFormulas({ template, nodes, items, header, flight, setItems });
 
     // 视频监管项：新结构在节点顶层 videoSupervision[]（type video）；兼容旧 auxiliaries[].auxiliary[]
     const videoByNode = useMemo(() => {
@@ -156,23 +136,12 @@ export default function ChecklistPage() {
         nodes.forEach((n) => {
             const list = [];
             (n.videoSupervision || []).forEach((v) => {
-                list.push({
-                    id: v.id,
-                    uuid: v.uuid,
-                    groupTitle: v.group || "",
-                    desc: v.desc,
-                });
+                list.push({ id: v.id, uuid: v.uuid, groupTitle: v.group || "", desc: v.desc });
             });
             if (!list.length) {
                 (n.auxiliaries || []).forEach((a) => {
                     (a.auxiliary || []).forEach((v) => {
-                        list.push({
-                            id: v.id,
-                            uuid: v.uuid,
-                            groupTitle: v.group || "",
-                            desc: v.desc,
-                            auxName: a.name,
-                        });
+                        list.push({ id: v.id, uuid: v.uuid, groupTitle: v.group || "", desc: v.desc, auxName: a.name });
                     });
                 });
             }
@@ -200,7 +169,33 @@ export default function ChecklistPage() {
     );
     const activeNodeId = activeNode ? getNodeId(activeNode) : null;
 
-    // 聚焦节点：更新步骤 + banner（常驻）+ 三栏各自滚动锚定
+    // ===== 检查单类型切换（下拉菜单：顺航/始发货航/过站货航/始发客运/过站客运） =====
+    // 当前选中项（按模板类别 + activeType 匹配；无匹配回退过站货航）
+    const activeBtn =
+        TYPE_BUTTONS.find(
+            (b) =>
+                template?.category === (b.tplId === "passenger-checklist" ? "客运航班" : "货运航班") &&
+                activeType === b.flightType
+        ) || TYPE_BUTTONS[2];
+
+    // 点击菜单项：仅清填写数据（保留 flight/header）→ 加载对应模板 → 切换 activeType
+    const switchType = async (tplId, flightType) => {
+        if (!flight) return;
+        useChecklistStore.setState({ items: {}, videoItems: {}, currentStep: null, recordId: null });
+        setActiveType(flightType);
+        setBanner(null);
+        setRecordStatus(null);
+        setLoadedRecord(null);
+        await loadTemplate(tplId);
+        // 模板为旧结构（flightTypes）且目标类型不存在时回退第一个可用类型
+        const tpl = useChecklistStore.getState().template;
+        if (tpl?.flightTypes && !tpl.flightTypes[flightType]) {
+            const first = Object.keys(tpl.flightTypes)[0];
+            if (first) setActiveType(first);
+        }
+    };
+
+    // 聚焦节点：更新步骤 + banner（常驻）+ 辅助/视频栏滚动锚定
     const focusNode = (n) => {
         const nid = getNodeId(n);
         setCurrentStep(nid);
@@ -246,6 +241,9 @@ export default function ChecklistPage() {
     useEffect(() => {
         if (!flight || !flight.id) return;
         if (recordStatus === "submitted") return; // 已提交的记录不同步草稿
+        // 仅在实际填写了内容（status/time/note 任一有值）时才写入草稿，避免"打开页面就产生空草稿"
+        const hasContent = Object.values(items).some((v) => v && (v.status || v.time || v.note));
+        if (!hasContent) return;
         const t = setTimeout(() => {
             const tplId = flight.category === "客运航班" ? "passenger-checklist" : "cargo-checklist";
             upsertDraft({
@@ -262,16 +260,7 @@ export default function ChecklistPage() {
         return () => clearTimeout(t);
     }, [flight, header, items, videoItems, inspector, recordStatus, upsertDraft]);
 
-    const getStatusBadge = (status) => {
-        if (!status) return <Circle size={15} className="text-slate-300" />;
-        if (status === "ok") return <CheckCircle2 size={15} className="text-emerald-500" />;
-        if (status === "abnormal") return <CircleDot size={15} className="text-red-500" />;
-        return <Circle size={15} className="text-slate-400" />;
-    };
-
     // ===== 落地时间联动（东8区）=====
-    const landingLocal = header.landingTimeLocal || "";
-    const landingUtc = header.landingTimeUtc || "";
     const setLandingFromLocal = (val) => {
         // val 形如 2026-08-06T14:30
         if (!val) {
@@ -336,17 +325,20 @@ export default function ChecklistPage() {
                         </Button>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h2 className="text-base font-bold text-slate-900">
-                                    {flight.flightNo} <span className="font-normal text-slate-400">调度席检查单</span>
+                                <h2 className="text-base font-bold">
+                                    <span className={cn("text-slate-900", activeBtn?.titleCls)}>{flight.flightNo}</span>{" "}
+                                    <span className={cn("font-normal", activeBtn?.titleCls || "text-slate-400")}>
+                                        {activeBtn?.label || "调度席检查单"}
+                                    </span>
                                 </h2>
-                                <Badge variant={flightTypeVariant(flight.flightType)}>{flight.flightType}</Badge>
-                                <Badge>{flight.category}</Badge>
                                 {recordStatus === "submitted" && (
                                     <Badge variant="success">
                                         ✓ 已提交
                                         {checkedAt && (
                                             <span className="ml-1.5 opacity-80">
-                                                {new Date(checkedAt).toLocaleString("zh-CN", { hour12: false }).slice(0, 16)}
+                                                {new Date(checkedAt)
+                                                    .toLocaleString("zh-CN", { hour12: false })
+                                                    .slice(0, 16)}
                                             </span>
                                         )}
                                     </Badge>
@@ -355,7 +347,9 @@ export default function ChecklistPage() {
                             <div className="mt-0.5 text-xs text-slate-400">
                                 {flight.origin} → {flight.destination} · 机型 {flight.aircraftType} · 日期{" "}
                                 {flight.flightDate}
-                                {loadedRecord?.inspector && <span className="ml-2">· 检查人 {loadedRecord.inspector}</span>}
+                                {loadedRecord?.inspector && (
+                                    <span className="ml-2">· 检查人 {loadedRecord.inspector}</span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -364,7 +358,12 @@ export default function ChecklistPage() {
                             size="sm"
                             onClick={() => {
                                 setViewOnly(false);
-                                navigate(`/checklist/${flight.id}?recordId=${loadedRecord?.id ?? searchParams.get("recordId")}`, { replace: true });
+                                navigate(
+                                    `/checklist/${flight.id}?recordId=${
+                                        loadedRecord?.id ?? searchParams.get("recordId")
+                                    }`,
+                                    { replace: true }
+                                );
                             }}
                         >
                             <ListChecks size={14} /> 修改
@@ -387,130 +386,37 @@ export default function ChecklistPage() {
     }
 
     return (
-        <div className="flex h-[calc(100vh-112px)] flex-col gap-2 overflow-hidden">
+        <div className="flex h-[calc(100vh-90px)] flex-col gap-2 overflow-hidden">
             {/* ===== 顶部固定区：标题 + 航班信息字段 + 操作按钮（均固定不滚） ===== */}
             <div className="shrink-0 space-y-2">
-                {/* 行1：标题 + 字段区 + 操作按钮 */}
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                            <ArrowLeft size={18} />
-                        </Button>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h2 className="text-base font-bold text-slate-900">
-                                    {flight.flightNo} <span className="font-normal text-slate-400">调度席检查单</span>
-                                </h2>
-                                <Badge variant={flightTypeVariant(flight.flightType)}>{flight.flightType}</Badge>
-                                <Badge>{flight.category}</Badge>
-                                {recordStatus && (
-                                    <Badge variant={recordStatus === "submitted" ? "success" : "warning"}>
-                                        {recordStatus === "submitted" ? (
-                                            <>
-                                                ✓ 已提交
-                                                {checkedAt && (
-                                                    <span className="ml-1.5 opacity-80">
-                                                        {new Date(checkedAt)
-                                                            .toLocaleString("zh-CN", { hour12: false })
-                                                            .slice(0, 16)}
-                                                    </span>
-                                                )}
-                                            </>
-                                        ) : (
-                                            "草稿"
-                                        )}
-                                    </Badge>
-                                )}
-                            </div>
-                            <div className="mt-0.5 text-xs text-slate-400">
-                                {flight.origin} → {flight.destination} · 机型 {flight.aircraftType} · 日期{" "}
-                                {flight.flightDate}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 航班信息字段区 —— 待修改（占位，后续合并重构） */}
-                    <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50/40 p-2 text-center text-[11px] text-amber-600">
-                        航班信息字段区（待修改）
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex rounded-lg border border-slate-200 p-0.5">
-                            <button
-                                onClick={() => setViewMode("form")}
-                                className={cn(
-                                    "flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                                    viewMode === "form"
-                                        ? "bg-primary-600 text-white"
-                                        : "text-slate-600 hover:bg-slate-100"
-                                )}
-                            >
-                                <ListChecks size={14} /> 检查项目
-                            </button>
-                            <button
-                                onClick={() => setViewMode("flow")}
-                                className={cn(
-                                    "flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                                    viewMode === "flow"
-                                        ? "bg-primary-600 text-white"
-                                        : "text-slate-600 hover:bg-slate-100"
-                                )}
-                            >
-                                <Workflow size={14} /> 流程图
-                            </button>
-                        </div>
-                        <Button
-                            variant={thumbVisible ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setThumbVisible((v) => !v)}
-                        >
-                            <Map size={14} /> {thumbVisible ? "隐藏小地图" : "显示小地图"}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/flowchart/${flight.id}`)}>
-                            <ExternalLink size={14} /> 独立展示
-                        </Button>
-                        {/* 检查人已迁移到提交表单保存（不再在顶部工具栏显示） */}
-                        {/* 草稿箱（在保存草稿按钮后） */}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSave("draft")}
-                            disabled={saveStatus === "saving"}
-                        >
-                            {saveStatus === "saving" ? (
-                                <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                                <Save size={14} />
-                            )}
-                            保存草稿
-                        </Button>
-                        <DraftDropdown
-                            onSelect={(d) => {
-                                setRecordStatus(null);
-                                navigate(`/checklist/${d.flightId}`);
-                            }}
-                        />
-                        <Button size="sm" onClick={() => handleSave("submitted")} disabled={saveStatus === "saving"}>
-                            {saveStatus === "saving" ? (
-                                <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                                <CheckCircle2 size={14} />
-                            )}
-                            提交
-                        </Button>
-                        {savedFlash && <span className="text-xs text-emerald-600">✓ 已保存</span>}
-                    </div>
-                </div>
+                <ChecklistToolbar
+                    flight={flight}
+                    activeBtn={activeBtn}
+                    onSwitchType={switchType}
+                    viewMode={viewMode}
+                    onToggleFlow={() => setViewMode("flow")}
+                    thumbVisible={thumbVisible}
+                    onToggleThumb={() => setThumbVisible((v) => !v)}
+                    saveStatus={saveStatus}
+                    onSaveDraft={() => handleSave("draft")}
+                    onSubmit={() => handleSave("submitted")}
+                    recordStatus={recordStatus}
+                    checkedAt={checkedAt}
+                    savedFlash={savedFlash}
+                    onSelectDraft={(d) => {
+                        setRecordStatus(null);
+                        navigate(`/checklist/${d.flightId}`);
+                    }}
+                />
             </div>
 
             {/* ===== 顶部 banner（常驻，不自动消失，可手动关闭）—— 悬浮在窗体顶部居中 ===== */}
             {banner && (
-                <div className="fixed left-1/2 top-0 z-[60] w-[620px] max-w-[92vw] -translate-x-1/2">
-                    <div className="mt-2 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/95 px-4 py-3 shadow-lg backdrop-blur">
-                        <Bell size={18} className="mt-0.5 shrink-0 text-amber-500" />
+                <div className="fixed left-1/2 top-0 z-[60] w-[500px] max-w-[92vw] -translate-x-1/2">
+                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/95 p-2  shadow-lg backdrop-blur">
+                        <MapPin size={18} className=" shrink-0 text-amber-500" />
                         <div className="flex-1">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
-                                <MapPin size={13} />
+                            <div className="flex items-center gap-2  font-semibold text-amber-800">
                                 {banner.title}
                                 {banner.responsible && (
                                     <span className="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700">
@@ -518,8 +424,8 @@ export default function ChecklistPage() {
                                     </span>
                                 )}
                             </div>
-                            <div className="mt-0.5 text-xs text-amber-700">{banner.desc}</div>
-                            <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-amber-600">
+                            <div className=" text-sm text-amber-700">{banner.desc}</div>
+                            <div className=" flex flex-wrap  text-sm text-amber-600">
                                 {banner.auxCount > 0 && <span>● 辅助监控指标 {banner.auxCount} 项（见中间栏）</span>}
                                 {banner.videoCount > 0 && (
                                     <span>● 视频监管检查重点 {banner.videoCount} 项（见右侧栏）</span>
@@ -558,263 +464,32 @@ export default function ChecklistPage() {
                 </Card>
             ) : (
                 /* ============ 检查项目视图：品字布局（主要监控跨两列 / 辅助 + 视频并排） ============ */
-                <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden rounded-lg border border-slate-200 bg-white p-3 lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)]">
-                    {/* ===== 第一行：主要监控指标（跨两列，占满顶部） ===== */}
-                    <div className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white lg:col-span-2">
-                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                                <ListChecks size={13} className="text-primary-600" />
-                                主要监控指标
-                            </div>
-                            <span className="text-[10px] text-slate-400">{nodes.length} 节点</span>
-                        </div>
-                        <div ref={setMainTableRef} className="max-h-[32vh] overflow-x-auto overflow-y-auto">
-                            {/* nodes 横向排布（flex row nowrap）：超宽出现横向滚动条，滚轮上下 → 水平移动 */}
-                            <div className="flex flex-nowrap items-stretch gap-2 p-2">
-                                {nodes.map((n) => {
-                                    const nid = getNodeId(n);
-                                    const mainKey = `main-${nid}`;
-                                    const mainItem = items[mainKey] || {};
-                                    const isActive = currentStep === nid;
-                                    return (
-                                        <div
-                                            key={mainKey}
-                                            id={`main-${nid}`}
-                                            onClick={() => focusNode(n)}
-                                            className={cn(
-                                                "flex w-[240px] shrink-0 cursor-pointer flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5 transition-colors hover:bg-primary-50/40",
-                                                isActive && "border-amber-300 bg-amber-50/70"
-                                            )}
-                                        >
-                                            {/* 序号 + 名称 */}
-                                            <div className="flex items-center gap-2">
-                                                <span
-                                                    className={cn(
-                                                        "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
-                                                        isActive
-                                                            ? "bg-amber-400 text-white"
-                                                            : "bg-primary-50 text-primary-700"
-                                                    )}
-                                                >
-                                                    {nid}
-                                                </span>
-                                                <span
-                                                    className="truncate text-[13px] font-semibold text-slate-800"
-                                                    title={n.name}
-                                                >
-                                                    {n.name}
-                                                </span>
-                                            </div>
-                                            {/* 描述 */}
-                                            <div className="truncate text-[11px] text-slate-400" title={n.desc || "—"}>
-                                                {n.desc || "—"}
-                                            </div>
-                                            {/* 标签 */}
-                                            <div className="flex flex-wrap gap-1">
-                                                {n.responsible && (
-                                                    <span className="rounded bg-violet-50 px-1 py-0.5 text-[9px] text-violet-600">
-                                                        {n.responsible}
-                                                    </span>
-                                                )}
-                                                {n.auxiliaries?.length > 0 && (
-                                                    <span className="rounded bg-slate-100 px-1 py-0.5 text-[9px] text-slate-500">
-                                                        辅助 {n.auxiliaries.length}
-                                                    </span>
-                                                )}
-                                                {videoByNode[nid]?.length > 0 && (
-                                                    <span className="rounded bg-sky-50 px-1 py-0.5 text-[9px] text-sky-600">
-                                                        视频 {videoByNode[nid].length}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {/* 完成情况 + 时间 */}
-                                            <div className="mt-auto flex items-center gap-1.5 pt-1">
-                                                <select
-                                                    className="input min-w-0 flex-1 px-1 py-1 text-[11px]"
-                                                    value={mainItem.status || ""}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    onChange={(e) => {
-                                                        setItemValue(mainKey, "status", e.target.value);
-                                                        focusNode(n);
-                                                    }}
-                                                >
-                                                    {STATUS_OPTIONS.map((o) => (
-                                                        <option key={o.value} value={o.value}>
-                                                            {o.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <input
-                                                    className="input w-[72px] shrink-0 px-1 py-1 text-[11px]"
-                                                    placeholder="HH:mm"
-                                                    value={mainItem.time || ""}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    onChange={(e) => setItemValue(mainKey, "time", e.target.value)}
-                                                />
-                                            </div>
-                                            {/* 状态徽章 */}
-                                            {mainItem.status && (
-                                                <div className="flex items-center">
-                                                    {getStatusBadge(mainItem.status)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                                {nodes.length === 0 && (
-                                    <div className="px-3 py-8 text-center text-slate-400">
-                                        该航班类型的检查单暂未配置
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ===== 第二行左列：辅助监控指标 ===== */}
-                    <div className="min-h-0 min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
-                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                                <ListChecks size={13} className="text-primary-600" />
-                                辅助监控指标
-                                <span className="text-[10px] font-normal text-slate-400">
-                                    {activeNode?.auxiliaries?.length || 0} 项
-                                </span>
-                            </div>
-                            {activeNode && (
-                                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                                    {activeNodeId}. {activeNode.name}
-                                </span>
-                            )}
-                        </div>
-                        <div
-                            ref={auxPanelRef}
-                            className="max-h-[45vh] space-y-2 overflow-y-auto p-2.5 lg:h-full lg:max-h-none"
-                        >
-                            {activeNode ? (
-                                activeNode.auxiliaries?.length ? (
-                                    activeNode.auxiliaries.map((a, ai) => {
-                                        const aKey = `aux-${a.id ?? a.row}`;
-                                        const aItem = items[aKey] || {};
-                                        return (
-                                            <div
-                                                key={aKey}
-                                                id={ai === 0 ? `aux-anchor-${activeNodeId}` : undefined}
-                                                className="scroll-mt-2 rounded-lg border border-slate-200 p-2.5"
-                                            >
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[13px] font-medium text-slate-700">
-                                                        ↳ {a.name}
-                                                    </span>
-                                                    <select
-                                                        className="input w-20 px-1.5 py-0.5 text-[11px]"
-                                                        value={aItem.status || ""}
-                                                        onChange={(e) => setItemValue(aKey, "status", e.target.value)}
-                                                    >
-                                                        {STATUS_OPTIONS.map((o) => (
-                                                            <option key={o.value} value={o.value}>
-                                                                {o.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                <div className="mt-1 text-[11px] text-slate-500">{a.desc || "—"}</div>
-                                                <div className="mt-1.5 flex items-center gap-1.5">
-                                                    <input
-                                                        className="input w-[72px] px-1.5 py-0.5 text-[11px]"
-                                                        placeholder="时间"
-                                                        value={aItem.time || ""}
-                                                        onChange={(e) => setItemValue(aKey, "time", e.target.value)}
-                                                    />
-                                                    <textarea
-                                                        className="input flex-1 resize-y px-1.5 py-0.5 text-[11px]"
-                                                        rows={1}
-                                                        placeholder="备注（可换行）"
-                                                        value={aItem.note || ""}
-                                                        onChange={(e) => setItemValue(aKey, "note", e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
-                                        该节点无辅助监控指标
-                                    </div>
-                                )
-                            ) : (
-                                <div className="py-6 text-center text-sm text-slate-400">点击左侧节点查看</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* 第二行右列：视频监管检查重点 */}
-                    <div className="min-h-0 min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
-                        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                                <Camera size={13} className="text-sky-600" />
-                                视频监管检查重点
-                                <span className="text-[10px] font-normal text-slate-400">
-                                    {videoByNode[activeNodeId]?.length || 0} 项
-                                </span>
-                            </div>
-                            <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                                <MonitorPlay size={11} /> 截图 / 人工评价
-                            </span>
-                        </div>
-                        <div
-                            ref={videoPanelRef}
-                            className="max-h-[45vh] space-y-2 overflow-y-auto p-2.5 lg:h-full lg:max-h-none"
-                        >
-                            {activeNode && videoByNode[activeNodeId]?.length ? (
-                                videoByNode[activeNodeId].map((v, vi) => {
-                                    const vKey = `video-${v.uuid}`;
-                                    const vItem = videoItems[vKey] || {};
-                                    return (
-                                        <div
-                                            key={vKey}
-                                            id={vi === 0 ? `video-anchor-${activeNodeId}` : undefined}
-                                            className="scroll-mt-2 rounded-lg border border-sky-100 bg-sky-50/40 p-2.5"
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="flex-1">
-                                                    {v.groupTitle && (
-                                                        <div className="text-[13px] font-medium text-sky-600">
-                                                            {v.groupTitle}
-                                                        </div>
-                                                    )}
-                                                    <div className="mt-0.5 text-[11px] leading-snug text-slate-600">
-                                                        {v.desc}
-                                                    </div>
-                                                </div>
-                                                <select
-                                                    className="input w-[76px] shrink-0 px-1.5 py-0.5 text-[11px]"
-                                                    value={vItem.status || ""}
-                                                    onChange={(e) => setVideoValue(vKey, "status", e.target.value)}
-                                                >
-                                                    {STATUS_OPTIONS.map((o) => (
-                                                        <option key={o.value} value={o.value}>
-                                                            {o.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <textarea
-                                                className="input mt-1.5 w-full resize-y px-1.5 py-0.5 text-[11px]"
-                                                rows={1}
-                                                placeholder="备注 / 截图信息（可换行）"
-                                                value={vItem.note || ""}
-                                                onChange={(e) => setVideoValue(vKey, "note", e.target.value)}
-                                            />
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400">
-                                    该节点无视频监管项
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden rounded-lg   lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)]">
+                    <MainMonitoringPanel
+                        nodes={nodes}
+                        items={items}
+                        currentStep={currentStep}
+                        videoByNode={videoByNode}
+                        formulaCtx={formulaCtx}
+                        getNodeId={getNodeId}
+                        onFocusNode={focusNode}
+                        setItemValue={setItemValue}
+                    />
+                    <AuxiliaryPanel
+                        activeNode={activeNode}
+                        activeNodeId={activeNodeId}
+                        items={items}
+                        formulaCtx={formulaCtx}
+                        panelRef={auxPanelRef}
+                        setItemValue={setItemValue}
+                    />
+                    <VideoPanel
+                        activeNodeId={activeNodeId}
+                        videoByNode={videoByNode}
+                        videoItems={videoItems}
+                        panelRef={videoPanelRef}
+                        setVideoValue={setVideoValue}
+                    />
                 </div>
             )}
 

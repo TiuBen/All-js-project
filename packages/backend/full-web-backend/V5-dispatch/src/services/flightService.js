@@ -59,7 +59,8 @@ async function getManualFlight(id) {
     id,
     flightNo: row.flight_no,
     aircraftType: row.aircraft_type || '',
-    category: '货运航班', // 手动添加默认按货运检查单处理
+    // 航班类别：优先取手动航班的 checklist_category（货运/客运，决定检查单模板）；缺省按货运处理
+    category: row.checklist_category || '货运航班',
     flightType: '常规航班',
     origin: '—',
     destination: '鄂州',

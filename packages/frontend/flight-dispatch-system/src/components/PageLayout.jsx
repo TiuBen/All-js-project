@@ -1,17 +1,28 @@
 import { useTabsStore } from "../store/tabsStore";
 import { useDraftStore } from "../store/draftStore";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Plane, ClipboardCheck, ListChecks, CalendarDays } from "lucide-react";
+import { Plane, ClipboardCheck, ListChecks, CalendarDays, Leaf } from "lucide-react";
 import DigitalClock from "./DigitalClock";
 import { cn } from "../lib/utils";
 
+/**
+ * ============================================================
+ * PageLayout —— 页面外壳（顶部导航栏 + 路由内容）
+ * ------------------------------------------------------------
+ * 在 App.jsx 顶层包裹所有路由：
+ *   - 顶部导航栏（全站固定，路径驱动高亮，检查单草稿数角标）
+ *   - 内容区 <main>（children = 各页面；页面内部可用 ContentLayout 再做左右布局）
+ * ============================================================
+ */
+
 const tabs = [
-    { id: "flights", label: "航班列表", icon: CalendarDays, path: "/" },
+    { id: "fips", label: "航班列表", icon: CalendarDays, path: "/fips" },
     { id: "checklist", label: "检查单", icon: ClipboardCheck, path: "/checklist" },
+    { id: "fresh", label: "生鲜保障", icon: Leaf, path: "/fresh" },
     { id: "records", label: "填写记录", icon: ListChecks, path: "/records" },
 ];
 
-export default function Layout({ children }) {
+export default function PageLayout({ children }) {
     // 高亮由当前路由路径决定（见下方 isActive）；setActiveTab 仅用于点击 tab 时持久化记忆
     const { setActiveTab } = useTabsStore();
     const drafts = useDraftStore((s) => s.drafts);
@@ -47,11 +58,12 @@ export default function Layout({ children }) {
                         {tabs.map((tab) => {
                             const Icon = tab.icon;
                             // 以当前路由路径决定高亮（任何入口跳转都准确，不依赖手动同步 activeTab）
+                            // fips：/ 与 /fips 都激活「航班列表」tab
                             const isActive =
-                                tab.id === "flights"
-                                    ? location.pathname === "/"
+                                tab.id === "fips"
+                                    ? location.pathname === "/" || location.pathname.startsWith("/fips")
                                     : location.pathname.startsWith(tab.path);
-                            const draftCount = tab.id === 'checklist' ? Math.min(drafts.length, 5) : 0;
+                            const draftCount = tab.id === "checklist" ? Math.min(drafts.length, 5) : 0;
                             return (
                                 <button
                                     key={tab.id}
@@ -60,7 +72,7 @@ export default function Layout({ children }) {
                                         "relative flex cursor-pointer items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                                         isActive
                                             ? "bg-white text-primary-700 shadow-sm"
-                                            : "text-slate-600 hover:text-slate-900",
+                                            : "text-slate-600 hover:text-slate-900"
                                     )}
                                 >
                                     <Icon size={15} />
@@ -78,7 +90,7 @@ export default function Layout({ children }) {
                 </div>
             </header>
 
-            <main className="flex-1 overflow-hidden p-2">{children}</main>
+            <main className="flex flex-col flex-1 overflow-hidden p-2">{children}</main>
         </div>
     );
 }

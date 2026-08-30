@@ -3,8 +3,8 @@ import { checklistsApi } from "../../api";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge, flightTypeVariant } from "../../components/ui/badge";
 import DateFilterPanel, { useDateFilterParams } from "../../components/ui/DateFilterPanel";
-import FlightSearchCard from "../../components/search/FlightSearchCard";
-import PageLayout from "../../components/layout/PageLayout";
+import Sidebar from "./components/Sidebar";
+import ContentLayout from "../../components/layout/ContentLayout";
 import { Loader2, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -32,15 +32,17 @@ export default function RecordsPage() {
             .finally(() => setLoading(false));
     }, [filterParams.date, filterParams.from, filterParams.to, refreshKey]);
 
-    // 加载全部记录 → 按航班日期统计数量 + 是否有异常项，供日历红/绿数字徽标使用
+    // 加载全部记录 → 按「创建/检查日期」（本地时区）统计数量 + 是否有异常项，供日历红/绿数字徽标使用
     useEffect(() => {
         checklistsApi
             .listRecords({})
             .then((d) => {
                 const markers = {};
                 (d.items || []).forEach((r) => {
-                    const dstr = r.flight_date;
-                    if (!dstr) return;
+                    // 日期取创建/检查时间（本地东8区格式），而非 flight_date（手动航班可能为空）
+                    const ts = r.checked_at || r.created_at;
+                    if (!ts) return;
+                    const dstr = dayjs(ts).format("YYYY-MM-DD");
                     const cur = markers[dstr] || { count: 0, hasAbnormal: false };
                     cur.count += 1;
                     // 检查该记录 items 中是否存在 status === 'abnormal' 的项
@@ -71,21 +73,15 @@ export default function RecordsPage() {
     const fmtDate = (iso) => (iso ? dayjs(iso).format("YYYY-MM-DD") : "—");
 
     return (
-        <PageLayout
+        <ContentLayout
             sidebar={
-                <>
-                    {/* 左侧：搜索 + 日期筛选 */}
-                    <div className="shrink-0 space-y-4">
-                        <FlightSearchCard
-                            keyword={keyword}
-                            onKeywordChange={setKeyword}
-                            matchCount={filtered.length}
-                            placeholder="航班号 / 检查单 / 检查人 / 机型..."
-                            onRefresh={() => setRefreshKey((k) => k + 1)}
-                        />
-                        <DateFilterPanel dayMarkers={dayMarkers} />
-                    </div>
-                </>
+                <Sidebar
+                    keyword={keyword}
+                    onKeywordChange={setKeyword}
+                    matchCount={filtered.length}
+                    onRefresh={() => setRefreshKey((k) => k + 1)}
+                    dayMarkers={dayMarkers}
+                />
             }
         >
             {/* 右侧：填写记录列表 */}
@@ -163,6 +159,6 @@ export default function RecordsPage() {
                     </table>
                 </div>
             </Card>
-        </PageLayout>
+        </ContentLayout>
     );
 }

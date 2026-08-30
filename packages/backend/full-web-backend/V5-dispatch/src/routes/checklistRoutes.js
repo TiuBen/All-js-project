@@ -61,4 +61,11 @@ router.post('/records', checklistController.createRecord);
  */
 router.put('/records/:id', checklistController.updateRecord);
 
+/**
+ * @route   DELETE /api/checklists/records/:id
+ * @desc    删除填写记录（清理测试/误建数据用）
+ * @access  公开
+ */
+router.delete('/records/:id', checklistController.deleteRecord);
+
 export { router as checklistRouter };

@@ -30,6 +30,8 @@ const FIELD_MAP = {
   stand: 'stand',
   aircraftType: 'aircraft_type',
   landingTime: 'landing_time',
+  checklistCategory: 'checklist_category',
+  checklistUuid: 'checklist_uuid',
 };
 
 /**

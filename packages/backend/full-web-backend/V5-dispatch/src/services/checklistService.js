@@ -32,17 +32,18 @@ export async function listRecords(filter = {}) {
     sql += ` AND checklist_template_id = $${params.length}`;
   }
   // 按航班日期过滤（精确日期优先，否则范围）
+  // 注意：manual 手动航班可能无 flight_date（NULL）——日期过滤时也包含这些记录，避免"提交后看不到"
   if (date) {
     params.push(date);
-    sql += ` AND flight_date = $${params.length}`;
+    sql += ` AND (flight_date = $${params.length} OR flight_date IS NULL)`;
   } else {
     if (from) {
       params.push(from);
-      sql += ` AND flight_date >= $${params.length}`;
+      sql += ` AND (flight_date >= $${params.length} OR flight_date IS NULL)`;
     }
     if (to) {
       params.push(to);
-      sql += ` AND flight_date <= $${params.length}`;
+      sql += ` AND (flight_date <= $${params.length} OR flight_date IS NULL)`;
     }
   }
 
@@ -123,4 +124,14 @@ export async function updateRecord(id, data) {
     ],
   );
   return rows.length ? rows[0] : null;
+}
+
+/**
+ * 删除填写记录
+ * @param {string|number} id 记录主键
+ * @returns {Promise<boolean>} 是否删除成功
+ */
+export async function deleteRecord(id) {
+  const { rows } = await query('DELETE FROM checklist_records WHERE id = $1 RETURNING id', [id]);
+  return rows.length > 0;
 }
