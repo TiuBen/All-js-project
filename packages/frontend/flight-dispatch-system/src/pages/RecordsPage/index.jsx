@@ -1,11 +1,11 @@
 import { useEffect, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
-import { Badge, flightTypeVariant } from "../../components/ui/badge";
+import { Badge } from "../../components/ui/badge";
 import DateFilterPanel, { useDateFilterParams } from "../../components/ui/DateFilterPanel";
 import { useRecordsStore } from "../../store/recordsStore";
 import Sidebar from "./components/Sidebar";
 import ContentLayout from "../../components/layout/ContentLayout";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2, FileText, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -26,6 +26,7 @@ export default function RecordsPage() {
     const refresh = useRecordsStore((s) => s.refresh);
     const fetchRecords = useRecordsStore((s) => s.fetchRecords);
     const fetchDayMarkers = useRecordsStore((s) => s.fetchDayMarkers);
+    const deleteRecord = useRecordsStore((s) => s.deleteRecord);
 
     // 所选日期变化（appStore）或手动刷新 → 重新拉取列表
     useEffect(() => {
@@ -52,8 +53,19 @@ export default function RecordsPage() {
         );
     }, [records, keyword]);
 
-    const fmtDateTime = (iso) => (iso ? dayjs(iso).format("YYYY-MM-DD HH:mm") : "—");
+    // 时间显示：统一 YYYY-MM-DD HH:mm:ss（创建时间 created_at / 修改时间 updated_at）
+    const fmtDateTime = (iso) => (iso ? dayjs(iso).format("YYYY-MM-DD HH:mm:ss") : "—");
     const fmtDate = (iso) => (iso ? dayjs(iso).format("YYYY-MM-DD") : "—");
+
+    // 删除确认后调用 store（后端同步解除 fips/manual_fips.checklist_uuid 关联并刷新列表/日历）
+    const handleDelete = async (r) => {
+        if (!window.confirm(`确定删除 ${r.flight_no || r.flight_id} 的检查单记录？删除后该航班可重新创建检查单。`)) return;
+        try {
+            await deleteRecord(r.id);
+        } catch (e) {
+            window.alert(`删除失败：${e.message}`);
+        }
+    };
 
     return (
         <ContentLayout
@@ -85,10 +97,10 @@ export default function RecordsPage() {
                                 <th className="px-4 py-2.5 font-medium">航班号</th>
                                 <th className="px-4 py-2.5 font-medium">航班日期</th>
                                 <th className="px-4 py-2.5 font-medium">机型</th>
-                                <th className="px-4 py-2.5 font-medium">检查单类型</th>
-                                <th className="px-4 py-2.5 font-medium">检查单分类</th>
+                                <th className="px-4 py-2.5 font-medium">检查单</th>
                                 <th className="px-4 py-2.5 font-medium">检查人</th>
-                                <th className="px-4 py-2.5 font-medium">检查时间</th>
+                                <th className="px-4 py-2.5 font-medium">创建时间</th>
+                                <th className="px-4 py-2.5 font-medium">修改时间</th>
                                 <th className="px-4 py-2.5 font-medium">状态</th>
                                 <th className="px-4 py-2.5 font-medium">操作</th>
                             </tr>
@@ -102,33 +114,38 @@ export default function RecordsPage() {
                                     <td className="px-4 py-2.5 font-semibold text-slate-800">{r.flight_no || "—"}</td>
                                     <td className="px-4 py-2.5">{fmtDate(r.flight_date)}</td>
                                     <td className="px-4 py-2.5">{r.aircraft_type || "—"}</td>
-                                    {/* 检查单类型：记录只存 category，类型由 header.template.checklistName 反查（始发/过站/顺航） */}
+                                    {/* 检查单：checklist_category 与检查单页下拉菜单完全对齐（如 货运始发航班 / 客运过站航班 / 顺航检查单） */}
                                     <td className="px-4 py-2.5">
-                                        <Badge variant={flightTypeVariant(r.header?.template?.checklistName)}>
-                                            {r.header?.template?.checklistName || "—"}
-                                        </Badge>
+                                        <Badge>{r.checklist_category || "—"}</Badge>
                                     </td>
-                                    <td className="px-4 py-2.5 text-xs text-slate-500">{r.checklist_category || "—"}</td>
                                     <td className="px-4 py-2.5">
                                         <span className="font-medium text-slate-700">{r.inspector || "—"}</span>
                                     </td>
-                                    <td className="px-4 py-2.5 tabular-nums text-slate-600">
-                                        {fmtDateTime(r.checked_at || r.updated_at)}
-                                    </td>
+                                    <td className="px-4 py-2.5 tabular-nums text-slate-600">{fmtDateTime(r.created_at)}</td>
+                                    <td className="px-4 py-2.5 tabular-nums text-slate-600">{fmtDateTime(r.updated_at)}</td>
                                     <td className="px-4 py-2.5">
                                         <Badge variant={r.status === "submitted" ? "success" : "warning"}>
                                             {r.status === "submitted" ? "已提交" : "草稿"}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-2.5">
-                                        <button
-                                            className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:underline"
-                                            onClick={() =>
-                                                navigate(`/checklist/${r.flight_id}?recordId=${r.id}&view=1`)
-                                            }
-                                        >
-                                            <FileText size={13} /> 查看
-                                        </button>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:underline"
+                                                onClick={() =>
+                                                    navigate(`/checklist/${r.flight_id}?recordId=${r.id}&view=1`)
+                                                }
+                                            >
+                                                <FileText size={13} /> 查看
+                                            </button>
+                                            <button
+                                                className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:underline"
+                                                title="删除该记录（解除航班与检查单的关联）"
+                                                onClick={() => handleDelete(r)}
+                                            >
+                                                <Trash2 size={13} /> 删除
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

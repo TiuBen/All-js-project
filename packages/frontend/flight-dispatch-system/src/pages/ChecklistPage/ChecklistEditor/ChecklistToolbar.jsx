@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../../components/ui/button";
-import DraftDropdown from "./DraftDropdown";
+import DraftDropdown from "../ChecklistCache/DraftDropdown";
 import { TYPE_BUTTONS } from "../checklistTypeConfig";
 import { ArrowLeft, ChevronDown, CheckCircle2, ExternalLink, Loader2, Map, Save, Workflow } from "lucide-react";
 
@@ -84,7 +84,7 @@ export default function ChecklistToolbar({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* 检查单类型下拉菜单：顺航/始发货航/过站货航/始发客运/过站客运（5 色） */}
+                    {/* 检查单类型下拉菜单：顺航检查单/货运始发/货运过站/客运始发/客运过站（5 色，label = 落库的 checklist_category） */}
                     <div className="relative">
                         {typeMenuOpen && <div className="fixed inset-0 z-40" onClick={() => setTypeMenuOpen(false)} />}
                         <button

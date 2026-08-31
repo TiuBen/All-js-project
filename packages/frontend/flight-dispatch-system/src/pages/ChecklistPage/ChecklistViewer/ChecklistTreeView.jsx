@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 import {
     CheckCircle2,
     CircleDot,
@@ -28,7 +28,7 @@ import VideoList from "./VideoList";
  * 已适配 v3 模板结构（schema 顶层 + id 定位 + videoSupervision 顶层），兼容旧结构。
  * ============================================================
  */
-export default function ChecklistTreeView({ template, record, flight }) {
+export default function ChecklistTreeView({ template, record }) {
     // 展开状态：Set<节点定位键>（包含 = 展开），默认全部折叠
     const [expanded, setExpanded] = useState(() => new Set());
     // 栏数：1 | 2 | 3（默认 3）

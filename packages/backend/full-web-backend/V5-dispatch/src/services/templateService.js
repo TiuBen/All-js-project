@@ -51,13 +51,25 @@ export function listTemplateMeta() {
 }
 
 /**
- * 视频监管重点文件映射：按模板 category → 独立的视频监管重点 JSON（无映射则返回 null）
- * 货运始发/货运过站共用 货运航班视频监管重点.json；客运始发/客运过站共用 客运航班视频监管重点.json
+ * 视频监管重点文件映射：按模板 category 匹配（category 已与下拉菜单对齐，
+ * 形如"货运始发航班 / 客运过站航班 / 顺航检查单"），用包含关系判定：
+ *   - 含"客运" → 客运航班视频监管重点
+ *   - 含"货运"或"顺航" → 货运航班视频监管重点
  */
-const VIDEO_FOCUS_MAP = {
-  货运航班: '货运航班视频监管重点',
-  客运航班: '客运航班视频监管重点',
-};
+const VIDEO_FOCUS_RULES = [
+  { match: (c) => String(c || '').includes('客运'), file: '客运航班视频监管重点' },
+  { match: (c) => String(c || '').includes('货运') || String(c || '').includes('顺航'), file: '货运航班视频监管重点' },
+];
+
+/**
+ * 按 category 解析对应的视频监管重点文件 id（无匹配返回 null）
+ * @param {string} category 模板分类（如 货运始发航班）
+ * @returns {string|null}
+ */
+function resolveVideoFocusId(category) {
+  const rule = VIDEO_FOCUS_RULES.find((r) => r.match(category));
+  return rule ? rule.file : null;
+}
 
 /**
  * 按 id 读取单个模板（完整内容），并附加关联的视频监管重点（videoFocus，独立 JSON 文件）
@@ -71,7 +83,7 @@ export function getTemplateById(id) {
 
   // 视频监管重点：按 category 映射独立文件；文件缺失时 videoFocus 为 null（前端自动降级为空）
   let videoFocus = null;
-  const vfId = VIDEO_FOCUS_MAP[data.category];
+  const vfId = resolveVideoFocusId(data.category);
   if (vfId) {
     const vfFile = path.join(config.paths.checklists, `${vfId}.json`);
     if (fs.existsSync(vfFile)) {

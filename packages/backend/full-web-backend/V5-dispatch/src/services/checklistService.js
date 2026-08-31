@@ -7,9 +7,11 @@
  * 业务规则：
  *   - 一个航班只能有一个检查单（flight_id 唯一）：createRecord 按 flight_id upsert，
  *     已存在记录 → 更新并返回，绝不新建第二条；
- *   - 已提交且超过 24 小时的记录锁定，禁止再修改（前端 + 后端双重拦截）；
+ *   - 已提交且超过 24 小时的记录锁定，禁止再修改（前端 + 后端双重拦截），
+ *     锁定基准时间 = updated_at（最后一次修改/提交时间）；
  *   - 创建/更新后把检查单 id 同步写入 fips / manual_fips 的 checklist_uuid 列，
- *     供航班列表展示"已有检查单"并防止新建。
+ *     供航班列表展示"已有检查单"并防止新建；删除记录时同步解除关联。
+ *   - 表结构：不存 checked_at，时间字段只有 created_at（创建）/ updated_at（修改）。
  * ============================================================
  */
 import { query } from '../db/pool.js';
@@ -18,12 +20,12 @@ import { query } from '../db/pool.js';
 export const EDIT_LOCK_HOURS = 24;
 
 /**
- * 24 小时锁定校验：记录已提交且检查时间距今超过 EDIT_LOCK_HOURS → 抛 409
+ * 24 小时锁定校验：记录已提交且最后修改时间距今超过 EDIT_LOCK_HOURS → 抛 409
  * @param {Object} record 已存在的记录行
  */
 function assertEditable(record) {
   if (record?.status !== 'submitted') return;
-  const ts = record.checked_at ? new Date(record.checked_at).getTime() : 0;
+  const ts = record.updated_at ? new Date(record.updated_at).getTime() : 0;
   if (ts && Date.now() - ts > EDIT_LOCK_HOURS * 3600 * 1000) {
     const err = new Error(`该检查单已提交超过 ${EDIT_LOCK_HOURS} 小时，不可再修改`);
     err.status = 409;
@@ -78,28 +80,28 @@ export async function listRecords(filter = {}) {
     params.push(category);
     sql += ` AND checklist_category = $${params.length}`;
   }
-  // 按"检查日期"过滤（COALESCE(checked_at, created_at)，本地东8区取日）：
-  // - 与前端日历红/绿数字徽标口径一致（都是按检查日期统计）；
+  // 按"日期"过滤（COALESCE(updated_at, created_at)，本地东8区取日）：
+  // - 与前端日历红/绿数字徽标口径一致（都是按"最后修改/创建日"统计）；
   // - 不再按 flight_date（航班日期）过滤——手动航班 flight_date 可能为 NULL，
-  //   且用户语义是"哪天检查的"而非"哪天飞的"。
-  // - checked_at 为 TIMESTAMPTZ（UTC 存储）。PG 会话时区是 Asia/Shanghai，
+  //   且用户语义是"哪天填写的"而非"哪天飞的"。
+  // - 时间字段为 TIMESTAMPTZ（UTC 存储）。PG 会话时区是 Asia/Shanghai，
   //   若直接 (ts + interval '8 hours')::date 会双重转换（多算 8h）；必须先用
   //   AT TIME ZONE 'UTC' 取 UTC 无时区表示，再 +8h 取本地日，保证确定性。
   if (date) {
     params.push(date);
-    sql += ` AND (COALESCE(checked_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date = $${params.length}`;
+    sql += ` AND (COALESCE(updated_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date = $${params.length}`;
   } else {
     if (from) {
       params.push(from);
-      sql += ` AND (COALESCE(checked_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date >= $${params.length}`;
+      sql += ` AND (COALESCE(updated_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date >= $${params.length}`;
     }
     if (to) {
       params.push(to);
-      sql += ` AND (COALESCE(checked_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date <= $${params.length}`;
+      sql += ` AND (COALESCE(updated_at, created_at) AT TIME ZONE 'UTC' + interval '8 hours')::date <= $${params.length}`;
     }
   }
 
-  sql += ' ORDER BY COALESCE(checked_at, created_at) DESC LIMIT 500';
+  sql += ' ORDER BY COALESCE(updated_at, created_at) DESC LIMIT 500';
   const { rows } = await query(sql, params);
   return rows;
 }
@@ -149,8 +151,8 @@ export async function createRecord(data) {
   const { rows } = await query(
     `INSERT INTO checklist_records
       (flight_id, flight_no, aircraft_type, checklist_category, flight_date,
-       header, items, video_supervision, inspector, status, checked_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       header, items, video_supervision, inspector, status)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
      RETURNING *`,
     [
       data.flightId,
@@ -163,7 +165,6 @@ export async function createRecord(data) {
       data.videoSupervision ? JSON.stringify(data.videoSupervision) : null,
       data.inspector || null,
       data.status || 'draft',
-      data.checkedAt || new Date().toISOString(),
     ],
   );
   await syncChecklistUuid(data.flightId, rows[0].id);
@@ -172,7 +173,10 @@ export async function createRecord(data) {
 
 /**
  * 更新填写记录（只更新传入的字段）
- * 已提交且检查时间超过 24 小时 → 拒绝（409，不可再修改）
+ * 已提交且最后修改时间超过 24 小时 → 拒绝（409，不可再修改）
+ * 说明：checklist_category / flight_no / aircraft_type / flight_date 为可选项，
+ *       传入时才更新（COALESCE 保持原值）——这样"切换模板类型后提交"（upsert 复用
+ *       本函数）也能把新的检查单分类落库，记录页"检查单"列随之更新。
  * @param {string|number} id 记录主键
  * @param {Object} data 要更新的字段
  * @returns {Promise<Object|null>} 更新后的记录；不存在返回 null
@@ -190,9 +194,12 @@ export async function updateRecord(id, data) {
            video_supervision = COALESCE($3, video_supervision),
            inspector = COALESCE($4, inspector),
            status = COALESCE($5, status),
-           checked_at = COALESCE($6, checked_at),
+           checklist_category = COALESCE($6, checklist_category),
+           flight_no = COALESCE($7, flight_no),
+           aircraft_type = COALESCE($8, aircraft_type),
+           flight_date = COALESCE($9, flight_date),
            updated_at = now()
-     WHERE id = $7
+     WHERE id = $10
      RETURNING *`,
     [
       data.header ? JSON.stringify(data.header) : null,
@@ -200,7 +207,10 @@ export async function updateRecord(id, data) {
       data.videoSupervision ? JSON.stringify(data.videoSupervision) : null,
       data.inspector || null,
       data.status || null,
-      data.checkedAt ? new Date(data.checkedAt).toISOString() : null,
+      data.checklistCategory || null,
+      data.flightNo || null,
+      data.aircraftType || null,
+      data.flightDate || null,
       id,
     ],
   );
@@ -212,11 +222,29 @@ export async function updateRecord(id, data) {
 }
 
 /**
- * 删除填写记录
+ * 删除填写记录（同时解除 fips / manual_fips 的 checklist_uuid 关联）
  * @param {string|number} id 记录主键
  * @returns {Promise<boolean>} 是否删除成功
  */
 export async function deleteRecord(id) {
-  const { rows } = await query('DELETE FROM checklist_records WHERE id = $1 RETURNING id', [id]);
-  return rows.length > 0;
+  const { rows } = await query(
+    'DELETE FROM checklist_records WHERE id = $1 RETURNING id, flight_id',
+    [id],
+  );
+  if (!rows.length) return false;
+  // 解除航班来源表的检查单关联（fips / manual_fips.checklist_uuid → NULL），
+  // 否则航班列表仍会显示"已有检查单"导致无法重新创建。
+  const flightId = rows[0].flight_id;
+  const fipsMatch = String(flightId || '').match(/^fips-(\d+)$/);
+  if (fipsMatch) {
+    await query('UPDATE fips SET checklist_uuid = NULL WHERE id = $1', [Number(fipsMatch[1])]);
+  } else {
+    const manualMatch = String(flightId || '').match(/^manual-(\d+)$/);
+    if (manualMatch) {
+      await query('UPDATE manual_fips SET checklist_uuid = NULL WHERE id = $1', [
+        Number(manualMatch[1]),
+      ]);
+    }
+  }
+  return true;
 }

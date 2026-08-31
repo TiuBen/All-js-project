@@ -1,6 +1,6 @@
 {
   "uuid": "c91cbcc3-7c96-4686-ad95-1da736d2caec",
-  "category": "客运航班",
+  "category": "客运始发航班",
   "generatedAt": "2026-08-31T01:25:27.000Z",
   "checklistName": "始发航班",
   "schemaVersion": "3.0-origin",

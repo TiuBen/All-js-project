@@ -2,11 +2,11 @@
  * ============================================================
  * 数据库 Schema（建库 + 建表）
  * ------------------------------------------------------------
- * 启动时自动执行：
+ * 结构与 data/schema.sql（pg_dump 导出的权威库结构）严格一致：
  *   1. 若数据库不存在则创建（flight_dispatch）
- *   2. 建表：checklist_records（检查单填写记录）
- *   3. 建表：flights（航班）
- * 幂等：CREATE TABLE IF NOT EXISTS，可重复执行。
+ *   2. 建 5 张表：checklist_records / fips / flights / manual_fips / fresh_air_cargo
+ *   3. 唯一约束、索引、外键与 schema.sql 一致
+ * 幂等：CREATE TABLE IF NOT EXISTS + IF NOT EXISTS 索引，可重复执行。
  * ============================================================
  */
 import pg from 'pg';
@@ -51,18 +51,16 @@ async function ensureDatabase() {
 }
 
 /**
- * 2) 建表（幂等）
+ * 2) 建表（严格对齐 data/schema.sql，幂等）
  */
 async function ensureTables() {
   const p = getPool();
   try {
-    // ---------- 检查单填写记录表 ----------
-    // 一航班一检查单：flight_id 唯一索引；记录只保留 checklist_category（模板由 category 加载），
-    // 不再存 flight_type / checklist_template_id / checklist_title（冗余，且曾导致重复建单）。
+    // ---------- 1. 检查单填写记录表 ----------
     await p.query(`
       CREATE TABLE IF NOT EXISTS checklist_records (
         id SERIAL PRIMARY KEY,
-        flight_id VARCHAR(64) NOT NULL UNIQUE,
+        flight_id VARCHAR(64) NOT NULL,
         flight_no VARCHAR(32),
         aircraft_type VARCHAR(32),
         checklist_category VARCHAR(32) NOT NULL,
@@ -72,45 +70,44 @@ async function ensureTables() {
         video_supervision JSONB,
         inspector VARCHAR(64),
         status VARCHAR(16) DEFAULT 'draft',
-        checked_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now()
       );
     `);
-    // 兼容旧表：补充可能缺失的列
-    await p.query(`ALTER TABLE checklist_records ADD COLUMN IF NOT EXISTS flight_date VARCHAR(16);`);
-    await p.query(`ALTER TABLE checklist_records ADD COLUMN IF NOT EXISTS checked_at TIMESTAMPTZ;`);
-    // ---- 表结构演进（幂等）----
-    // 1) 移除冗余列：模板信息统一由 checklist_category 决定，不落库
-    await p.query(`ALTER TABLE checklist_records DROP COLUMN IF EXISTS flight_type;`);
-    await p.query(`ALTER TABLE checklist_records DROP COLUMN IF EXISTS checklist_template_id;`);
-    await p.query(`ALTER TABLE checklist_records DROP COLUMN IF EXISTS checklist_title;`);
-    // 2) 清理旧数据：同一航班曾允许重复建单，这里保留每个航班最新一条，其余删除
-    await p.query(`
-      DELETE FROM checklist_records a
-      USING checklist_records b
-      WHERE a.flight_id = b.flight_id AND a.id < b.id;
-    `);
-    // 3) 一航班一检查单：flight_id 唯一索引（幂等；旧非唯一索引先删）
-    await p.query(`DROP INDEX IF EXISTS idx_records_flight;`);
-    await p.query(`DROP INDEX IF EXISTS idx_records_template;`);
     await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_records_flight_unique ON checklist_records(flight_id);`);
-    // 4) 存量数据回填：把已有记录 id 同步到 fips / manual_fips 的 checklist_uuid（幂等）
-    await p.query(`
-      UPDATE fips f SET checklist_uuid = r.id::text
-      FROM checklist_records r
-      WHERE r.flight_id = 'fips-' || f.id::text;
-    `);
-    await p.query(`
-      UPDATE manual_fips m SET checklist_uuid = r.id::text
-      FROM checklist_records r
-      WHERE r.flight_id = 'manual-' || m.id::text;
-    `);
-    // 常用查询索引
     await p.query(`CREATE INDEX IF NOT EXISTS idx_records_flight_date ON checklist_records(flight_date);`);
     console.log('[DB] 表 checklist_records 已就绪');
 
-    // ---------- 航班表 ----------
+    // ---------- 2. 历史航班流量表（fips） ----------
+    await p.query(`
+      CREATE TABLE IF NOT EXISTS fips (
+        id SERIAL PRIMARY KEY,
+        task VARCHAR(8),
+        flight_no VARCHAR(32),
+        origin_station VARCHAR(8),
+        dest_station VARCHAR(8),
+        landing_station VARCHAR(8),
+        in_out_time VARCHAR(19),
+        sobt VARCHAR(19),
+        eobt VARCHAR(19),
+        atot VARCHAR(19),
+        sibt VARCHAR(19),
+        eldt VARCHAR(19),
+        aldt VARCHAR(19),
+        corridor VARCHAR(16),
+        runway VARCHAR(16),
+        stand VARCHAR(16),
+        aircraft_type VARCHAR(16),
+        source_file VARCHAR(32),
+        source_date VARCHAR(16),
+        mapped_date VARCHAR(16),
+        checklist_category VARCHAR(32),
+        checklist_uuid VARCHAR(64)
+      );
+    `);
+    console.log('[DB] 表 fips 已就绪');
+
+    // ---------- 3. 航班表（flights） ----------
     await p.query(`
       CREATE TABLE IF NOT EXISTS flights (
         id VARCHAR(64) PRIMARY KEY,
@@ -131,8 +128,7 @@ async function ensureTables() {
     await p.query(`CREATE INDEX IF NOT EXISTS idx_flights_date ON flights(flight_date);`);
     console.log('[DB] 表 flights 已就绪');
 
-    // ---------- 手动添加航班表（manual-fips） ----------
-    // 保存用户在航班列表页手动添加的航班（字段对齐 fips 表数据项）
+    // ---------- 4. 手动添加航班表（manual_fips） ----------
     await p.query(`
       CREATE TABLE IF NOT EXISTS manual_fips (
         id SERIAL PRIMARY KEY,
@@ -158,35 +154,13 @@ async function ensureTables() {
         created_at TIMESTAMPTZ DEFAULT now()
       );
     `);
-    // 兼容已存在的旧表：补充可能缺失的列
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS task VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS origin_station VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS dest_station VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS landing_station VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS in_out_time VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS sobt VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS eobt VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS atot VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS sibt VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS eldt VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS aldt VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS corridor VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS runway VARCHAR(16);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS checklist_category VARCHAR(32);`);
-    await p.query(`ALTER TABLE manual_fips ADD COLUMN IF NOT EXISTS checklist_uuid VARCHAR(64);`);
-    // fips 历史表同样补这两列（幂等；表不存在则跳过）
-    await p.query(`ALTER TABLE IF EXISTS fips ADD COLUMN IF NOT EXISTS checklist_category VARCHAR(32);`);
-    await p.query(`ALTER TABLE IF EXISTS fips ADD COLUMN IF NOT EXISTS checklist_uuid VARCHAR(64);`);
     console.log('[DB] 表 manual_fips 已就绪');
 
-    // ---------- 生鲜货物航班表（fresh_air_cargo） ----------
-    // 关联表：标记 manual_fips 中的航班为生鲜货物
-    //   - manual_fips_id 唯一外键（一条航班最多一个生鲜标记）
-    //   - content JSONB：预留的生鲜航班附加内容（未定，先存 JSON）
+    // ---------- 5. 生鲜货物航班表（fresh_air_cargo） ----------
     await p.query(`
       CREATE TABLE IF NOT EXISTS fresh_air_cargo (
         id SERIAL PRIMARY KEY,
-        manual_fips_id INTEGER UNIQUE NOT NULL REFERENCES manual_fips(id) ON DELETE CASCADE,
+        manual_fips_id INTEGER NOT NULL UNIQUE REFERENCES manual_fips(id) ON DELETE CASCADE,
         content JSONB DEFAULT '{}'::jsonb,
         created_at TIMESTAMPTZ DEFAULT now()
       );

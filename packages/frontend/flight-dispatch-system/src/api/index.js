@@ -42,6 +42,7 @@ export const checklistsApi = {
   getRecord: (id) => request(`/checklists/records/${id}`),
   createRecord: (data) => request('/checklists/records', { method: 'POST', body: JSON.stringify(data) }),
   updateRecord: (id, data) => request(`/checklists/records/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRecord: (id) => request(`/checklists/records/${id}`, { method: 'DELETE' }),
 }
 
 // fips 原始数据详情（双击航班号打开 Dialog 用）

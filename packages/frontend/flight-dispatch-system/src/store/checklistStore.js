@@ -87,7 +87,6 @@ export const useChecklistStore = create((set, get) => ({
     const { status = 'draft' } = opts
     set({ saveStatus: 'saving' })
     try {
-      const nowIso = new Date().toISOString()
       // header 注入模板元信息（模仿 new-test2 顶层结构：记录自描述用哪个模板/版本）
       // 模板由 checklist_category + header.template.checklistName 决定，不再存 checklist_template_id
       const headerWithTemplate = {
@@ -103,14 +102,13 @@ export const useChecklistStore = create((set, get) => ({
         flightId: s.flight.id,
         flightNo: s.flight.flightNo,
         aircraftType: s.flight.aircraftType,
-        checklistCategory: s.template.category,
+        checklistCategory: s.template.category, // 与下拉菜单对齐的模板名（如 货运始发航班）
         flightDate: s.flight.flightDate || null,
         header: headerWithTemplate,
         items: s.items,
         videoSupervision: s.videoItems,
         inspector: s.inspector,
         status,
-        checkedAt: nowIso,
       }
       let record
       if (s.recordId) {
@@ -120,7 +118,12 @@ export const useChecklistStore = create((set, get) => ({
           videoSupervision: s.videoItems,
           inspector: s.inspector,
           status,
-          checkedAt: nowIso,
+          // 与 createRecord 对齐：切换模板类型后提交，后端也能把新的检查单分类落库
+          // （后端 updateRecord 对可选字段 COALESCE，未传时保持原值）
+          checklistCategory: s.template.category,
+          flightNo: s.flight.flightNo,
+          aircraftType: s.flight.aircraftType,
+          flightDate: s.flight.flightDate || null,
         })
       } else {
         record = await checklistsApi.createRecord(payload)

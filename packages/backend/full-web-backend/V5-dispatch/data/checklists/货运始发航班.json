@@ -1,6 +1,6 @@
 {
   "uuid": "c91cbcc3-7c96-4686-ad95-1da736d2caec",
-  "category": "货运航班",
+  "category": "货运始发航班",
   "source": "货运航班节点保障及合规性监控检查单.xlsx",
   "generatedAt": "2026-08-30T22:08:40.000Z",
   "checklistName": "始发航班",

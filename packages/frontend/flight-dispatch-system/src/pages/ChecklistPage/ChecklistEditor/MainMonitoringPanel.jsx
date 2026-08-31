@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import { cn } from "../../../lib/utils";
 import { ListChecks } from "lucide-react";
 import { evaluateFormula } from "../../../utils/timeFormula";
-import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "./statusBadge";
+import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../components/statusBadge";
 
 /**
  * ============================================================

@@ -1,6 +1,6 @@
 {
   "uuid": "69452c28-7eb8-4c09-aed4-f7c48d7854dc",
-  "category": "客运航班",
+  "category": "客运过站航班",
   "checklistName": "过站航班",
   "schemaVersion": "3.0-passenger",
   "generatedAt": "2026-08-31T01:30:00.000000",
@@ -63,8 +63,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "estimatedLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -82,7 +90,11 @@
       "formula": {
         "type": "lookup",
         "param": "CHOCK_PLACEMENT_TIME",
-        "key": { "type": "ref", "target": "var", "ref": "aircraftSeats" }
+        "key": {
+          "type": "ref",
+          "target": "var",
+          "ref": "aircraftSeats"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -100,8 +112,16 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "estimatedLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -119,8 +139,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "estimatedLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -144,7 +172,11 @@
           "ref": "E003",
           "time": "actual"
         },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -187,7 +219,11 @@
           "ref": "E005",
           "time": "actual"
         },
-        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+        "right": {
+          "type": "literal",
+          "value": 15,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -205,8 +241,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 15,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -224,8 +268,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 15,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -249,7 +301,11 @@
           "ref": "E005",
           "time": "actual"
         },
-        "right": { "type": "literal", "value": 30, "unit": "minutes" }
+        "right": {
+          "type": "literal",
+          "value": 30,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -273,7 +329,11 @@
           "ref": "E005",
           "time": "actual"
         },
-        "right": { "type": "literal", "value": 25, "unit": "minutes" }
+        "right": {
+          "type": "literal",
+          "value": 25,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -291,8 +351,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "estimatedLanding"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -310,8 +378,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -329,8 +405,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -367,8 +451,16 @@
       "formula": {
         "type": "binary",
         "operator": "-",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []
@@ -386,8 +478,16 @@
       "formula": {
         "type": "binary",
         "operator": "+",
-        "left": { "type": "ref", "target": "var", "ref": "cobt" },
-        "right": { "type": "literal", "value": 3, "unit": "minutes" }
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 3,
+          "unit": "minutes"
+        }
       },
       "auxiliaries": [],
       "videoSupervision": []

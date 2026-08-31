@@ -1,6 +1,6 @@
 import { Camera, MonitorPlay } from "lucide-react";
 import { cn } from "../../../lib/utils";
-import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "./statusBadge";
+import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../components/statusBadge";
 
 /**
  * ============================================================
@@ -13,17 +13,18 @@ import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "./status
  *   - panelRef 挂内容区，供 focusNode 滚动到顶部
  * ============================================================
  * @param {Object|null} videoFocus  视频监管重点模板 { groups: [{ uuid, name, items: [{uuid, name, applicable}] }] }
- * @param {string} category         当前模板类别（"客运航班" / "货运航班"，用于过滤 applicable=客运 条目）
+ * @param {string} category         当前模板类别（"客运始发航班"等，含"客运"则展示 applicable=客运 条目）
  * @param {Object} videoItems       填写内容 { "video-{uuid}": { status, note } }
  */
 export default function VideoPanel({ videoFocus, category, videoItems, panelRef, setVideoValue }) {
     const groups = videoFocus?.groups || [];
 
-    // 过滤：货运模板不展示"客运"限定条目
+    // 过滤：非客运模板（category 不含"客运"）不展示"客运"限定条目
+    const isPassenger = String(category || "").includes("客运");
     const visibleGroups = groups
         .map((g) => ({
             ...g,
-            items: (g.items || []).filter((it) => !(it.applicable === "客运" && category !== "客运航班")),
+            items: (g.items || []).filter((it) => !(it.applicable === "客运" && !isPassenger)),
         }))
         .filter((g) => g.items.length > 0);
     const total = visibleGroups.reduce((s, g) => s + g.items.length, 0);

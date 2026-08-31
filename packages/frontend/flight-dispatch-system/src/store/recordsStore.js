@@ -11,10 +11,12 @@ import { useAppStore } from './appStore'
  * 数据动作：
  *   fetchRecords     按 appStore 所选日期拉取记录（date 或 from/to）
  *   fetchDayMarkers  拉取全部记录 → 统计每个本地日期的 { count, hasAbnormal }
+ *   deleteRecord     删除单条记录（后端同步解除 fips/manual_fips.checklist_uuid 关联）→ 刷新列表与日历标记
  *   refresh          手动刷新（refreshKey+1，页面 useEffect 监听后重新拉取）
+ * 时间基准：表结构无 checked_at，一律用 updated_at（最后修改/提交）兜底 created_at（创建）。
  * ============================================================
  */
-export const useRecordsStore = create((set) => ({
+export const useRecordsStore = create((set, get) => ({
   // ---- 状态 ----
   records: [],
   loading: true,
@@ -42,14 +44,14 @@ export const useRecordsStore = create((set) => ({
     }
   },
 
-  // 拉取全部记录 → 按「检查时间」本地日期统计，供日历红/绿数字徽标
+  // 拉取全部记录 → 按「最后修改/创建时间」本地日期统计，供日历红/绿数字徽标
   fetchDayMarkers: async () => {
     try {
       const d = await checklistsApi.listRecords({})
       const markers = {}
       ;(d.items || []).forEach((r) => {
-        // 日期取检查/创建时间（本地东8区格式），而非 flight_date（手动航班可能为空）
-        const ts = r.checked_at || r.created_at
+        // 日期取最后修改/创建时间（本地东8区格式），而非 flight_date（手动航班可能为空）
+        const ts = r.updated_at || r.created_at
         if (!ts) return
         const dstr = dayjs(ts).format('YYYY-MM-DD')
         const cur = markers[dstr] || { count: 0, hasAbnormal: false }
@@ -62,6 +64,19 @@ export const useRecordsStore = create((set) => ({
       set({ dayMarkers: markers })
     } catch (e) {
       console.error('加载日历标记失败:', e.message)
+    }
+  },
+
+  // 删除单条填写记录：后端会同时解除 fips/manual_fips.checklist_uuid 关联
+  deleteRecord: async (id) => {
+    try {
+      await checklistsApi.deleteRecord(id)
+      // 删除成功后刷新列表与日历标记（同步更新当前视图）
+      await get().fetchRecords()
+      await get().fetchDayMarkers()
+    } catch (e) {
+      console.error('删除填写记录失败:', e)
+      throw e
     }
   },
 }))

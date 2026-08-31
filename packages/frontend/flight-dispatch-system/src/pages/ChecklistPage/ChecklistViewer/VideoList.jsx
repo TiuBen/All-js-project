@@ -1,5 +1,5 @@
 import { Camera } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 import { statusStyle, StatusIcon } from "./statusView";
 
 /**

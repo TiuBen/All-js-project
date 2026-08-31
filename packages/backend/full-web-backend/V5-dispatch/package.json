@@ -5,9 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "nodemon server.js",
-    "parse-excel": "python scripts/excel_to_json.py",
-    "init-db": "node scripts/init_db.js"
+    "start": "nodemon server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
