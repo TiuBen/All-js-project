@@ -18,7 +18,6 @@ export default function MainMonitoringPanel({
     nodes,
     items,
     currentStep,
-    videoByNode,
     formulaCtx,
     getNodeId,
     onFocusNode,
@@ -47,9 +46,9 @@ export default function MainMonitoringPanel({
     );
 
     return (
-        <div className="min-w-0 overflow-hidden rounded-lg border border-slate-300 bg-white lg:col-span-2">
+        <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-slate-300 bg-white">
             {/* 标题栏 */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 py-2">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
                     <ListChecks size={13} className="text-primary-600" />
                     主要监控指标
@@ -58,9 +57,9 @@ export default function MainMonitoringPanel({
             </div>
 
             {/* 横向卡片流（flex row nowrap）：超宽出现横向滚动条，滚轮上下 → 水平移动 */}
-            <div ref={setMainTableRef} className="max-h-[32vh] overflow-x-auto overflow-y-auto">
-                <div className="flex flex-nowrap items-stretch gap-2 p-2">
-                    {nodes.map((n) => {
+            <div ref={setMainTableRef} className="min-h-0 flex-1 overflow-auto">
+                <div className="flex  flex-col items-stretch gap-2 p-2">
+                    {nodes.map((n, index) => {
                         const nid = getNodeId(n);
                         const mainKey = `main-${nid}`;
                         const mainItem = items[mainKey] || {};
@@ -83,7 +82,8 @@ export default function MainMonitoringPanel({
                                             isActive ? "bg-amber-400 text-white" : "bg-primary-50 text-primary-700"
                                         )}
                                     >
-                                        {nid}
+                                        {/* {nid} */}
+                                        {index + 1}
                                     </span>
                                     <span className="truncate text-[13px] font-semibold text-slate-800" title={n.name}>
                                         {n.name}

@@ -1,0 +1,396 @@
+{
+  "uuid": "69452c28-7eb8-4c09-aed4-f7c48d7854dc",
+  "category": "客运航班",
+  "checklistName": "过站航班",
+  "schemaVersion": "3.0-passenger",
+  "generatedAt": "2026-08-31T01:30:00.000000",
+  "variables": {
+    "estimatedLanding": {
+      "name": "预计落地时间",
+      "type": "datetime",
+      "source": "upstream",
+      "required": true,
+      "description": "报文预计落地时刻"
+    },
+    "cobt": {
+      "name": "计算撤轮挡时间",
+      "type": "datetime",
+      "source": "upstream",
+      "required": true,
+      "description": "Calculated Off-Block Time"
+    },
+    "aircraftSeats": {
+      "name": "机型座位级别",
+      "type": "enum",
+      "source": "upstream",
+      "options": [
+        "500+",
+        "251-500",
+        "151-250",
+        "61-150",
+        "60-"
+      ],
+      "description": "用于轮挡与反光锥形标志物放置时间查表"
+    }
+  },
+  "parameters": [
+    {
+      "code": "CHOCK_PLACEMENT_TIME",
+      "name": "轮挡与反光锥形标志物放置时间",
+      "type": "aircraft_seats",
+      "unit": "minutes",
+      "description": "按机型座位级别查表，500+→4、251-500→4、151-250→3、61-150→3、60-→2",
+      "values": {
+        "500+": 4,
+        "251-500": 4,
+        "151-250": 3,
+        "61-150": 3,
+        "60-": 2
+      }
+    }
+  ],
+  "schema": [
+    {
+      "uuid": "dcf4ee8b-7d6f-4fcf-8d7c-682b824a584f",
+      "id": 1,
+      "eventId": "E001",
+      "code": "AIRCRAFT_IN_POSITION",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "航空器入位",
+      "desc": "接机人员应不晚于航班计划/预计到港时间前5分钟到达机位。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "9f8dedb9-c36e-446e-8b23-9d3e4fbb84f7",
+      "id": 2,
+      "eventId": "E002",
+      "code": "CHOCK_AND_CONE_PLACEMENT",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "轮挡与反光锥形标志物放置",
+      "desc": "500座以上：4分钟  251-500座：4分钟  151-250座：3分钟  61-150座：3分钟  60座以下：2分钟",
+      "formula": {
+        "type": "lookup",
+        "param": "CHOCK_PLACEMENT_TIME",
+        "key": { "type": "ref", "target": "var", "ref": "aircraftSeats" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "171b4956-e417-471a-bc1d-334d190f72c6",
+      "id": 3,
+      "eventId": "E003",
+      "code": "BRIDGE_DOCKING",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "廊桥对接",
+      "desc": "对接操作应在机务给出对接指令后进行。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "7e030894-51a5-43b6-83ca-0961a32ec03a",
+      "id": 4,
+      "eventId": "E004",
+      "code": "STAIR_DOCKING",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "客梯车对接",
+      "desc": "客梯车应在航班计划/预计到港时间前5分钟到达机位。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb",
+      "id": 5,
+      "eventId": "E005",
+      "code": "CABIN_DOOR_OPEN",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "客舱门开启",
+      "desc": "客舱门开启操作应在廊桥或客梯车对接完毕确认后进行。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E003",
+          "time": "actual"
+        },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "6b0c6528-75c7-495b-975f-90e85acd8995",
+      "id": 6,
+      "eventId": "E006",
+      "code": "CARGO_DOOR_OPEN",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "货舱门开启",
+      "desc": "货舱门开启应在机务给出指令后立即进行。",
+      "formula": {
+        "type": "ref",
+        "target": "event",
+        "ref": "E005",
+        "time": "actual"
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "6327dff2-8d2c-44e1-8519-f72121dcb992",
+      "id": 7,
+      "eventId": "E007",
+      "code": "CABIN_CLEANING",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "客舱清洁",
+      "desc": "客舱清洁应在旅客下机完毕后立即进行，开始登机前完成。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E005",
+          "time": "actual"
+        },
+        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "8d188972-9119-4d3c-8e5a-39cb5cf45b40",
+      "id": 8,
+      "eventId": "E008",
+      "code": "WASTEWATER_SERVICE",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "污水操作",
+      "desc": "污水操作完成时间应不晚于计划/目标离港时间前15分钟。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "f64c0e41-de96-4f71-8754-3f4022ddf826",
+      "id": 9,
+      "eventId": "E009",
+      "code": "WATER_SERVICE",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "清水操作",
+      "desc": "清水操作完成时间应不晚于计划/目标离港时间前15分钟。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 15, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "8312ff54-8dc5-4d87-8006-af86ca4dc7f0",
+      "id": 10,
+      "eventId": "E010",
+      "code": "CATERING_SUPPLY",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "餐食及机供品配供",
+      "desc": "餐食及机供品配供应在开始登机前完成。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E005",
+          "time": "actual"
+        },
+        "right": { "type": "literal", "value": 30, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "69c82eb4-5c85-40ac-a3ad-64f60cae38b6",
+      "id": 11,
+      "eventId": "E011",
+      "code": "FUELING",
+      "category": "main",
+      "type": "客运",
+      "responsible": "中航油",
+      "name": "航油加注",
+      "desc": "航油加注应在开始登机前5分钟完成。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E005",
+          "time": "actual"
+        },
+        "right": { "type": "literal", "value": 25, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "99c2588a-efb1-4e47-8bf9-1488d3ca2413",
+      "id": 12,
+      "eventId": "E012",
+      "code": "HANDLER_AND_EQUIPMENT_ARRIVAL",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "装卸人员及装卸设备",
+      "desc": "在航班计划／预计到港时间前5分钟到位。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "estimatedLanding" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "632974e5-4bde-4508-96f8-6a6a3f632045",
+      "id": 13,
+      "eventId": "E013",
+      "code": "CARGO_BAGGAGE_LOAD",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "货邮、行李装载",
+      "desc": "货邮、行李装载应在计划/目标离港时间前5分钟完成。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "9ce4bce8-77f3-4a73-9445-e6ea15b8b1ee",
+      "id": 14,
+      "eventId": "E014",
+      "code": "CABIN_DOOR_CLOSE",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "客舱门关闭",
+      "desc": "客舱门关闭时间不晚于计划/目标离港时间前5分钟。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 5, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "d2c3b1da-d5b0-47fc-bef5-858c018a084c",
+      "id": 15,
+      "eventId": "E015",
+      "code": "BRIDGE_RETRACT",
+      "category": "main",
+      "type": "客运",
+      "responsible": "万事通",
+      "name": "廊桥撤离",
+      "desc": "廊桥撤离应在客舱门关闭后开始。",
+      "formula": {
+        "type": "ref",
+        "target": "event",
+        "ref": "E014",
+        "time": "actual"
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "e3c8ffe5-bc97-4841-990c-01016926be64",
+      "id": 16,
+      "eventId": "E016",
+      "code": "TOW_AND_MECHANIC_ARRIVAL",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "牵引车、机务到位",
+      "desc": "牵引车、机务到位时间不晚于计划/目标离港时间前10分钟。",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 10, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "c8b6ded2-0722-4e4f-8481-072ded9d2ad2",
+      "id": 17,
+      "eventId": "E017",
+      "code": "PUSHBACK",
+      "category": "main",
+      "type": "客运",
+      "responsible": "赛福威",
+      "name": "航空器推出",
+      "desc": "从接到指令到航空器开始撤离机位不应超过3分钟。",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": { "type": "ref", "target": "var", "ref": "cobt" },
+        "right": { "type": "literal", "value": 3, "unit": "minutes" }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    }
+  ]
+}

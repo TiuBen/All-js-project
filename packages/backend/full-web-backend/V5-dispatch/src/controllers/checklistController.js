@@ -38,14 +38,14 @@ export const getTemplate = asyncHandler(async (req, res) => {
 /* ==================== 填写记录相关 ==================== */
 
 /**
- * GET /api/checklists/records?flightId=&templateId=&date=&from=&to=
+ * GET /api/checklists/records?flightId=&category=&date=&from=&to=
  * 查询填写记录列表
  */
 export const listRecords = asyncHandler(async (req, res) => {
-  const { flightId, templateId, date, from, to } = req.query;
+  const { flightId, category, date, from, to } = req.query;
   const items = await checklistService.listRecords({
     flightId,
-    templateId,
+    category,
     date,
     from,
     to,
@@ -67,14 +67,15 @@ export const getRecord = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/checklists/records
- * 创建填写记录（必填：flightId + checklistTemplateId）
+ * 创建填写记录（必填：flightId + checklistCategory）
+ * 一航班一检查单：flight_id 已有记录时后端自动转为更新（upsert），不会新建第二条
  */
 export const createRecord = asyncHandler(async (req, res) => {
-  const { flightId, checklistTemplateId } = req.body;
-  if (!flightId || !checklistTemplateId) {
+  const { flightId, checklistCategory } = req.body;
+  if (!flightId || !checklistCategory) {
     return res
       .status(400)
-      .json({ error: 'flightId and checklistTemplateId are required' });
+      .json({ error: 'flightId and checklistCategory are required' });
   }
   const record = await checklistService.createRecord(req.body);
   res.status(201).json(record);

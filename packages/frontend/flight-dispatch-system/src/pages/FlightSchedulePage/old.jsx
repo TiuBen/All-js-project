@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
-import { useDateStore } from "../../store/tabsStore";
+import { useAppStore } from "../../store/appStore";
 import { useFlightsStore } from "../../store/flightsStore";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge, statusVariant, flightTypeVariant } from "../../components/ui/badge";
@@ -75,7 +75,7 @@ const FIPS_FIELD_LABELS = [
 
 export default function FlightSchedulePage() {
     const navigate = useNavigate();
-    const { mode, selectedDate, rangeFrom, rangeTo, setMode, setSelectedDate, setRange } = useDateStore();
+    const { mode, selectedDate, rangeFrom, rangeTo, setMode, setSelectedDate, setRange } = useAppStore();
     const { flights, loading, error, total, dataDate, fetchFlights } = useFlightsStore();
 
     const [sortKey, setSortKey] = useState(null);

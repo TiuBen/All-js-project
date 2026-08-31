@@ -51,12 +51,33 @@ export function listTemplateMeta() {
 }
 
 /**
- * 按 id 读取单个模板（完整内容）
- * @param {string} id 模板 id（对应文件名，如 cargo-checklist）
- * @returns {Object|null} 完整模板；不存在返回 null
+ * 视频监管重点文件映射：按模板 category → 独立的视频监管重点 JSON（无映射则返回 null）
+ * 货运始发/货运过站共用 货运航班视频监管重点.json；客运始发/客运过站共用 客运航班视频监管重点.json
+ */
+const VIDEO_FOCUS_MAP = {
+  货运航班: '货运航班视频监管重点',
+  客运航班: '客运航班视频监管重点',
+};
+
+/**
+ * 按 id 读取单个模板（完整内容），并附加关联的视频监管重点（videoFocus，独立 JSON 文件）
+ * @param {string} id 模板 id（对应文件名，如 货运始发航班）
+ * @returns {Object|null} 完整模板（含 videoFocus 字段）；不存在返回 null
  */
 export function getTemplateById(id) {
   const file = path.join(config.paths.checklists, `${id}.json`);
   if (!fs.existsSync(file)) return null;
-  return { id, ...JSON.parse(fs.readFileSync(file, 'utf-8')) };
+  const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
+
+  // 视频监管重点：按 category 映射独立文件；文件缺失时 videoFocus 为 null（前端自动降级为空）
+  let videoFocus = null;
+  const vfId = VIDEO_FOCUS_MAP[data.category];
+  if (vfId) {
+    const vfFile = path.join(config.paths.checklists, `${vfId}.json`);
+    if (fs.existsSync(vfFile)) {
+      videoFocus = { id: vfId, ...JSON.parse(fs.readFileSync(vfFile, 'utf-8')) };
+    }
+  }
+
+  return { id, ...data, videoFocus };
 }

@@ -67,7 +67,9 @@ async function getManualFlight(id) {
     flightDate: landingDate,
     landingTimeUtc: landing,
     status: '计划',
-    hasChecklist: false,
+    // 已关联检查单：checklist_uuid 存 checklist_records.id（无则 false）
+    hasChecklist: !!row.checklist_uuid,
+    checklistId: row.checklist_uuid || null,
     // 原始字段透传
     raw: {
       task: row.task,

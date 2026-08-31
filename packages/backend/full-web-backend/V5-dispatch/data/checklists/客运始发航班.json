@@ -1,0 +1,470 @@
+{
+  "uuid": "c91cbcc3-7c96-4686-ad95-1da736d2caec",
+  "category": "客运航班",
+  "generatedAt": "2026-08-31T01:25:27.000Z",
+  "checklistName": "始发航班",
+  "schemaVersion": "3.0-origin",
+  "variables": {
+    "cobt": {
+      "name": "计算撤轮挡时间",
+      "type": "datetime",
+      "source": "upstream",
+      "description": "Calculated Off-Block Time"
+    },
+    "ctot": {
+      "name": "计算起飞时间",
+      "type": "datetime",
+      "source": "upstream",
+      "description": "Calculated Take-Off Time"
+    },
+    "aircraftType": {
+      "name": "机型",
+      "type": "enum",
+      "source": "upstream",
+      "options": [
+        "B747",
+        "B777",
+        "B767",
+        "B757",
+        "B737"
+      ]
+    },
+    "aircraftSeats": {
+      "name": "客座数档位",
+      "type": "enum",
+      "source": "upstream",
+      "options": [
+        "500+",
+        "251-500",
+        "151-250",
+        "61-150",
+        "60-"
+      ],
+      "description": "按客座数划分的座级档位"
+    },
+    "demandGroundPower": {
+      "name": "地面电源需求申请时间",
+      "type": "datetime",
+      "source": "manual",
+      "description": "机组提出地面电源需求的时刻"
+    },
+    "demandWater": {
+      "name": "加清水/排污水需求申请时间",
+      "type": "datetime",
+      "source": "manual",
+      "description": "机组提出加清水/排污水需求的时刻"
+    }
+  },
+  "parameters": [
+    {
+      "code": "LOAD_TIME",
+      "name": "标准装机作业时长",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准装机作业时长",
+      "values": {
+        "B747": 80,
+        "B777": 80,
+        "B767": 75,
+        "B757": 50,
+        "B737": 40
+      }
+    },
+    {
+      "code": "FUEL_TIME",
+      "name": "机型参考加油时间",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准加油作业时长",
+      "values": {
+        "B747": 100,
+        "B777": 70,
+        "B767": 60,
+        "B757": 60,
+        "B737": 60
+      }
+    },
+    {
+      "code": "CHOCK_TIME",
+      "name": "标准撤轮挡时间",
+      "type": "aircraft_type",
+      "unit": "minutes",
+      "description": "不同机型的标准撤轮挡作业时长",
+      "values": {
+        "B747": 4,
+        "B777": 4,
+        "B767": 3,
+        "B757": 3,
+        "B737": 2
+      }
+    },
+    {
+      "code": "BRIDGE_DOCKING_TIME",
+      "name": "廊桥对接时间",
+      "type": "seats",
+      "unit": "minutes",
+      "description": "按客座数档位确定廊桥对接时间（不晚于 COBT 多少分钟）",
+      "values": {
+        "500+": 120,
+        "251-500": 90,
+        "151-250": 90,
+        "61-150": 90,
+        "60-": 90
+      }
+    },
+    {
+      "code": "STAIR_DOCKING_TIME",
+      "name": "客梯车对接时间",
+      "type": "seats",
+      "unit": "minutes",
+      "description": "按客座数档位确定客梯车对接时间（不晚于 COBT 多少分钟）",
+      "values": {
+        "500+": 120,
+        "251-500": 70,
+        "151-250": 70,
+        "61-150": 60,
+        "60-": 60
+      }
+    },
+    {
+      "code": "APRON_BUS_ARRIVAL_TIME",
+      "name": "摆渡车到位时间",
+      "type": "seats",
+      "unit": "minutes",
+      "description": "按客座数档位确定首辆摆渡车到位时间（不晚于 COBT 多少分钟）",
+      "values": {
+        "500+": 60,
+        "251-500": 50,
+        "151-250": 45,
+        "61-150": 45,
+        "60-": 45
+      }
+    }
+  ],
+  "schema": [
+    {
+      "uuid": "68d02744-56a7-45b4-88cb-0b380a789556",
+      "id": 1,
+      "eventId": "E001",
+      "code": "BRIDGE_DOCKING",
+      "category": "main",
+      "name": "廊桥对接",
+      "desc": "对接时间不晚于计划/目标离港时间前：500座以上：120分钟；251-500座：90分钟；151-250座：90分钟；61-150座：90分钟；60座以下：90分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "BRIDGE_DOCKING_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftSeats"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "851d9108-f8fd-4745-8bc2-a1bccbdb3aa2",
+      "id": 2,
+      "eventId": "E002",
+      "code": "STAIR_DOCKING",
+      "category": "main",
+      "name": "客梯车对接",
+      "desc": "对接时间不晚于计划/目标离港时间前：500座以上：120分钟；251-500座：70分钟；151-250座：70分钟；60-150座：60分钟；60座以下：60分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "STAIR_DOCKING_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftSeats"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "c5db665f-ab90-4ac4-b2af-a81c70479a3d",
+      "id": 3,
+      "eventId": "E003",
+      "code": "OPEN_CABIN_DOOR",
+      "category": "main",
+      "name": "客舱门开启",
+      "desc": "廊桥或客梯车对接完成后1分钟内开启客舱门",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E001",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 1,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "265107d1-54ee-459e-be4a-77af82f9c826",
+      "id": 4,
+      "eventId": "E004",
+      "code": "APRON_BUS_ARRIVAL",
+      "category": "main",
+      "name": "摆渡车到位",
+      "desc": "首辆摆渡车到位时间不晚于计划/目标离港时间前：500座以上：60分钟；251-500座：50分钟；151-250座：45分钟；61-150座：45分钟；60座以下：45分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "lookup",
+          "param": "APRON_BUS_ARRIVAL_TIME",
+          "key": {
+            "type": "ref",
+            "target": "var",
+            "ref": "aircraftSeats"
+          }
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "a2b63350-ccd7-49d3-99d5-ce3b1a8f36dc",
+      "id": 5,
+      "eventId": "E005",
+      "code": "WATER_SERVICE",
+      "category": "main",
+      "name": "清水操作",
+      "desc": "清水操作完成时间不晚于计划/目标离港时间前15分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 15,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "808efbac-830a-4cf4-8520-507ed3d6d56c",
+      "id": 6,
+      "eventId": "E006",
+      "code": "CATERING_SUPPLY",
+      "category": "main",
+      "name": "餐食及机供品配供",
+      "desc": "餐食及机供品配供应在开始登机前完成",
+      "formula": {
+        "type": "ref",
+        "target": "event",
+        "ref": "E003",
+        "time": "actual"
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "5583d52a-2338-46e4-83d6-742e675f78b6",
+      "id": 7,
+      "eventId": "E007",
+      "code": "FUELING",
+      "category": "main",
+      "name": "航油加注",
+      "desc": "航油加注应在开始登机前5分钟完成",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E003",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "34615df6-e064-45f8-8b4f-afe4220a9e5d",
+      "id": 8,
+      "eventId": "E008",
+      "code": "LOADING_CREW_READY",
+      "category": "main",
+      "name": "装卸人员及装卸设备",
+      "desc": "在航班计划/预计离港时间前5分钟到位",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "bac9af15-7f72-4097-aa51-3c28745613db",
+      "id": 9,
+      "eventId": "E009",
+      "code": "CARGO_BAGGAGE_LOADED",
+      "category": "main",
+      "name": "货邮、行李装载",
+      "desc": "货邮、行李装载应在计划/目标离港时间前5分钟完成",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "f634af19-f656-4f84-8a21-e4c89474ec87",
+      "id": 10,
+      "eventId": "E010",
+      "code": "CLOSE_CABIN_DOOR",
+      "category": "main",
+      "name": "客舱门关闭",
+      "desc": "客舱门关闭时间不晚于计划/目标离港时间前5分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 5,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "1055f883-dec2-4420-ae65-1616dd9f7c3e",
+      "id": 11,
+      "eventId": "E011",
+      "code": "BRIDGE_RETREAT",
+      "category": "main",
+      "name": "廊桥撤离",
+      "desc": "廊桥撤离应在客舱门关闭后开始",
+      "formula": {
+        "type": "ref",
+        "target": "event",
+        "ref": "E010",
+        "time": "actual"
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "3d9839f8-093d-4540-93aa-b08a717ecf0a",
+      "id": 12,
+      "eventId": "E012",
+      "code": "TOW_TRUCK_AND_MECHANIC_READY",
+      "category": "main",
+      "name": "牵引车、机务到位",
+      "desc": "牵引车、机务到位时间不晚于计划/目标离港时间前10分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "-",
+        "left": {
+          "type": "ref",
+          "target": "var",
+          "ref": "cobt"
+        },
+        "right": {
+          "type": "literal",
+          "value": 10,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    },
+    {
+      "uuid": "a81dc4b3-1a95-4017-b747-2c451812f60f",
+      "id": 13,
+      "eventId": "E013",
+      "code": "PUSHBACK",
+      "category": "main",
+      "name": "航空器推出",
+      "desc": "从接到指令到航空器开始推离机位不应超过3分钟",
+      "formula": {
+        "type": "binary",
+        "operator": "+",
+        "left": {
+          "type": "ref",
+          "target": "event",
+          "ref": "E012",
+          "time": "actual"
+        },
+        "right": {
+          "type": "literal",
+          "value": 3,
+          "unit": "minutes"
+        }
+      },
+      "auxiliaries": [],
+      "videoSupervision": []
+    }
+  ]
+}

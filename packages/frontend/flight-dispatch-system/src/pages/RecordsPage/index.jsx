@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { checklistsApi } from "../../api";
+import { useEffect, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
 import { Badge, flightTypeVariant } from "../../components/ui/badge";
 import DateFilterPanel, { useDateFilterParams } from "../../components/ui/DateFilterPanel";
+import { useRecordsStore } from "../../store/recordsStore";
 import Sidebar from "./components/Sidebar";
 import ContentLayout from "../../components/layout/ContentLayout";
 import { Loader2, FileText } from "lucide-react";
@@ -12,58 +12,41 @@ import dayjs from "dayjs";
 /**
  * 填写记录页（Tab: 填写记录）
  * 显示：哪个航班、谁检查的、什么时间检查的；支持按日期单选/范围筛选 + 关键词搜索
+ * 状态：recordsStore（记录列表/日历标记/关键词/刷新），日期来自 appStore（DateFilterPanel 共享）
  */
 export default function RecordsPage() {
     const navigate = useNavigate();
-    const filterParams = useDateFilterParams();
-    const [records, setRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [keyword, setKeyword] = useState("");
-    // 日历红绿数字：{ 'YYYY-MM-DD': { count, hasAbnormal } }
-    const [dayMarkers, setDayMarkers] = useState({});
+    const filterParams = useDateFilterParams(); // appStore 的日期（单选 date / 范围 from,to）
+    const records = useRecordsStore((s) => s.records);
+    const loading = useRecordsStore((s) => s.loading);
+    const keyword = useRecordsStore((s) => s.keyword);
+    const dayMarkers = useRecordsStore((s) => s.dayMarkers);
+    const refreshKey = useRecordsStore((s) => s.refreshKey);
+    const setKeyword = useRecordsStore((s) => s.setKeyword);
+    const refresh = useRecordsStore((s) => s.refresh);
+    const fetchRecords = useRecordsStore((s) => s.fetchRecords);
+    const fetchDayMarkers = useRecordsStore((s) => s.fetchDayMarkers);
 
+    // 所选日期变化（appStore）或手动刷新 → 重新拉取列表
     useEffect(() => {
-        setLoading(true);
-        checklistsApi
-            .listRecords(filterParams)
-            .then((d) => setRecords(d.items))
-            .catch((e) => console.error(e))
-            .finally(() => setLoading(false));
+        fetchRecords();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filterParams.date, filterParams.from, filterParams.to, refreshKey]);
 
-    // 加载全部记录 → 按「创建/检查日期」（本地时区）统计数量 + 是否有异常项，供日历红/绿数字徽标使用
+    // 首次挂载 + 手动刷新 → 更新日历红/绿数字标记
     useEffect(() => {
-        checklistsApi
-            .listRecords({})
-            .then((d) => {
-                const markers = {};
-                (d.items || []).forEach((r) => {
-                    // 日期取创建/检查时间（本地东8区格式），而非 flight_date（手动航班可能为空）
-                    const ts = r.checked_at || r.created_at;
-                    if (!ts) return;
-                    const dstr = dayjs(ts).format("YYYY-MM-DD");
-                    const cur = markers[dstr] || { count: 0, hasAbnormal: false };
-                    cur.count += 1;
-                    // 检查该记录 items 中是否存在 status === 'abnormal' 的项
-                    const items = r.items || {};
-                    const hasAb = Object.values(items).some((v) => v && v.status === "abnormal");
-                    if (hasAb) cur.hasAbnormal = true;
-                    markers[dstr] = cur;
-                });
-                setDayMarkers(markers);
-            })
-            .catch((e) => console.error("加载日历标记失败:", e.message));
+        fetchDayMarkers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refreshKey]);
 
-    // 关键词过滤（航班号 / 检查单 / 检查人 / 机型）
+    // 关键词过滤（航班号 / 检查单分类 / 检查人 / 机型）
     const filtered = useMemo(() => {
         const kw = keyword.trim().toLowerCase();
         if (!kw) return records;
         return records.filter(
             (r) =>
                 (r.flight_no || "").toLowerCase().includes(kw) ||
-                (r.checklist_title || r.checklist_category || "").toLowerCase().includes(kw) ||
+                (r.checklist_category || "").toLowerCase().includes(kw) ||
                 (r.inspector || "").toLowerCase().includes(kw) ||
                 (r.aircraft_type || "").toLowerCase().includes(kw)
         );
@@ -79,7 +62,7 @@ export default function RecordsPage() {
                     keyword={keyword}
                     onKeywordChange={setKeyword}
                     matchCount={filtered.length}
-                    onRefresh={() => setRefreshKey((k) => k + 1)}
+                    onRefresh={refresh}
                     dayMarkers={dayMarkers}
                 />
             }
@@ -102,8 +85,8 @@ export default function RecordsPage() {
                                 <th className="px-4 py-2.5 font-medium">航班号</th>
                                 <th className="px-4 py-2.5 font-medium">航班日期</th>
                                 <th className="px-4 py-2.5 font-medium">机型</th>
-                                <th className="px-4 py-2.5 font-medium">航班类型</th>
-                                <th className="px-4 py-2.5 font-medium">检查单</th>
+                                <th className="px-4 py-2.5 font-medium">检查单类型</th>
+                                <th className="px-4 py-2.5 font-medium">检查单分类</th>
                                 <th className="px-4 py-2.5 font-medium">检查人</th>
                                 <th className="px-4 py-2.5 font-medium">检查时间</th>
                                 <th className="px-4 py-2.5 font-medium">状态</th>
@@ -119,12 +102,13 @@ export default function RecordsPage() {
                                     <td className="px-4 py-2.5 font-semibold text-slate-800">{r.flight_no || "—"}</td>
                                     <td className="px-4 py-2.5">{fmtDate(r.flight_date)}</td>
                                     <td className="px-4 py-2.5">{r.aircraft_type || "—"}</td>
+                                    {/* 检查单类型：记录只存 category，类型由 header.template.checklistName 反查（始发/过站/顺航） */}
                                     <td className="px-4 py-2.5">
-                                        <Badge variant={flightTypeVariant(r.flight_type)}>{r.flight_type || "—"}</Badge>
+                                        <Badge variant={flightTypeVariant(r.header?.template?.checklistName)}>
+                                            {r.header?.template?.checklistName || "—"}
+                                        </Badge>
                                     </td>
-                                    <td className="px-4 py-2.5 text-xs text-slate-500">
-                                        {r.checklist_title || r.checklist_category || "—"}
-                                    </td>
+                                    <td className="px-4 py-2.5 text-xs text-slate-500">{r.checklist_category || "—"}</td>
                                     <td className="px-4 py-2.5">
                                         <span className="font-medium text-slate-700">{r.inspector || "—"}</span>
                                     </td>

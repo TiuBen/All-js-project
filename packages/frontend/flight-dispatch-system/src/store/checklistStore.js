@@ -6,7 +6,8 @@ import { checklistsApi } from '../api'
 // items: 逐项填写内容 keyed by nodeId
 // videoSupervision: 视频监管填写内容 keyed by index
 export const useChecklistStore = create((set, get) => ({
-  template: null,        // 检查单模板（JSON）
+  template: null,        // 检查单模板（JSON，主监控/辅助节点）
+  videoFocus: null,      // 视频监管重点模板（独立 JSON，groups[] 结构，按模板 category 自动附加）
   templateLoading: false,
   record: null,          // 已保存的填写记录（从后端加载）
   recordId: null,
@@ -22,7 +23,9 @@ export const useChecklistStore = create((set, get) => ({
     set({ templateLoading: true })
     try {
       const tpl = await checklistsApi.getTemplate(templateId)
-      set({ template: tpl, templateLoading: false })
+      // 后端 getTemplateById 附加了 videoFocus（按 category 映射的视频监管重点文件）；从 template 剥离单独存
+      const { videoFocus, ...templateBody } = tpl
+      set({ template: templateBody, videoFocus: videoFocus || null, templateLoading: false })
     } catch (err) {
       set({ templateLoading: false })
       throw err
@@ -65,6 +68,7 @@ export const useChecklistStore = create((set, get) => ({
   reset: () =>
     set({
       template: null,
+      videoFocus: null,
       record: null,
       recordId: null,
       flight: null,
@@ -83,9 +87,9 @@ export const useChecklistStore = create((set, get) => ({
     const { status = 'draft' } = opts
     set({ saveStatus: 'saving' })
     try {
-      const templateId = s.template.id || (s.template.category === '客运航班' ? 'passenger-checklist' : 'cargo-checklist')
       const nowIso = new Date().toISOString()
       // header 注入模板元信息（模仿 new-test2 顶层结构：记录自描述用哪个模板/版本）
+      // 模板由 checklist_category + header.template.checklistName 决定，不再存 checklist_template_id
       const headerWithTemplate = {
         ...s.header,
         template: {
@@ -99,10 +103,7 @@ export const useChecklistStore = create((set, get) => ({
         flightId: s.flight.id,
         flightNo: s.flight.flightNo,
         aircraftType: s.flight.aircraftType,
-        flightType: s.flight.flightType,
         checklistCategory: s.template.category,
-        checklistTemplateId: templateId,
-        checklistTitle: s.template.title || s.template.category,
         flightDate: s.flight.flightDate || null,
         header: headerWithTemplate,
         items: s.items,

@@ -2,7 +2,7 @@ import { DayPicker, DayButton } from 'react-day-picker'
 import 'react-day-picker/style.css'
 import { zhCN } from 'react-day-picker/locale'
 import dayjs from 'dayjs'
-import { useDateStore } from '../../store/tabsStore'
+import { useAppStore } from '../../store/appStore'
 import { Card, CardHeader, CardTitle, CardContent } from './card'
 import { cn } from '../../lib/utils'
 
@@ -15,7 +15,7 @@ import { cn } from '../../lib/utils'
  *   - hasAbnormal  当日是否有异常项（true=红底数字，false/undefined=绿底数字）
  */
 export default function DateFilterPanel({ notice, dayMarkers }) {
-  const { mode, selectedDate, rangeFrom, rangeTo, setMode, setSelectedDate, setRange } = useDateStore()
+  const { mode, selectedDate, rangeFrom, rangeTo, setMode, setSelectedDate, setRange } = useAppStore()
 
   // 自定义 DayButton：保留官方组件能力（焦点/交互），在日期右上角叠加红/绿底数字徽标
   const DayButtonWithMarkers = (props) => {
@@ -123,8 +123,8 @@ export default function DateFilterPanel({ notice, dayMarkers }) {
   )
 }
 
-// 从 zustand 读取当前筛选参数（供页面调用）
+// 从 appStore 读取当前筛选参数（供页面调用）
 export function useDateFilterParams() {
-  const { mode, selectedDate, rangeFrom, rangeTo } = useDateStore()
+  const { mode, selectedDate, rangeFrom, rangeTo } = useAppStore()
   return mode === 'single' ? { date: selectedDate } : { from: rangeFrom, to: rangeTo }
 }

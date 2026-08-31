@@ -22,7 +22,7 @@
 import { create } from 'zustand'
 
 const STORAGE_KEY = 'flight_dispatch_drafts'
-const MAX_DRAFTS = 5
+export const MAX_DRAFTS = 5
 
 function loadFromStorage() {
   if (typeof window === 'undefined') return []

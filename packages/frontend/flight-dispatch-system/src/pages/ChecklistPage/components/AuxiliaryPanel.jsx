@@ -14,9 +14,9 @@ import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "./status
  */
 export default function AuxiliaryPanel({ activeNode, activeNodeId, items, formulaCtx, panelRef, setItemValue }) {
     return (
-        <div className="flex flex-col min-w-0   rounded-lg border border-slate-300   bg-white">
+        <div className="flex h-full min-w-0 flex-col rounded-lg border border-slate-300 bg-white">
             {/* 标题栏 */}
-            <div className="flex items-center justify-between border-b border-slate-200  px-3 py-2">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-3 py-2">
                 <div className="flex items-center gap-1.5 text-[14px] font-semibold text-slate-600">
                     <ListChecks size={13} className="text-primary-600" />
                     辅助监控指标

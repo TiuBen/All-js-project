@@ -53,10 +53,10 @@ export default function DraftSection({ onContinue }) {
                             </div>
                             <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-400">
                                 <span className="rounded bg-slate-100 px-1.5 py-0.5">
-                                    {d.templateId === "passenger-checklist" ? "客运" : "货运"}
+                                    {String(d.templateId || "").includes("客运") ? "客运" : "货运"}
                                 </span>
                                 <span className="truncate">
-                                    {d.templateId === "passenger-checklist" ? "客运检查单" : "货运检查单"}
+                                    {String(d.templateId || "").includes("客运") ? "客运检查单" : "货运检查单"}
                                 </span>
                             </div>
                             <div className="mt-3">

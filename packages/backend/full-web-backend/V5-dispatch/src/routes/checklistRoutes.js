@@ -34,7 +34,7 @@ router.get('/templates/:id', checklistController.getTemplate);
 /**
  * @route   GET /api/checklists/records
  * @desc    查询填写记录列表
- *          支持 ?flightId= / ?templateId= / ?date= / ?from= / ?to=
+ *          支持 ?flightId= / ?category= / ?date= / ?from= / ?to=
  * @access  公开
  */
 router.get('/records', checklistController.listRecords);
@@ -48,8 +48,8 @@ router.get('/records/:id', checklistController.getRecord);
 
 /**
  * @route   POST /api/checklists/records
- * @desc    创建填写记录
- *          必填：flightId、checklistTemplateId
+ * @desc    创建填写记录（一航班一检查单，flight_id 已存在则更新）
+ *          必填：flightId、checklistCategory
  * @access  公开
  */
 router.post('/records', checklistController.createRecord);

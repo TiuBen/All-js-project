@@ -56,7 +56,9 @@ function toFlight(r) {
     aircraftType: r.aircraft_type,
     flightType: '常规航班',
     category: '货运航班',
-    hasChecklist: false,
+    // 已关联检查单：checklist_uuid 存 checklist_records.id（无则 false）
+    hasChecklist: !!r.checklist_uuid,
+    checklistId: r.checklist_uuid || null,
     /** 进港 / 离港（以鄂州 ZHEC 为基准） */
     direction: isArrival ? '进港' : isDeparture ? '离港' : '中转',
     // 完整时间字段透传（SOBT/EOBT/ATOT/SIBT/ELDT/ALDT，本地时间）

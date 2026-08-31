@@ -17,7 +17,6 @@ export default function AuxiliaryList({ auxiliaries = [], items = {} }) {
 
     return (
         <ul className="space-y-1 px-2 pb-2 pt-1">
-            顶顶顶顶顶顶顶顶顶顶顶
             {auxiliaries.map((a, ai) => {
                 // 定位键：新结构 a.id；兼容旧结构 a.row / a.source.row
                 const aKey = `aux-${a.id ?? a.row ?? a.source?.row}`;
@@ -26,7 +25,7 @@ export default function AuxiliaryList({ auxiliaries = [], items = {} }) {
                     <li key={aKey ?? `${ai}-aux`} className="rounded-md border border-slate-100 bg-white">
                         {/* 标题行：名称 + 时间 + 状态图标 */}
                         <div className="flex items-center gap-1 px-3 py-1.5">
-                            <span className="pl-2 text-[11px] text-slate-400">↳</span>单独
+                            <span className="pl-2 text-[11px] text-slate-400">↳</span>
                             <span
                                 className={cn("min-w-0 flex-1 truncate text-[12px] font-medium", statusStyle(aItem))}
                                 title={a.name}
@@ -43,7 +42,7 @@ export default function AuxiliaryList({ auxiliaries = [], items = {} }) {
                         {/* 描述行：独立行，支持换行 */}
                         {a.desc && (
                             <div className="whitespace-normal break-words px-3 pb-1 pl-9 text-[10px] leading-snug text-slate-500">
-                                {a.desc}单独
+                                {a.desc}
                             </div>
                         )}
                         {/* 备注行 */}

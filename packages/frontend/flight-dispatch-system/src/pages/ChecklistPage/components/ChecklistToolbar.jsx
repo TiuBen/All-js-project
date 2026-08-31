@@ -26,7 +26,10 @@ import { ArrowLeft, ChevronDown, CheckCircle2, ExternalLink, Loader2, Map, Save,
  * @param {Function} props.onSubmit     提交
  * @param {string|null} props.recordStatus 记录状态（draft/submitted/null）
  * @param {string|null} props.checkedAt    提交时间
+ * @param {boolean} props.savedFlash       是否显示"已保存"提示
+ * @param {boolean} props.draftFull        草稿箱是否已满（5 个）且当前航班不在箱内
  * @param {Function} props.onSelectDraft   草稿下拉选择
+ * @param {ReactNode} props.panelSwitcher  三列面板切换器（主要/辅助/视频），渲染在"流程图"按钮前
  * ============================================================
  */
 export default function ChecklistToolbar({
@@ -43,7 +46,9 @@ export default function ChecklistToolbar({
     recordStatus,
     checkedAt,
     savedFlash,
+    draftFull,
     onSelectDraft,
+    panelSwitcher,
 }) {
     const navigate = useNavigate();
     const [typeMenuOpen, setTypeMenuOpen] = useState(false); // 类型下拉开关（组件内状态，切换类型不影响整页）
@@ -56,20 +61,19 @@ export default function ChecklistToolbar({
                     <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                         <ArrowLeft size={18} />
                     </Button>
-                    <div>
+                    <div className={cn("text-slate-900", activeBtn?.titleCls)}>
                         <div className="flex items-center gap-2">
                             <h2 className="text-base font-bold">
                                 <span className={cn("text-slate-900", activeBtn?.titleCls)}>{flight.flightNo}</span>{" "}
-                                <span className={cn("font-normal", activeBtn?.titleCls || "text-slate-400")}>
-                                    {activeBtn?.label || "调度席检查单"}
-                                </span>
+                                {/* <span className={cn("font-normal", activeBtn?.titleCls || "text-slate-400")}> */}
+                                <span>{activeBtn?.label || "调度席检查单"}</span>
                             </h2>
-                            {recordStatus && (
-                                <BadgeWrap recordStatus={recordStatus} checkedAt={checkedAt} />
-                            )}
+                            {recordStatus && <BadgeWrap recordStatus={recordStatus} checkedAt={checkedAt} />}
                         </div>
-                        <div className="mt-0.5 text-xs text-slate-400">
-                            {flight.origin} → {flight.destination} · 机型 {flight.aircraftType} · 日期 {flight.flightDate}
+                        {/* <div className="mt-0.5 text-xs text-slate-400"> */}
+                        <div>
+                            {flight?.origin || "起飞机场"} → {flight?.destination || "目的地机场"} · 机型{" "}
+                            {flight.aircraftType} · 日期 {flight.flightDate}
                         </div>
                     </div>
                 </div>
@@ -97,8 +101,7 @@ export default function ChecklistToolbar({
                         {typeMenuOpen && (
                             <div className="absolute left-0 top-full z-50 mt-1 w-44 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
                                 {TYPE_BUTTONS.map((b) => {
-                                    const isActiveItem =
-                                        activeBtn?.label === b.label;
+                                    const isActiveItem = activeBtn?.label === b.label;
                                     return (
                                         <button
                                             key={b.label}
@@ -122,14 +125,15 @@ export default function ChecklistToolbar({
                         )}
                     </div>
 
+                    {/* 三列面板切换器（主要/辅助/视频）—— 置于"流程图"按钮前 */}
+                    {panelSwitcher}
+
                     <div className="flex rounded-lg border border-slate-200 p-0.5">
                         <button
                             onClick={onToggleFlow}
                             className={cn(
                                 "flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                                viewMode === "flow"
-                                    ? "bg-primary-600 text-white"
-                                    : "text-slate-600 hover:bg-slate-100"
+                                viewMode === "flow" ? "bg-primary-600 text-white" : "text-slate-600 hover:bg-slate-100"
                             )}
                         >
                             <Workflow size={14} /> 流程图
@@ -143,13 +147,23 @@ export default function ChecklistToolbar({
                         <ExternalLink size={14} /> 独立展示
                     </Button>
 
-                    <Button variant="outline" size="sm" onClick={onSaveDraft} disabled={saveStatus === "saving"}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onSaveDraft}
+                        disabled={saveStatus === "saving" || draftFull}
+                        title={draftFull ? "草稿箱已满（最多 5 个），请先删除部分草稿" : undefined}
+                    >
                         {saveStatus === "saving" ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
                         保存草稿
                     </Button>
                     <DraftDropdown onSelect={onSelectDraft} />
                     <Button size="sm" onClick={onSubmit} disabled={saveStatus === "saving"}>
-                        {saveStatus === "saving" ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />}
+                        {saveStatus === "saving" ? (
+                            <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                            <CheckCircle2 size={14} />
+                        )}
                         提交
                     </Button>
                     {savedFlash && <span className="text-xs text-emerald-600">✓ 已保存</span>}
