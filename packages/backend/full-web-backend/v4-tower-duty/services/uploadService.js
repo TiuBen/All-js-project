@@ -68,8 +68,22 @@ const storage = multer.diskStorage({
         cb(null, UPLOAD_DIR);
     },
     filename: (req, file, cb) => {
-        // 直接使用前端传过来的新文件名，不做任何修改
-        cb(null, file.originalname);
+        // 从请求体中获取 year 和 month
+        const { year, month } = req.body;
+
+        if (!year || !month) {
+            // 兜底：如果没传年月，就用原始文件名
+            console.warn("未提供 year/month 参数，使用原始文件名:", file.originalname);
+            return cb(null, file.originalname);
+        }
+
+        // 获取原始扩展名（.xls / .xlsx / .xlsm）
+        const ext = path.extname(file.originalname);
+        // 强制命名为 year-month.ext
+        const filename = `${year}-${month}${ext}`;
+
+        console.log("上传文件保存为:", filename);
+        cb(null, filename);
     },
 });
 
