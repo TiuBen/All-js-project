@@ -4,7 +4,7 @@ const { calcPositionSummary } = require("../services/statisticsService.PositionS
 const { calcUserByRule } = require("../services/statisticsService.CalcuUserStats.js");
 const dayjs = require("dayjs");
 
-function getStatisticsTimeRange(year, month) {
+function getStatisticsTimeRange(year, month, startTime = "00:00:00", endTime = "08:30:00") {
     const y = Number(year);
     const m = Number(month);
 
@@ -24,7 +24,8 @@ function getStatisticsTimeRange(year, month) {
 //! 支持 year month
 //! 当月夜班频次
 exports.getNightCount = async (req, res, next) => {
-    const ALLOWED_COLUMNS = ["year", "month", "startTime", "endTime", "filter"];
+    const ALLOWED_COLUMNS = ["year", "month", "userId", "username", "filter"];
+    // 夜班应该是 01日的08:30:00 到 下一月 01日 08:30:00
     const { filter, year, month, startTime, endTime, userId } = req.query;
 
     const invalidParams = Object.keys(req.query).filter((key) => !ALLOWED_COLUMNS.includes(key));
@@ -38,10 +39,18 @@ exports.getNightCount = async (req, res, next) => {
     }
 
     try {
-        const { inTime, outTime } = getStatisticsTimeRange(year, month);
-
+        //! 这里 不用那个函数了
         // 使用 await 异步等待结果
-        const result = await calcNightCount({ inTime, outTime, year, month });
+        //! 传入的month 是
+        const start = dayjs().year(year).month(month).date(-1).hour(8).minute(30).second(0).millisecond(0);
+
+        const end = start.add(1, "month").add(1, "day").hour(8).minute(30).second(0).millisecond(0);
+        const inTime = start.format("YYYY-MM-DD HH:mm:ss");
+        const outTime = end.format("YYYY-MM-DD HH:mm:ss");
+        console.log("================== Controller GetNightCount ==", { year, month, inTime, outTime });
+        const dutyRows = await queryDuty({ inTime, outTime, userId, username });
+
+        const result = await calcNightCount(dutyRows);
 
         // 成功响应
         return res.send(result);

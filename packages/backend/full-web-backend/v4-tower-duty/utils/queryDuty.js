@@ -33,7 +33,7 @@ function rawRowToJsObject(row) {
 }
 
 function queryDuty({ id, userId, username, inTime, outTime }) {
-    // console.log("queryDuty", { id, userId, username, inTime, outTime });
+    console.log("queryDuty", { id, userId, username, inTime, outTime });
     let sql = `SELECT *FROM duty WHERE 1=1`;
     const params = [];
     if (id != null) {
