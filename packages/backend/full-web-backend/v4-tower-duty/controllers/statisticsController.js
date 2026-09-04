@@ -2,6 +2,7 @@ const { calcNightCount } = require("../services/statisticsService.NightCount.js"
 const { checkDuration } = require("../services/statisticsService.CheckDuration.js");
 const { calcPositionSummary } = require("../services/statisticsService.PositionSummary.js");
 const { calcUserByRule } = require("../services/statisticsService.CalcuUserStats.js");
+const { queryDuty } = require("../utils/queryDuty.js");
 const dayjs = require("dayjs");
 
 function getStatisticsTimeRange(year, month, startTime = "00:00:00", endTime = "08:30:00") {
@@ -26,7 +27,7 @@ function getStatisticsTimeRange(year, month, startTime = "00:00:00", endTime = "
 exports.getNightCount = async (req, res, next) => {
     const ALLOWED_COLUMNS = ["year", "month", "userId", "username", "filter"];
     // 夜班应该是 01日的08:30:00 到 下一月 01日 08:30:00
-    const { filter, year, month, startTime, endTime, userId } = req.query;
+    const { filter, year, month, startTime, endTime, userId, username } = req.query;
 
     const invalidParams = Object.keys(req.query).filter((key) => !ALLOWED_COLUMNS.includes(key));
 
@@ -42,15 +43,88 @@ exports.getNightCount = async (req, res, next) => {
         //! 这里 不用那个函数了
         // 使用 await 异步等待结果
         //! 传入的month 是
-        const start = dayjs().year(year).month(month).date(-1).hour(8).minute(30).second(0).millisecond(0);
+        const start = dayjs().year(year).month(month).date(1).hour(8).minute(30).second(0).millisecond(0);
 
         const end = start.add(1, "month").add(1, "day").hour(8).minute(30).second(0).millisecond(0);
+
         const inTime = start.format("YYYY-MM-DD HH:mm:ss");
         const outTime = end.format("YYYY-MM-DD HH:mm:ss");
         console.log("================== Controller GetNightCount ==", { year, month, inTime, outTime });
-        const dutyRows = await queryDuty({ inTime, outTime, userId, username });
 
-        const result = await calcNightCount(dutyRows);
+        // =========================================================
+        // 这里负责按照用户分类
+        // calcNightCount 不负责分类
+        // =========================================================
+
+        const userMap = new Map();
+        const dutyRows = await queryDuty({ inTime, outTime, userId, username });
+        console.log(dutyRows.length);
+
+        for (const row of dutyRows) {
+            const key = row.userId != null ? `userId:${row.userId}` : `username:${row.username}`;
+
+            if (!userMap.has(key)) {
+                userMap.set(key, []);
+            }
+
+            userMap.get(key).push(row);
+        }
+        console.log("userMap", userMap.size);
+        // =========================================================
+        // 每个用户单独计算
+        // =========================================================
+        const result = [];
+        // 这个很干净
+        // for (const rows of userMap.values()) {
+        //     console.log("rows:" + rows.length);
+
+        //     const nightResult = calcNightCount(rows);
+
+        //     result.push({
+        //         userId: rows[0]?.userId ?? null,
+        //         username: rows[0]?.username ?? null,
+
+        //         night: nightResult.night.map((item) => {
+        //             const { nightBelongDate, ...stats } = item;
+        //             return { [nightBelongDate]: stats };
+        //         }),
+        //     });
+        // }
+
+        for (const rows of userMap.values()) {
+            // 一个用户的全部 duty
+            const userResult = calcNightCount(rows);
+
+            const userId = rows[0]?.userId;
+
+            if (userId == null) {
+                continue;
+            }
+
+            // 用户这一层
+            result[userId] = {};
+
+            // calcNightCount 返回的 night
+            for (const item of userResult.night) {
+                const { nightBelongDate, ...nightData } = item;
+
+                result[userId][nightBelongDate] = nightData;
+            }
+
+            // 计算这个用户的 summary
+            let nightCount = 0;
+            let nightSegmentCount = 0;
+
+            for (const item of userResult.night) {
+                nightCount += item["夜班次数"] || 0;
+                nightSegmentCount += item["夜班段数"] || 0;
+            }
+
+            result[userId].summary = {
+                夜班次数: nightCount,
+                夜班段数: nightSegmentCount,
+            };
+        }
 
         // 成功响应
         return res.send(result);

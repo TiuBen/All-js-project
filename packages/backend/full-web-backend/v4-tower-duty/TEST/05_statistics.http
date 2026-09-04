@@ -8,6 +8,9 @@
 # 合规检查
 
 ### 夜班频次
+GET http://localhost:3205/api/statistics/night-count?year=2026&month=7&userId=14
+
+### 获取所有用户 duty-duration
 GET http://localhost:3205/api/statistics/night-count?year=2026&month=5
 
 ### 获取单个用户执勤时间统计
