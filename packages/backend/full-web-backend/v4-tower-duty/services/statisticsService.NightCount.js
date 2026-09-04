@@ -77,14 +77,44 @@ function buildNightSegments(nightDate) {
         },
     ];
 }
+function createNightItem(nightBelongDate) {
+    return {
+        nightBelongDate,
 
+        "1800-2100": 0,
+
+        "2100-2400": 0,
+
+        "+1天0000-0830": 0,
+
+        夜班次数: 0,
+
+        夜班段数: 0,
+
+        具体考勤: [],
+    };
+}
+function calculateNightResult(nightItem) {
+    nightItem["夜班次数"] =
+        nightItem["1800-2100"] > 0.7 || nightItem["2100-2400"] > 0.7 || nightItem["+1天0000-0830"] > 0.7 ? 1 : 0;
+
+    nightItem["夜班段数"] =
+        (nightItem["1800-2100"] >= 0.75 ? 1 : 0) +
+        (nightItem["2100-2400"] >= 0.75 ? 1 : 0) +
+        (nightItem["+1天0000-0830"] >= 0.75 ? 1 : 0);
+
+    return nightItem;
+}
 /**
  * 当月夜班统计(主入口)
  */
 
 function calcNightCount(dutyRows) {
     if (!Array.isArray(dutyRows)) {
-        return [];
+        return {
+            dutyRows: [],
+            night: [],
+        };
     }
 
     const result = [];
@@ -120,18 +150,10 @@ function calcNightCount(dutyRows) {
         const lastNightDate = rOut.startOf("day");
 
         while (nightDate.isSame(lastNightDate) || nightDate.isBefore(lastNightDate)) {
+            const nightBelongDate = nightDate.format("YYYY-MM-DD");
             const nightSegments = buildNightSegments(nightDate);
 
-            const nightItem = {
-                nightBelongDate: nightDate.format("YYYY-MM-DD"),
-
-                "1800-2100": 0,
-                "2100-2400": 0,
-                "+1天0000-0830": 0,
-
-                夜班次数: 0,
-                夜班段数: 0,
-            };
+            const nightItem = createNightItem(nightBelongDate);
 
             let hasOverlap = false;
 
@@ -152,6 +174,10 @@ function calcNightCount(dutyRows) {
             // 这个 nightBelongDate 确实有夜班时间
             // ---------------------------------------------
             if (hasOverlap) {
+                nightItem["具体考勤"].push({
+                    ...row,
+                    date: nightItem.nightBelongDate,
+                });
                 nightItem["夜班次数"] =
                     nightItem["1800-2100"] > 0.7 || nightItem["2100-2400"] > 0.7 || nightItem["+1天0000-0830"] > 0.7
                         ? 1
@@ -168,8 +194,8 @@ function calcNightCount(dutyRows) {
             nightDate = nightDate.add(1, "day");
         }
 
-        console.log(row);
-        console.log("night", night);
+        // console.log(row);
+        // console.log("night", night);
 
         result.push({
             ...row,
@@ -180,9 +206,7 @@ function calcNightCount(dutyRows) {
     // =========================================================
     // 2. 再次按照 nightBelongDate 合并
     // =========================================================
-    //
     // 例如：
-    //
     // duty 1:
     // night: [
     //   {
@@ -192,7 +216,6 @@ function calcNightCount(dutyRows) {
     //      "+1天0000-0830": 0
     //   }
     // ]
-    //
     // duty 2:
     // night: [
     //   {
@@ -204,7 +227,6 @@ function calcNightCount(dutyRows) {
     // ]
     //
     // 最终：
-    //
     // {
     //    nightBelongDate: "2026-05-01",
     //    "1800-2100": 0.9,
@@ -213,7 +235,6 @@ function calcNightCount(dutyRows) {
     //    夜班次数: 1,
     //    夜班段数: 2
     // }
-    //
     // 注意：
     // 夜班次数、夜班段数必须在所有小时数合并完成以后重新计算。
     // =========================================================
@@ -229,16 +250,7 @@ function calcNightCount(dutyRows) {
             const date = nightItem.nightBelongDate;
 
             if (!nightMap.has(date)) {
-                nightMap.set(date, {
-                    nightBelongDate: date,
-
-                    "1800-2100": 0,
-                    "2100-2400": 0,
-                    "+1天0000-0830": 0,
-
-                    夜班次数: 0,
-                    夜班段数: 0,
-                });
+                nightMap.set(date, createNightItem(date));
             }
 
             const merged = nightMap.get(date);
@@ -246,6 +258,10 @@ function calcNightCount(dutyRows) {
             merged["1800-2100"] += nightItem["1800-2100"] || 0;
             merged["2100-2400"] += nightItem["2100-2400"] || 0;
             merged["+1天0000-0830"] += nightItem["+1天0000-0830"] || 0;
+
+            if (Array.isArray(nightItem["具体考勤"])) {
+                merged["具体考勤"].push(...nightItem["具体考勤"]);
+            }
         }
     }
 
@@ -254,40 +270,13 @@ function calcNightCount(dutyRows) {
     // =========================================================
 
     for (const nightItem of nightMap.values()) {
-        // 保留 4 位小数
         nightItem["1800-2100"] = Number(nightItem["1800-2100"].toFixed(4));
 
         nightItem["2100-2400"] = Number(nightItem["2100-2400"].toFixed(4));
 
         nightItem["+1天0000-0830"] = Number(nightItem["+1天0000-0830"].toFixed(4));
 
-        // -----------------------------------------------------
-        // 夜班次数
-        //
-        // 任意一个时间段累计 > 0.7 小时
-        // 就算这个 nightBelongDate 有 1 次夜班
-        // -----------------------------------------------------
-        if (nightItem["1800-2100"] > 0.7 || nightItem["2100-2400"] > 0.7 || nightItem["+1天0000-0830"] > 0.7) {
-            nightItem["夜班次数"] = 1;
-        }
-
-        // -----------------------------------------------------
-        // 夜班段数
-        //
-        // 每个时间段累计 >= 0.75 小时
-        // 就算 1 个夜班段
-        // -----------------------------------------------------
-        if (nightItem["1800-2100"] >= 0.75) {
-            nightItem["夜班段数"]++;
-        }
-
-        if (nightItem["2100-2400"] >= 0.75) {
-            nightItem["夜班段数"]++;
-        }
-
-        if (nightItem["+1天0000-0830"] >= 0.75) {
-            nightItem["夜班段数"]++;
-        }
+        calculateNightResult(nightItem);
     }
 
     // =========================================================

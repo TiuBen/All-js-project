@@ -71,17 +71,41 @@ const storage = multer.diskStorage({
         // 从请求体中获取 year 和 month
         const { year, month } = req.body;
 
+        // if (!year || !month) {
+        //     // 兜底：如果没传年月，就用原始文件名
+        //     console.warn("未提供 year/month 参数，使用原始文件名:", file.originalname);
+        //     return cb(null, file.originalname);
+        // }
+
+        // // 获取原始扩展名（.xls / .xlsx / .xlsm）
+        // const ext = path.extname(file.originalname);
+        // // 强制命名为 year-month.ext
+        // const filename = `${year}-${month}${ext}`;
+
+        // console.log("上传文件保存为:", filename);
+        // cb(null, filename);
+
         if (!year || !month) {
-            // 兜底：如果没传年月，就用原始文件名
-            console.warn("未提供 year/month 参数，使用原始文件名:", file.originalname);
-            return cb(null, file.originalname);
+            return cb(new Error("必须提供 year 和 month"));
         }
-
-        // 获取原始扩展名（.xls / .xlsx / .xlsm）
-        const ext = path.extname(file.originalname);
-        // 强制命名为 year-month.ext
-        const filename = `${year}-${month}${ext}`;
-
+        // 获取扩展名
+        const ext = path.extname(file.originalname).toLowerCase();
+        // 只允许 Excel
+        const allowedExt = [".xls", ".xlsx", ".xlsm"];
+        if (!allowedExt.includes(ext)) {
+            return cb(new Error("只允许上传 .xls、.xlsx、.xlsm 文件"));
+        }
+        const baseName = `${year}-${month}`;
+        // 删除同一个 year-month 下可能存在的其他扩展名
+        for (const oldExt of allowedExt) {
+            const oldFile = path.join(UPLOAD_DIR, `${baseName}${oldExt}`);
+            if (fs.existsSync(oldFile)) {
+                fs.unlinkSync(oldFile);
+                console.log("删除旧文件:", oldFile);
+            }
+        }
+        // 最终文件名仍然保留当前上传文件的扩展名
+        const filename = `${baseName}${ext}`;
         console.log("上传文件保存为:", filename);
         cb(null, filename);
     },

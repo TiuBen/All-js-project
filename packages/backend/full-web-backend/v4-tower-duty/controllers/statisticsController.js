@@ -49,7 +49,7 @@ exports.getNightCount = async (req, res, next) => {
 
         const inTime = start.format("YYYY-MM-DD HH:mm:ss");
         const outTime = end.format("YYYY-MM-DD HH:mm:ss");
-        console.log("================== Controller GetNightCount ==", { year, month, inTime, outTime });
+        // console.log("================== Controller GetNightCount ==", { year, month, inTime, outTime });
 
         // =========================================================
         // 这里负责按照用户分类
@@ -58,7 +58,7 @@ exports.getNightCount = async (req, res, next) => {
 
         const userMap = new Map();
         const dutyRows = await queryDuty({ inTime, outTime, userId, username });
-        console.log(dutyRows.length);
+        // console.log(dutyRows.length);
 
         for (const row of dutyRows) {
             const key = row.userId != null ? `userId:${row.userId}` : `username:${row.username}`;
@@ -69,7 +69,7 @@ exports.getNightCount = async (req, res, next) => {
 
             userMap.get(key).push(row);
         }
-        console.log("userMap", userMap.size);
+        // console.log("userMap", userMap.size);
         // =========================================================
         // 每个用户单独计算
         // =========================================================
@@ -92,38 +92,37 @@ exports.getNightCount = async (req, res, next) => {
         // }
 
         for (const rows of userMap.values()) {
+            if (!rows.length) continue;
+            const userId = rows[0].userId;
+
             // 一个用户的全部 duty
             const userResult = calcNightCount(rows);
-
-            const userId = rows[0]?.userId;
-
-            if (userId == null) {
-                continue;
-            }
 
             // 用户这一层
             result[userId] = {};
 
+            const userResultData = {};
             // calcNightCount 返回的 night
-            for (const item of userResult.night) {
-                const { nightBelongDate, ...nightData } = item;
+            for (const nightItem of userResult.night) {
+                const { nightBelongDate, ...data } = nightItem;
 
-                result[userId][nightBelongDate] = nightData;
+                userResultData[nightBelongDate] = data;
             }
 
-            // 计算这个用户的 summary
-            let nightCount = 0;
-            let nightSegmentCount = 0;
+            let totalNightCount = 0;
+            let totalNightSegments = 0;
 
-            for (const item of userResult.night) {
-                nightCount += item["夜班次数"] || 0;
-                nightSegmentCount += item["夜班段数"] || 0;
+            for (const nightItem of userResult.night) {
+                totalNightCount += nightItem["夜班次数"] || 0;
+                totalNightSegments += nightItem["夜班段数"] || 0;
             }
 
-            result[userId].summary = {
-                夜班次数: nightCount,
-                夜班段数: nightSegmentCount,
+            userResultData.summary = {
+                夜班次数: totalNightCount,
+
+                夜班段数: totalNightSegments,
             };
+            result[userId] = userResultData;
         }
 
         // 成功响应
