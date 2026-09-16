@@ -2,13 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../../components/ui/button";
-import DraftDropdown from "../ChecklistCache/DraftDropdown";
-import { TYPE_BUTTONS } from "../checklistTypeConfig";
-import { ArrowLeft, ChevronDown, CheckCircle2, ExternalLink, Loader2, Map, Save, Workflow } from "lucide-react";
+import DraftDropdown from "./Components/DraftDropdown";
+import { TYPE_BUTTONS, withAlpha } from "../checklistTypeConfig";
+import { useChecklistStore } from "../../../store/checklistStore";
+import {
+    ArrowLeft,
+    Check,
+    ChevronDown,
+    CheckCircle2,
+    ExternalLink,
+    HardDrive,
+    Loader2,
+    Map,
+    Workflow,
+} from "lucide-react";
 
 /**
  * ============================================================
  * ChecklistToolbar —— 检查单页顶部固定区（行1）
+ * ------------------------------------------------------------
+ * 目录：ChecklistPage/ToolBar/index.jsx（本文件即工具栏本体）
+ *      子组件（草稿箱下拉等）放在 ToolBar/Components/ 下
  * ------------------------------------------------------------
  * 标题（航班号 + 检查单类型，同色）+ 操作按钮 + 检查单类型下拉菜单。
  * 独立组件：切换检查单类型只更新模板相关状态，避免整个页面重新渲染。
@@ -21,15 +35,15 @@ import { ArrowLeft, ChevronDown, CheckCircle2, ExternalLink, Loader2, Map, Save,
  * @param {Function} props.onToggleFlow 切换流程图视图
  * @param {boolean} props.thumbVisible  小地图开关
  * @param {Function} props.onToggleThumb
- * @param {string} props.saveStatus     保存状态（idle/saving/saved/error）
- * @param {Function} props.onSaveDraft  保存草稿
- * @param {Function} props.onSubmit     提交
+ * @param {string} props.saveStatus     提交状态（idle/saving/saved/error）
+ * @param {Function} props.onSubmit     提交（落地后端）
  * @param {string|null} props.recordStatus 记录状态（draft/submitted/null）
  * @param {string|null} props.checkedAt    提交时间
- * @param {boolean} props.savedFlash       是否显示"已保存"提示
- * @param {boolean} props.draftFull        草稿箱是否已满（5 个）且当前航班不在箱内
  * @param {Function} props.onSelectDraft   草稿下拉选择
  * @param {ReactNode} props.panelSwitcher  三列面板切换器（主要/辅助/视频），渲染在"流程图"按钮前
+ * ------------------------------------------------------------
+ * 注：页面上没有"保存草稿"按钮 —— 草稿由 checklistStore 在改动某项时防抖写入
+ *     浏览器 localStorage。这里只订阅 store 的草稿状态，展示一行轻量提示。
  * ============================================================
  */
 export default function ChecklistToolbar({
@@ -41,17 +55,17 @@ export default function ChecklistToolbar({
     thumbVisible,
     onToggleThumb,
     saveStatus,
-    onSaveDraft,
     onSubmit,
     recordStatus,
     checkedAt,
-    savedFlash,
-    draftFull,
     onSelectDraft,
     panelSwitcher,
 }) {
     const navigate = useNavigate();
     const [typeMenuOpen, setTypeMenuOpen] = useState(false); // 类型下拉开关（组件内状态，切换类型不影响整页）
+    // 草稿落盘状态直接从 store 订阅：工具栏不必让编辑器为它订阅、更不必每按键都重渲染
+    const draftPending = useChecklistStore((s) => s.draftPending);
+    const draftSavedAt = useChecklistStore((s) => s.draftSavedAt);
 
     return (
         <div className="shrink-0 space-y-2">
@@ -61,16 +75,13 @@ export default function ChecklistToolbar({
                     <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                         <ArrowLeft size={18} />
                     </Button>
-                    <div className={cn("text-slate-900", activeBtn?.titleCls)}>
+                    <div style={{ color: activeBtn?.color }}>
                         <div className="flex items-center gap-2">
                             <h2 className="text-base font-bold">
-                                <span className={cn("text-slate-900", activeBtn?.titleCls)}>{flight.flightNo}</span>{" "}
-                                {/* <span className={cn("font-normal", activeBtn?.titleCls || "text-slate-400")}> */}
-                                <span>{activeBtn?.label || "调度席检查单"}</span>
+                                <span>{flight.flightNo}</span> <span>{activeBtn?.label || "调度席检查单"}</span>
                             </h2>
                             {recordStatus && <BadgeWrap recordStatus={recordStatus} checkedAt={checkedAt} />}
                         </div>
-                        {/* <div className="mt-0.5 text-xs text-slate-400"> */}
                         <div>
                             {flight?.origin || "起飞机场"} → {flight?.destination || "目的地机场"} · 机型{" "}
                             {flight.aircraftType} · 日期 {flight.flightDate}
@@ -83,18 +94,41 @@ export default function ChecklistToolbar({
                     航班信息字段区（待修改）
                 </div>
 
+                {/* 草稿自动保存状态：改动某项时由 store 防抖写入 localStorage，页面上没有"保存草稿"按钮 */}
+                <span
+                    className="flex items-center gap-1 text-[11px] text-slate-400"
+                    title="草稿自动保存在浏览器本地，无需手动保存"
+                >
+                    {draftPending ? (
+                        <>
+                            <Loader2 className="animate-spin" size={12} /> 草稿保存中…
+                        </>
+                    ) : draftSavedAt ? (
+                        <>
+                            <Check size={12} className="text-emerald-500" />
+                            草稿已保存{" "}
+                            {new Date(draftSavedAt).toLocaleTimeString("zh-CN", { hour12: false }).slice(0, 5)}
+                        </>
+                    ) : (
+                        <>
+                            <HardDrive size={12} /> 草稿自动保存
+                        </>
+                    )}
+                </span>
                 <div className="flex flex-wrap items-center gap-2">
                     {/* 检查单类型下拉菜单：顺航检查单/货运始发/货运过站/客运始发/客运过站（5 色，label = 落库的 checklist_category） */}
                     <div className="relative">
                         {typeMenuOpen && <div className="fixed inset-0 z-40" onClick={() => setTypeMenuOpen(false)} />}
                         <button
                             onClick={() => setTypeMenuOpen((v) => !v)}
-                            className={cn(
-                                "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
-                                activeBtn?.activeCls
-                            )}
+                            className="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
+                            style={{
+                                color: activeBtn?.color,
+                                borderColor: withAlpha(activeBtn?.color, 0.35),
+                                backgroundColor: withAlpha(activeBtn?.color, 0.08),
+                            }}
                         >
-                            <span className={cn("h-2 w-2 rounded-full", activeBtn?.dot)} />
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: activeBtn?.color }} />
                             {activeBtn?.label}
                             <ChevronDown size={12} />
                         </button>
@@ -109,15 +143,12 @@ export default function ChecklistToolbar({
                                                 setTypeMenuOpen(false);
                                                 onSwitchType(b.tplId, b.flightType, b.routeId);
                                             }}
-                                            className={cn(
-                                                "flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-slate-50",
-                                                isActiveItem
-                                                    ? cn("font-semibold", b.textCls || "text-slate-800")
-                                                    : "text-slate-600"
-                                            )}
+                                            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors hover:bg-slate-50"
+                                            style={{ color: b.color }}
                                         >
-                                            <span className={cn("h-2 w-2 shrink-0 rounded-full", b.dot)} />
                                             {b.label}
+                                            {/* 选中态用 ✔ 表示（不再靠加粗/变色区分） */}
+                                            {isActiveItem && <Check size={13} className="ml-auto shrink-0" />}
                                         </button>
                                     );
                                 })}
@@ -147,16 +178,6 @@ export default function ChecklistToolbar({
                         <ExternalLink size={14} /> 独立展示
                     </Button>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onSaveDraft}
-                        disabled={saveStatus === "saving" || draftFull}
-                        title={draftFull ? "草稿箱已满（最多 5 个），请先删除部分草稿" : undefined}
-                    >
-                        {saveStatus === "saving" ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                        保存草稿
-                    </Button>
                     <DraftDropdown onSelect={onSelectDraft} />
                     <Button size="sm" onClick={onSubmit} disabled={saveStatus === "saving"}>
                         {saveStatus === "saving" ? (
@@ -166,7 +187,6 @@ export default function ChecklistToolbar({
                         )}
                         提交
                     </Button>
-                    {savedFlash && <span className="text-xs text-emerald-600">✓ 已保存</span>}
                 </div>
             </div>
         </div>

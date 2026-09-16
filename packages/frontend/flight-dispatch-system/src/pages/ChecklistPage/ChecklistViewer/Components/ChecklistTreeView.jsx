@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../../lib/utils";
 import {
     CheckCircle2,
     CircleDot,
@@ -86,7 +86,7 @@ export default function ChecklistTreeView({ template, record }) {
                 const aKey = `aux-${a.id ?? a.row ?? a.source?.row}`;
                 countItem(items[aKey] || items[`aux-${a.row}`]);
             });
-            (videoByNode[nid] || []).forEach((v) => countItem(videoItems[`video-${v.uuid}`]));
+            (videoByNode[nid] || []).forEach((v) => countItem(videoItems[v.id || `video-${v.uuid}`]));
         });
         return { ok, abnormal, pending };
     }, [nodes, items, videoItems, videoByNode]);

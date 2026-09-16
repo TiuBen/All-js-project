@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "../../../lib/utils";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import ChecklistTreeView from "./ChecklistTreeView";
+import ChecklistTreeView from "./Components/ChecklistTreeView";
 import { AlertCircle, ArrowLeft, ListChecks, Loader2 } from "lucide-react";
 
 /**
@@ -23,7 +23,7 @@ import { AlertCircle, ArrowLeft, ListChecks, Loader2 } from "lucide-react";
  * @param {string|null} props.recordStatus 记录状态（submitted / draft / null）
  * @param {string|null} props.checkedAt    最后修改/提交时间（24h 锁定基准）
  * @param {boolean} props.isLocked         已提交且超 24h → 禁止修改
- * @param {Object} props.activeBtn         当前检查单类型（TYPE_BUTTONS 项：label / titleCls）
+ * @param {Object} props.activeBtn         当前检查单类型（TYPE_BUTTONS 项：label / color）
  * @param {Function} props.onEdit          点"修改"回调（解除只读并跳转编辑态）
  * ============================================================
  */
@@ -47,13 +47,11 @@ export default function ChecklistViewer({
                     <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                         <ArrowLeft size={18} />
                     </Button>
-                    <div>
+                    <div style={{ color: activeBtn?.color }}>
                         <div className="flex items-center gap-2">
                             <h2 className="text-base font-bold">
-                                <span className={cn("text-slate-900", activeBtn?.titleCls)}>{flight.flightNo}</span>{" "}
-                                <span className={cn("font-normal", activeBtn?.titleCls || "text-slate-400")}>
-                                    {activeBtn?.label || "调度席检查单"}
-                                </span>
+                                <span>{flight.flightNo}</span>{" "}
+                                <span className="font-normal">{activeBtn?.label || "调度席检查单"}</span>
                             </h2>
                             {recordStatus === "submitted" && (
                                 <Badge variant="success">

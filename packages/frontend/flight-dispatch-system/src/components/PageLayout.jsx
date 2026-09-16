@@ -25,7 +25,8 @@ const tabs = [
 export default function PageLayout({ children }) {
     // 高亮由当前路由路径决定（见下方 isActive）；setActiveTab 仅用于点击 tab 时持久化记忆
     const { setActiveTab } = useTabsStore();
-    const drafts = useDraftStore((s) => s.drafts);
+    // 只订阅条数（角标用）：否则编辑器每落盘一次草稿，整个页面外壳都要重渲染
+    const draftCount = useDraftStore((s) => s.drafts.length);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -63,7 +64,7 @@ export default function PageLayout({ children }) {
                                 tab.id === "fips"
                                     ? location.pathname === "/" || location.pathname.startsWith("/fips")
                                     : location.pathname.startsWith(tab.path);
-                            const draftCount = tab.id === "checklist" ? Math.min(drafts.length, 5) : 0;
+                            const badgeCount = tab.id === "checklist" ? Math.min(draftCount, 5) : 0;
                             return (
                                 <button
                                     key={tab.id}
@@ -78,9 +79,9 @@ export default function PageLayout({ children }) {
                                     <Icon size={15} />
                                     {tab.label}
                                     {/* 检查单：未提交草稿数小红点（最多 5） */}
-                                    {draftCount > 0 && (
+                                    {badgeCount > 0 && (
                                         <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow">
-                                            {draftCount}
+                                            {badgeCount}
                                         </span>
                                     )}
                                 </button>

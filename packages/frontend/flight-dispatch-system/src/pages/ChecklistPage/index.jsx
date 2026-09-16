@@ -36,8 +36,15 @@ export default function ChecklistPage() {
     const navigate = useNavigate();
     const { setActiveTab } = useTabsStore(); // 跳转航班列表时同步顶部导航高亮
 
-    const { template, templateLoading, flight, setFlight, loadTemplate, reset, hydrateFromRecord } =
-        useChecklistStore();
+    // 细粒度订阅：本组件是编辑器/查看器的直接父级，若整体订阅 store，
+    // 那么"填任何一项"都会让这里重渲染并连带整棵子树 —— 编辑器里的 memo 全部白做。
+    const template = useChecklistStore((s) => s.template);
+    const templateLoading = useChecklistStore((s) => s.templateLoading);
+    const flight = useChecklistStore((s) => s.flight);
+    const setFlight = useChecklistStore((s) => s.setFlight);
+    const loadTemplate = useChecklistStore((s) => s.loadTemplate);
+    const reset = useChecklistStore((s) => s.reset);
+    const hydrateFromRecord = useChecklistStore((s) => s.hydrateFromRecord);
 
     const [flightLoading, setFlightLoading] = useState(true);
     // 查看模式（从记录页点"查看"进入：?recordId=xx&view=1），树形只读展示；点"修改"切回编辑

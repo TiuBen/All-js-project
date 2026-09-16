@@ -51,45 +51,19 @@ export function listTemplateMeta() {
 }
 
 /**
- * 视频监管重点文件映射：按模板 category 匹配（category 已与下拉菜单对齐，
- * 形如"货运始发航班 / 客运过站航班 / 顺航检查单"），用包含关系判定：
- *   - 含"客运" → 客运航班视频监管重点
- *   - 含"货运"或"顺航" → 货运航班视频监管重点
- */
-const VIDEO_FOCUS_RULES = [
-  { match: (c) => String(c || '').includes('客运'), file: '客运航班视频监管重点' },
-  { match: (c) => String(c || '').includes('货运') || String(c || '').includes('顺航'), file: '货运航班视频监管重点' },
-];
-
-/**
- * 按 category 解析对应的视频监管重点文件 id（无匹配返回 null）
- * @param {string} category 模板分类（如 货运始发航班）
- * @returns {string|null}
- */
-function resolveVideoFocusId(category) {
-  const rule = VIDEO_FOCUS_RULES.find((r) => r.match(category));
-  return rule ? rule.file : null;
-}
-
-/**
- * 按 id 读取单个模板（完整内容），并附加关联的视频监管重点（videoFocus，独立 JSON 文件）
+ * 按 id 读取单个模板（完整内容）
+ * ------------------------------------------------------------
+ * 注：视频监管重点已迁移到前端静态模块
+ *     （frontend/src/pages/ChecklistPage/videoFocus/*.js），
+ *     由前端按 category 本地解析，接口不再附加 videoFocus 字段，
+ *     单次响应体积因此减少约 10~15KB。
+ * 后端 data/checklists/{客运|货运}航班视频监管重点.json 仍作为数据源保留。
  * @param {string} id 模板 id（对应文件名，如 货运始发航班）
- * @returns {Object|null} 完整模板（含 videoFocus 字段）；不存在返回 null
+ * @returns {Object|null} 完整模板；不存在返回 null
  */
 export function getTemplateById(id) {
   const file = path.join(config.paths.checklists, `${id}.json`);
   if (!fs.existsSync(file)) return null;
   const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
-
-  // 视频监管重点：按 category 映射独立文件；文件缺失时 videoFocus 为 null（前端自动降级为空）
-  let videoFocus = null;
-  const vfId = resolveVideoFocusId(data.category);
-  if (vfId) {
-    const vfFile = path.join(config.paths.checklists, `${vfId}.json`);
-    if (fs.existsSync(vfFile)) {
-      videoFocus = { id: vfId, ...JSON.parse(fs.readFileSync(vfFile, 'utf-8')) };
-    }
-  }
-
-  return { id, ...data, videoFocus };
+  return { id, ...data };
 }

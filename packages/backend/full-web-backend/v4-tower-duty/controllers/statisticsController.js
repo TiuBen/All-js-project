@@ -96,7 +96,7 @@ exports.getNightCount = async (req, res, next) => {
             const userId = rows[0].userId;
 
             // 一个用户的全部 duty
-            const userResult = calcNightCount(rows);
+            const userResult = calcNightCount(rows, year, month);
 
             // 用户这一层
             result[userId] = {};

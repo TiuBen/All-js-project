@@ -105,17 +105,49 @@ function calculateNightResult(nightItem) {
 
     return nightItem;
 }
+
+// ==========================================
+//  判断某个夜班周期
+//  是否与统计窗口存在真正的时间交集
+//   统计窗口：
+//  [statisticsStart, statisticsEnd) //
+//  夜班周期：
+//  [nightStart, nightEnd)
+//  注意：
+//  如果 nightEnd === statisticsStart
+//  只有一个边界点，没有实际重叠，不算。 //
+//  如果 nightStart === statisticsEnd //
+//  ==========================================
+function isNightInStatisticsWindow(nightBelongDate, statisticsStart, statisticsEnd) {
+    const nightDate = dayjs(nightBelongDate);
+    const nightStart = nightDate.hour(18).minute(0).second(0).millisecond(0);
+    const nightEnd = nightDate.add(1, "day").hour(8).minute(30).second(0).millisecond(0);
+    return nightStart.isBefore(statisticsEnd) && nightEnd.isAfter(statisticsStart);
+}
+
 /**
  * 当月夜班统计(主入口)
  */
 
-function calcNightCount(dutyRows) {
+function calcNightCount(dutyRows, year, month) {
     if (!Array.isArray(dutyRows)) {
         return {
             dutyRows: [],
             night: [],
         };
     }
+
+    year = Number(year);
+    month = Number(month);
+    if (!Number.isInteger(year)) {
+        throw new Error("calcNightCount: year 参数无效");
+    }
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+        throw new Error("calcNightCount: month 参数必须是 1-12");
+    }
+
+    const statisticsStart = dayjs().year(year).month(month).date(1).hour(8).minute(30).second(0).millisecond(0);
+    const statisticsEnd = statisticsStart.add(1, "month");
 
     const result = [];
 
@@ -151,6 +183,14 @@ function calcNightCount(dutyRows) {
 
         while (nightDate.isSame(lastNightDate) || nightDate.isBefore(lastNightDate)) {
             const nightBelongDate = nightDate.format("YYYY-MM-DD");
+
+            const isInStatisticsWindow = isNightInStatisticsWindow(nightBelongDate, statisticsStart, statisticsEnd);
+
+            if (!isInStatisticsWindow) {
+                nightDate = nightDate.add(1, "day");
+                continue;
+            }
+
             const nightSegments = buildNightSegments(nightDate);
 
             const nightItem = createNightItem(nightBelongDate);
@@ -178,15 +218,7 @@ function calcNightCount(dutyRows) {
                     ...row,
                     date: nightItem.nightBelongDate,
                 });
-                nightItem["夜班次数"] =
-                    nightItem["1800-2100"] > 0.7 || nightItem["2100-2400"] > 0.7 || nightItem["+1天0000-0830"] > 0.7
-                        ? 1
-                        : 0;
-
-                nightItem["夜班段数"] =
-                    (nightItem["1800-2100"] >= 0.75 ? 1 : 0) +
-                    (nightItem["2100-2400"] >= 0.75 ? 1 : 0) +
-                    (nightItem["+1天0000-0830"] >= 0.75 ? 1 : 0);
+                calculateNightResult(nightItem);
 
                 night.push(nightItem);
             }
@@ -248,6 +280,11 @@ function calcNightCount(dutyRows) {
 
         for (const nightItem of row.night) {
             const date = nightItem.nightBelongDate;
+
+            const isInStatisticsWindow = isNightInStatisticsWindow(date, statisticsStart, statisticsEnd);
+            if (!isInStatisticsWindow) {
+                continue;
+            }
 
             if (!nightMap.has(date)) {
                 nightMap.set(date, createNightItem(date));

@@ -1,5 +1,5 @@
 import { Camera } from "lucide-react";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../../lib/utils";
 import { statusStyle, StatusIcon } from "./statusView";
 
 /**
@@ -17,7 +17,8 @@ export default function VideoList({ videos = [], videoItems = {} }) {
   return (
     <ul className="space-y-1 px-5 pb-1.5">
       {videos.map((v, vi) => {
-        const vKey = `video-${v.uuid}`;
+        // 定位 key：优先 vCheckId（视频监管项编号），回退旧结构的 video-{uuid}
+        const vKey = v.id || `video-${v.uuid}`;
         const vItem = videoItems[vKey] || {};
         return (
           <li

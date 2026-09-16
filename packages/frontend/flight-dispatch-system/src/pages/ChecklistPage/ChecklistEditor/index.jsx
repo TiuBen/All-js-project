@@ -1,18 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
+// ahooks 的 useLocalStorageState：布局偏好（视图模式 / 小地图 / 三栏可见性）本地持久化
+import { useLocalStorageState } from "ahooks";
 import { useChecklistStore } from "../../../store/checklistStore";
-import { useDraftStore, MAX_DRAFTS } from "../../../store/draftStore";
+import { useDraftStore } from "../../../store/draftStore";
 import { useRecordsStore } from "../../../store/recordsStore";
 import { Card, CardContent } from "../../../components/ui/card";
-import FlowChart from "../../../components/flowchart/FlowChart";
-import DraggableThumb from "../components/DraggableThumb";
-import PanelSwitcher from "../components/PanelSwitcher";
-import ResizableColumns from "../components/ResizableColumns";
-import ChecklistToolbar from "./ChecklistToolbar";
-import MainMonitoringPanel from "./MainMonitoringPanel";
-import AuxiliaryPanel from "./AuxiliaryPanel";
-import VideoPanel from "./VideoPanel";
+import ChecklistToolbar from "../ToolBar";
+import ResizableColumns from "../CommonComponents/ResizableColumns";
+import PanelSwitcher from "../CommonComponents/PanelSwitcher";
+import MainMonitoringPanel from "./Components/MainMonitoringPanel";
+import AuxiliaryPanel from "./Components/AuxiliaryPanel";
+import VideoPanel from "./Components/VideoPanel";
+import TimeFormulaEngine from "./Components/TimeFormulaEngine";
+import { MainFlowView, FlowThumbView } from "./Components/FlowStatusView";
 import useTimeFormulas from "./useTimeFormulas";
 import {
     TYPE_BUTTONS,
@@ -27,15 +29,31 @@ const TZ_OFFSET_HOURS = 8;
 // 已提交记录的可修改时限（小时）：检查时间距今超过 24h → 锁定只读，禁止再修改/提交
 const LOCK_HOURS = 24;
 
+// 检查单页布局偏好（视图模式 / 小地图 / 三栏可见性）：本地持久化
+const UI_PREFS_KEY = "checklist_ui_prefs";
+const DEFAULT_UI_PREFS = { viewMode: "form", thumbVisible: false, panels: ["main", "aux", "video"] };
+
 /**
  * ============================================================
  * ChecklistEditor —— 检查单填写/编辑页（ChecklistPage 子页面）
  * ------------------------------------------------------------
  * 负责检查单编辑态的全部交互：
- *   - 顶部工具栏（类型下拉 / 面板切换 / 流程图 / 草稿箱 / 保存提交）
+ *   - 顶部工具栏（类型下拉 / 面板切换 / 流程图 / 草稿箱 / 提交）
  *   - 三列面板（主要 / 辅助 / 视频，可拖拽调整宽度）
  *   - 流程图全屏视图 / 右下角缩略图小窗
- *   - 24h 锁定拦截、草稿自动同步、落地时间本地/UTC 联动
+ *   - 24h 锁定拦截、落地时间本地/UTC 联动
+ *
+ * ★ 重渲染约定（改动本文件务必遵守）
+ *   本组件**不订阅 items / header / videoItems**，只用细粒度 selector 取
+ *   template / videoFocus / currentStep / saveStatus 与若干稳定 action。
+ *   原因：一旦订阅 items，"编辑某一项"就会让整个编辑页（工具栏 + 三列 + 流程图）
+ *   全部重渲染，memo 卡片也随 formulaCtx 重建而集体失效。
+ *   各项数据由真正需要它的组件自己去订阅：
+ *     - 主/辅助面板       → useChecklistStore(s => s.items)
+ *     - 视频监管单项       → useVideoCheckItem(vCheckId)
+ *     - 流程图 / 小地图    → Components/FlowStatusView
+ *     - 公式自动计算       → Components/TimeFormulaEngine
+ *     - 草稿落盘           → store/checklistStore 内部（改一项时防抖写 localStorage）
  * ============================================================
  * @param {Object} props
  * @param {Object} props.flight           航班对象
@@ -61,35 +79,50 @@ export default function ChecklistEditor({
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const store = useChecklistStore();
-    const {
-        template,
-        videoFocus,
-        header,
-        items,
-        videoItems,
-        inspector,
-        currentStep,
-        saveStatus,
-        setHeaderField,
-        setInspector,
-        setItemValue,
-        setVideoValue,
-        setCurrentStep,
-        setItems,
-        save,
-    } = store;
+    // ===== 细粒度订阅：只取"会影响整页布局/标题"的状态，内容类状态一概不订阅 =====
+    // store 里的 action 在 create 时定义一次，引用永久稳定，用 selector 取也不会引发重渲染
+    const template = useChecklistStore((s) => s.template);
+    const videoFocus = useChecklistStore((s) => s.videoFocus);
+    const currentStep = useChecklistStore((s) => s.currentStep);
+    const saveStatus = useChecklistStore((s) => s.saveStatus);
+    const setHeaderField = useChecklistStore((s) => s.setHeaderField);
+    const setItemValue = useChecklistStore((s) => s.setItemValue);
+    const setCurrentStep = useChecklistStore((s) => s.setCurrentStep);
+    const setDraftPersistEnabled = useChecklistStore((s) => s.setDraftPersistEnabled);
 
-    // 草稿箱（localStorage 自动持久化）
-    const upsertDraft = useDraftStore((s) => s.upsertDraft);
+    // 草稿箱的删除入口（提交成功后清掉该航班草稿）
     const removeDraft = useDraftStore((s) => s.removeDraft);
-    const drafts = useDraftStore((s) => s.drafts);
 
-    const [viewMode, setViewMode] = useState("form"); // form | flow
-    const [savedFlash, setSavedFlash] = useState(false);
+    // ===== 布局偏好：本地持久化（不同步到其他标签页）=====
+    const [uiPrefs, setUiPrefs] = useLocalStorageState(UI_PREFS_KEY, {
+        defaultValue: DEFAULT_UI_PREFS,
+    });
+    const prefs = uiPrefs || DEFAULT_UI_PREFS;
+    const viewMode = prefs.viewMode || "form"; // form | flow
+    const thumbVisible = !!prefs.thumbVisible; // 右下角缩略图（默认不显示，点"显示小地图"开启）
+
+    // 逐字段 setter：值未变化时返回原对象 → ahooks 内部 Object.is 判定相等，跳过 setState 与落盘
+    const setViewMode = useCallback(
+        (next) =>
+            setUiPrefs((p) => {
+                const cur = p || DEFAULT_UI_PREFS;
+                const value = typeof next === "function" ? next(cur.viewMode || "form") : next;
+                return value === cur.viewMode ? cur : { ...cur, viewMode: value };
+            }),
+        [setUiPrefs]
+    );
+    const setThumbVisible = useCallback(
+        (next) =>
+            setUiPrefs((p) => {
+                const cur = p || DEFAULT_UI_PREFS;
+                const value = typeof next === "function" ? next(!!cur.thumbVisible) : next;
+                return value === !!cur.thumbVisible ? cur : { ...cur, thumbVisible: value };
+            }),
+        [setUiPrefs]
+    );
+
     const [banner, setBanner] = useState(null); // 顶部提示（常驻，不自动消失）
     const [saveError, setSaveError] = useState(null); // 保存失败提示（常驻，可关闭）
-    const [thumbVisible, setThumbVisible] = useState(false); // 右下角缩略图（默认不显示，点"显示小地图"开启）
     // 当前检查单类型（决定节点集）：货运常规/始发/过站、客运始发/过站…
     const [activeType, setActiveType] = useState("常规航班");
     const auxPanelRef = useRef(null);
@@ -129,8 +162,8 @@ export default function ChecklistEditor({
         return template.schema || template.flightTypes?.[activeType] || [];
     }, [template, flight, activeType]);
 
-    // v3 公式时间计算：formulaCtx + 自动计算 effect（手动优先）
-    const { formulaCtx, getNodeId } = useTimeFormulas({ template, nodes, items, header, flight, setItems });
+    // 公式求值上下文（引用稳定，不随 items 变化）—— 卡片 memo 的前提之一
+    const { formulaCtx, getNodeId } = useTimeFormulas({ template, nodes, flight });
 
     // 视频监管项总数：来自 videoFocus（独立视频监管重点模板，groups 结构）
     // 非客运模板（category 不含"客运"）下隐藏 applicable="客运" 的限定条目
@@ -145,19 +178,7 @@ export default function ChecklistEditor({
         );
     }, [videoFocus, template?.category]);
 
-    // 状态映射（流程图高亮）
-    const statusMap = useMemo(() => {
-        const map = {};
-        nodes.forEach((n) => {
-            const nid = getNodeId(n);
-            const st = items[`main-${nid}`]?.status;
-            if (st === "ok") map[nid] = "done";
-            else if (st === "abnormal" || st === "na") map[nid] = "current";
-        });
-        return map;
-    }, [nodes, items]);
-
-    // 当前激活的节点
+    // 当前激活的节点（辅助栏标题/列表由此驱动）
     const activeNode = useMemo(
         () => nodes.find((n) => getNodeId(n) === currentStep) || nodes[0] || null,
         [nodes, currentStep]
@@ -168,7 +189,17 @@ export default function ChecklistEditor({
     // 是否有辅助监控节点（客运模板无辅助项 → "辅助"按钮禁用，自动降为 2 列）
     const hasAux = useMemo(() => nodes.some((n) => (n.auxiliaries || []).length > 0), [nodes]);
     // 默认三列全开 1:1:1；无辅助节点时自动去掉"辅助"
-    const [panels, setPanels] = useState(["main", "aux", "video"]);
+    const panels = prefs.panels && prefs.panels.length ? prefs.panels : DEFAULT_UI_PREFS.panels;
+    const setPanels = useCallback(
+        (updater) =>
+            setUiPrefs((p) => {
+                const cur = p || DEFAULT_UI_PREFS;
+                const prev = cur.panels && cur.panels.length ? cur.panels : DEFAULT_UI_PREFS.panels;
+                const next = typeof updater === "function" ? updater(prev) : updater;
+                return next === prev ? cur : { ...cur, panels: next };
+            }),
+        [setUiPrefs]
+    );
     useEffect(() => {
         setPanels((prev) => {
             if (hasAux && !prev.includes("aux")) return [...prev, "aux"];
@@ -190,7 +221,7 @@ export default function ChecklistEditor({
         setBanner(null);
         setRecordStatus(null);
         setLoadedRecord(null);
-        await store.loadTemplate(tplId);
+        await useChecklistStore.getState().loadTemplate(tplId);
         // 模板为旧结构（flightTypes）且目标类型不存在时回退第一个可用类型
         const tpl = useChecklistStore.getState().template;
         if (tpl?.flightTypes && !tpl.flightTypes[flightType]) {
@@ -200,47 +231,54 @@ export default function ChecklistEditor({
     };
 
     // 聚焦节点：更新步骤 + banner（常驻）+ 辅助栏滚动锚定（保留主要/辅助联动）
-    const focusNode = (n) => {
-        const nid = getNodeId(n);
-        setCurrentStep(nid);
-        setBanner({
-            title: `节点 ${nid} · ${n.name}`,
-            desc: n.desc || "无时间要求",
-            auxCount: n.auxiliaries?.length || 0,
-            videoCount: videoTotal,
-            responsible: n.responsible,
-        });
-        // 辅助项滚动到锚点（主要监控不自动滚动，用户手动用滚轮平移；辅助面板隐藏时跳过）
-        if (auxPanelRef.current) {
-            const el = document.getElementById(`aux-anchor-${nid}`);
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-        // 第三栏（视频）：视频监管项为全局分组列表，滚动到面板顶部
-        if (videoPanelRef.current) {
-            videoPanelRef.current.scrollTo({ top: 0, behavior: "smooth" });
-        }
-    };
+    // useCallback：引用稳定，否则 memo 卡片会因回调变化而全部重渲染
+    const focusNode = useCallback(
+        (n) => {
+            const nid = getNodeId(n);
+            setCurrentStep(nid);
+            setBanner({
+                title: `节点 ${nid} · ${n.name}`,
+                desc: n.desc || "无时间要求",
+                auxCount: n.auxiliaries?.length || 0,
+                videoCount: videoTotal,
+                responsible: n.responsible,
+            });
+            // 辅助项滚动到锚点（主要监控不自动滚动，用户手动用滚轮平移；辅助面板隐藏时跳过）
+            if (auxPanelRef.current) {
+                const el = document.getElementById(`aux-anchor-${nid}`);
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+            // 第三栏（视频）：视频监管项为全局分组列表，滚动到面板顶部
+            if (videoPanelRef.current) {
+                videoPanelRef.current.scrollTo({ top: 0, behavior: "smooth" });
+            }
+        },
+        [getNodeId, setCurrentStep, videoTotal]
+    );
 
-    const handleSave = async (status = "draft") => {
+    /**
+     * 提交（落地到后端）—— 页面上唯一的显式保存动作
+     * 未提交过程中的内容由 store 内部防抖自动落本地草稿，不再需要"保存草稿"按钮
+     */
+    const handleSubmit = async () => {
         // 24h 锁定：已提交超时后禁止再修改/提交（前端拦截，后端同样拒绝）
         if (isLocked) {
             setSaveError(`该检查单已提交超过 ${LOCK_HOURS} 小时，不可再修改`);
             return;
         }
         try {
-            const rec = await save({ status });
-            setSavedFlash(true);
+            const rec = await useChecklistStore.getState().save({ status: "submitted" });
             // 时间基准：updated_at（表结构已无 checked_at）
             setCheckedAt(rec.updated_at || rec.created_at || new Date().toISOString());
             setRecordStatus(rec.status);
             setSaveError(null);
-            setTimeout(() => setSavedFlash(false), 2000);
             // 保存/提交成功 → 记录页数据可能已变化（如切换模板类型后 checklist_category 更新），
             // 主动失效其缓存（refreshKey+1），回到填写记录页时自动从后端拉取最新
             useRecordsStore.getState().refresh();
-            // 提交成功后立即从草稿箱移除（务必放在其他可能抛错的调用之前）
-            if (status === "submitted" && flight) {
+            // 提交成功后立即从草稿箱移除，并重置落盘签名（重新编辑时首笔改动要能再次落盘）
+            if (flight) {
                 removeDraft(flight.id);
+                useChecklistStore.getState().resetDraftTracking();
             }
             // 一航班一检查单的关联（fips/manual_fips.checklist_uuid）由后端在 create/update 时自动同步，无需前端额外标记
         } catch (err) {
@@ -249,33 +287,25 @@ export default function ChecklistEditor({
         }
     };
 
-    // ===== 自动同步到草稿箱（字段变化时，debounce 800ms 入 localStorage） =====
+    // 已提交的记录不再产生草稿（store 内部据此短路落盘）
     useEffect(() => {
-        if (!flight || !flight.id) return;
-        if (recordStatus === "submitted") return; // 已提交的记录不同步草稿
-        // 仅在实际填写了内容（status/time/note 任一有值）时才写入草稿，避免"打开页面就产生空草稿"
-        const hasContent = Object.values(items).some((v) => v && (v.status || v.time || v.note));
-        if (!hasContent) return;
-        // 草稿箱已满（5 个）且当前航班不在箱内时，不再自动写入，避免静默挤掉最早的草稿
-        const currentDrafts = useDraftStore.getState().drafts;
-        const alreadyInBox = currentDrafts.some((d) => d.flightId === flight.id);
-        if (currentDrafts.length >= MAX_DRAFTS && !alreadyInBox) return;
-        const t = setTimeout(() => {
-            // 记录当前使用的模板 id（顺航检查单 / 货运始发航班 / 客运始发航班 …），恢复草稿时按它加载对应模板
-            const tplId = template?.id || (flight.category === "客运航班" ? "客运始发航班" : "货运过站航班");
-            upsertDraft({
-                flightId: flight.id,
-                flightNo: flight.flightNo,
-                templateId: tplId,
-                header,
-                items,
-                videoSupervision: videoItems,
-                inspector,
-                status: "draft",
-            });
-        }, 800);
-        return () => clearTimeout(t);
-    }, [flight, header, items, videoItems, inspector, recordStatus, upsertDraft, template?.id]);
+        setDraftPersistEnabled(recordStatus !== "submitted");
+    }, [recordStatus, setDraftPersistEnabled]);
+
+    // 页面隐藏 / 关闭 / 组件卸载 → 立刻把防抖中的草稿落盘（来不及等到 800ms 也不丢）
+    useEffect(() => {
+        const flush = () => useChecklistStore.getState().flushDraft();
+        const onVisibility = () => {
+            if (document.visibilityState === "hidden") flush();
+        };
+        window.addEventListener("pagehide", flush);
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => {
+            window.removeEventListener("pagehide", flush);
+            document.removeEventListener("visibilitychange", onVisibility);
+            flush();
+        };
+    }, []);
 
     // ===== 落地时间联动（东8区）=====
     const setLandingFromLocal = (val) => {
@@ -304,6 +334,9 @@ export default function ChecklistEditor({
 
     return (
         <div className="flex h-[calc(100vh-90px)] flex-col gap-2 overflow-hidden">
+            {/* ===== 公式时间自动计算（无 UI，只订阅 items，不牵动本组件） ===== */}
+            <TimeFormulaEngine template={template} nodes={nodes} formulaCtx={formulaCtx} getNodeId={getNodeId} />
+
             {/* ===== 顶部固定区：标题 + 航班信息字段 + 操作按钮（均固定不滚） ===== */}
             <div className="shrink-0 space-y-2">
                 <ChecklistToolbar
@@ -315,12 +348,9 @@ export default function ChecklistEditor({
                     thumbVisible={thumbVisible}
                     onToggleThumb={() => setThumbVisible((v) => !v)}
                     saveStatus={saveStatus}
-                    onSaveDraft={() => handleSave("draft")}
-                    onSubmit={() => handleSave("submitted")}
+                    onSubmit={handleSubmit}
                     recordStatus={recordStatus}
                     checkedAt={checkedAt}
-                    savedFlash={savedFlash}
-                    draftFull={drafts.length >= MAX_DRAFTS && !drafts.some((d) => d.flightId === flight.id)}
                     onSelectDraft={(d) => {
                         setRecordStatus(null);
                         // 带上草稿的模板 id，恢复页面时加载对应模板（始发/过站/客运模板各不相同）
@@ -367,14 +397,13 @@ export default function ChecklistEditor({
             )}
 
             {viewMode === "flow" ? (
-                /* ============ 流程图全屏视图 ============ */
+                /* ============ 流程图全屏视图（状态映射由容器自行订阅 items） ============ */
                 <Card className="min-h-0 flex-1 overflow-hidden">
                     <CardContent>
-                        <FlowChart
+                        <MainFlowView
                             nodes={nodes}
-                            statusMap={statusMap}
+                            getNodeId={getNodeId}
                             currentStep={currentStep}
-                            size="full"
                             onSelect={(n) => {
                                 focusNode(n);
                                 setViewMode("form");
@@ -394,7 +423,6 @@ export default function ChecklistEditor({
                                 content: (
                                     <MainMonitoringPanel
                                         nodes={nodes}
-                                        items={items}
                                         currentStep={currentStep}
                                         formulaCtx={formulaCtx}
                                         getNodeId={getNodeId}
@@ -409,7 +437,6 @@ export default function ChecklistEditor({
                                     <AuxiliaryPanel
                                         activeNode={activeNode}
                                         activeNodeId={activeNodeId}
-                                        items={items}
                                         formulaCtx={formulaCtx}
                                         panelRef={auxPanelRef}
                                         setItemValue={setItemValue}
@@ -419,12 +446,12 @@ export default function ChecklistEditor({
                             panels.includes("video") && {
                                 key: "video",
                                 content: (
+                                    // 视频监管数据来自前端静态模块（videoFocus 按 category 本地解析，不请求后端）；
+                                    // 每条视频项自行订阅 store（useVideoCheckItem / set_vCheckIdN），此处不传 videoItems
                                     <VideoPanel
                                         videoFocus={videoFocus}
                                         category={template?.category}
-                                        videoItems={videoItems}
                                         panelRef={videoPanelRef}
-                                        setVideoValue={setVideoValue}
                                     />
                                 ),
                             },
@@ -433,11 +460,11 @@ export default function ChecklistEditor({
                 </div>
             )}
 
-            {/* ===== 右下角缩略图小窗（可拖动 / 可关闭） ===== */}
+            {/* ===== 右下角缩略图小窗（可拖动 / 可关闭；状态映射由容器自行订阅 items） ===== */}
             {thumbVisible && (
-                <DraggableThumb
+                <FlowThumbView
                     nodes={nodes}
-                    statusMap={statusMap}
+                    getNodeId={getNodeId}
                     currentStep={currentStep}
                     onSelectNode={(n) => {
                         focusNode(n);

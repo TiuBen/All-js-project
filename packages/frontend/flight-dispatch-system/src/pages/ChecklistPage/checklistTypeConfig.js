@@ -10,62 +10,65 @@
  */
 
 // 检查单类型：tplId 模板 + flightType 节点集（旧结构 flightTypes 用；新结构 schema 忽略 flightType）
-// 5 类各用一种颜色（避免使用全局主色蓝 / 琥珀）
 // label 与模板 category 完全对齐（= 模板文件名 = checklist_records.checklist_category 的落库值）：
 //   dropdown 选中什么，记录里存的 checklist_category 就是什么，前后端数据一致。
 // tplId 对应 data/checklists/*.json 文件名（中文名模板）；视频监管重点由后端按 category 匹配（含"客运"→客运视频 / 含"货运|顺航"→货运视频）
+//
+// 颜色统一用 hex 主色 color 维护：文字 / 圆点直接取主色，选中底色与边框用 withAlpha 从主色派生。
+// 不用 Tailwind 动态 class（`text-[${color}]` 这类运行时拼接 JIT 扫描不到，会失效）。
 export const TYPE_BUTTONS = [
     {
         label: "顺航检查单",
         routeId: "template1",
         tplId: "顺航检查单", // 空模板（暂无内容，先占位）
         flightType: "常规航班",
-        dot: "bg-green-500",
-        activeCls: "border-green-400 bg-green-100 text-green-800",
-        textCls: "text-green-800",
-        titleCls: "text-green-800",
+        color: "#059669", // 翠绿
     },
     {
         label: "货运始发航班",
         routeId: "template2",
         tplId: "货运始发航班", // 对应 data/checklists/货运始发航班.json
         flightType: "始发航班",
-        dot: "bg-purple-500",
-        activeCls: "border-purple-400 bg-purple-100 text-purple-800",
-        textCls: "text-purple-800",
-        titleCls: "text-purple-800",
+        color: "#0891B2", // 深青
     },
     {
         label: "货运过站航班",
         routeId: "template3",
         tplId: "货运过站航班", // 对应 data/checklists/货运过站航班.json
         flightType: "过站航班",
-        dot: "bg-cyan-500",
-        activeCls: "border-cyan-400 bg-cyan-100 text-cyan-800",
-        textCls: "text-cyan-800",
-        titleCls: "text-cyan-800",
+        color: "#7C3AED", // 紫
     },
     {
         label: "客运始发航班",
         routeId: "template4",
         tplId: "客运始发航班", // 对应 data/checklists/客运始发航班.json
         flightType: "航空器始发",
-        dot: "bg-teal-500",
-        activeCls: "border-teal-400 bg-teal-100 text-teal-800",
-        textCls: "text-teal-800",
-        titleCls: "text-teal-800",
+        color: "#D946EF", // 洋红
     },
     {
         label: "客运过站航班",
         routeId: "template5",
         tplId: "客运过站航班", // 对应 data/checklists/客运过站航班.json
         flightType: "航空器过站",
-        dot: "bg-lime-500",
-        activeCls: "border-lime-400 bg-lime-100 text-lime-800",
-        textCls: "text-lime-800",
-        titleCls: "text-lime-800",
+        color: "#6B2608", // 深棕
     },
 ];
+
+/**
+ * hex 主色 → 指定透明度的 rgba
+ * 用于从单一主色派生浅底 / 浅边框（inline style 渲染，绕开 Tailwind 动态类名限制）
+ * @param {string} hex 形如 #6B2608 或 #abc
+ * @param {number} alpha 0~1
+ * @returns {string} rgba(...) 字符串；非法输入原样返回
+ */
+export const withAlpha = (hex, alpha = 1) => {
+    const h = String(hex || "").replace("#", "").trim();
+    const full = h.length === 3 ? [...h].map((c) => c + c).join("") : h;
+    if (full.length !== 6) return hex;
+    const n = parseInt(full, 16);
+    if (Number.isNaN(n)) return hex;
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+};
 
 /** 按 label 快速查找（默认类型解析用） */
 export const TYPE_BY_LABEL = Object.fromEntries(TYPE_BUTTONS.map((b) => [b.label, b]));

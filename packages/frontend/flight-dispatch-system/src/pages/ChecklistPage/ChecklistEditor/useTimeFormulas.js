@@ -1,42 +1,59 @@
-import { useEffect, useMemo } from "react";
-import dayjs from "dayjs";
-import { evaluateFormula } from "../../../utils/timeFormula";
+import { useCallback, useMemo } from "react";
+import { useChecklistStore } from "../../../store/checklistStore";
 
 /**
  * ============================================================
  * useTimeFormulas —— 检查单填写页（ChecklistPage）私有 hook
  * ------------------------------------------------------------
- * 负责 v3 模板的公式时间计算：
- *   1. 构建 formulaCtx（variables / parameters / 事件时间 / 名称映射）
- *   2. 自动计算 effect：formula 求值 → 批量写入时间（迭代至稳定）
+ * 只负责构建公式求值上下文 formulaCtx（variables / parameters / 事件时间 / 名称映射）。
  *
- * 手动优先约定：
- *   items[key].auto === true  → 自动计算写入，可被重新计算覆盖
- *   手动输入（无 auto）与历史记录值 → 不覆盖
+ * ★ 引用稳定性（重渲染的关键）
+ *   formulaCtx 的依赖只有 template / nodes / flight / getNodeId —— **不含 items / header**。
+ *   原来把 items、header 作为依赖，导致"填任何一项 → formulaCtx 重建 →
+ *   所有带 formula 的卡片 props 变化 → memo 全部失效、整列卡片重渲染"。
+ *   现在改成：
+ *     - vars / getEventTime 用 getter 在**求值那一刻**从 store 现读（getState()），
+ *       结果永远是最新的，不需要把它们放进依赖里
+ *     - formulaCtx 对象本身在整个填写过程中引用不变 → memo(卡片) 只受"自己那一项"影响
  *
- * @param {Object} 入参 { template, nodes, items, header, flight, setItems }
+ * 自动计算（formula → 写回 items）不在这里做，见 Components/TimeFormulaEngine.jsx：
+ * 那部分必须跟随 items 变化，放在一个只订阅 items、渲染 null 的引擎组件里，
+ * 才不至于把整个编辑页拖进重渲染。
+ *
+ * @param {Object} 入参 { template, nodes, flight }
  * @returns {{ formulaCtx, getNodeId }}
  * ============================================================
  */
-export default function useTimeFormulas({ template, nodes, items, header, flight, setItems }) {
+export default function useTimeFormulas({ template, nodes, flight }) {
     // 节点定位键：新结构用全局 id；兼容旧结构 source.seq / seq
-    const getNodeId = (n) => n?.id ?? n?.source?.seq ?? n?.seq;
+    // useCallback([])：引用永久稳定 → memo 卡片不会因它而刷新
+    const getNodeId = useCallback((n) => n?.id ?? n?.source?.seq ?? n?.seq, []);
 
-    // 公式求值上下文：变量来源 + 机型参数表 + 事件时间 + 名称映射
     const formulaCtx = useMemo(() => {
         const paramMap = {};
         (template?.parameters || []).forEach((p) => (paramMap[p.code] = p));
         const varDefs = template?.variables || {};
+        const eventTime = (eventId) => {
+            const st = useChecklistStore.getState();
+            const refNode = (nodes || []).find((n) => n.eventId === eventId);
+            if (!refNode) return null;
+            return st.items[`main-${getNodeId(refNode)}`]?.time || null;
+        };
+
         return {
-            vars: {
-                // 变量来源：航班头部 / 航班原始字段；机必备必填（默认 B757）
-                actualLanding: header.landingTimeLocal || flight?.landingTimeUtc || flight?.raw?.aldt || "",
-                estimatedLanding: flight?.raw?.eldt || "",
-                cobt: flight?.raw?.cobt || "",
-                ctot: flight?.raw?.ctot || "",
-                aircraftType: flight?.aircraftType || header.aircraftType || "",
-                demandGroundPower: "",
-                demandWater: "",
+            // 变量来源：航班头部 / 航班原始字段；机必备必填（默认 B757）
+            // getter 现读 store.header —— 落地时间改动后无需重建本对象即可生效
+            get vars() {
+                const header = useChecklistStore.getState().header || {};
+                return {
+                    actualLanding: header.landingTimeLocal || flight?.landingTimeUtc || flight?.raw?.aldt || "",
+                    estimatedLanding: flight?.raw?.eldt || "",
+                    cobt: flight?.raw?.cobt || "",
+                    ctot: flight?.raw?.ctot || "",
+                    aircraftType: flight?.aircraftType || header.aircraftType || "",
+                    demandGroundPower: "",
+                    demandWater: "",
+                };
             },
             paramValue: (code, ac) => paramMap[code]?.values?.[ac] ?? null,
             // 机型宽窄判断（choice 条件分支用）：窄体机名单，其余视为宽体机
@@ -44,55 +61,11 @@ export default function useTimeFormulas({ template, nodes, items, header, flight
                 const code = String(ac || "").toUpperCase();
                 return ["B737", "B757", "B718", "A319", "A320", "A321"].some((k) => code.startsWith(k));
             },
-            getEventTime: (eventId) => {
-                const refNode = nodes.find((n) => n.eventId === eventId);
-                if (!refNode) return null;
-                return items[`main-${getNodeId(refNode)}`]?.time || null;
-            },
+            getEventTime: eventTime,
             varName: (ref) => varDefs[ref]?.name || ref,
-            eventName: (eventId) => nodes.find((n) => n.eventId === eventId)?.name || eventId,
+            eventName: (eventId) => (nodes || []).find((n) => n.eventId === eventId)?.name || eventId,
         };
-    }, [template, header, flight, nodes, items]);
-
-    // 自动计算：迭代至稳定；手动输入过的节点（无 auto）不覆盖
-    useEffect(() => {
-        if (!template || !nodes.length) return;
-        const next = { ...items };
-
-        // HH:mm → 完整 datetime（补当天日期），供"实际时间" datetime-local 输入使用
-        const toFullTime = (hm) => dayjs().format("YYYY-MM-DD") + "T" + hm;
-
-        // toFull=true：aux 实际时间（完整 datetime）；toFull=false：main 节点（HH:mm）
-        const setIfAuto = (key, formula, toFull = false) => {
-            if (!formula) return false;
-            const cur = next[key];
-            if (cur?.time && !cur?.auto) return false; // 手动/历史值 → 不覆盖
-            const r = evaluateFormula(formula, formulaCtx);
-            if (r.ok && r.kind === "time") {
-                const v = toFull ? toFullTime(r.value) : r.value;
-                if ((cur?.time || "") !== v) {
-                    next[key] = { ...(cur || {}), time: v, auto: true };
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        for (let round = 0; round < nodes.length + 2; round++) {
-            let changed = false;
-            for (const n of nodes) {
-                // main 节点：实际完成时间默认填系统计算时间（完整 datetime，手动优先）
-                changed = setIfAuto(`main-${getNodeId(n)}`, n.formula, true) || changed;
-                // aux 辅助项：实际时间默认填系统计算时间（完整 datetime，手动优先）
-                for (const a of n.auxiliaries || []) {
-                    changed = setIfAuto(`aux-${a.id ?? a.row}`, a.formula, true) || changed;
-                }
-            }
-            if (!changed) break;
-        }
-        if (JSON.stringify(next) !== JSON.stringify(items)) setItems(next);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [template, nodes, formulaCtx, items]);
+    }, [template, nodes, flight, getNodeId]);
 
     return { formulaCtx, getNodeId };
 }

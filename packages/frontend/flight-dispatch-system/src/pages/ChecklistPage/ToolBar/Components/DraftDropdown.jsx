@@ -1,12 +1,15 @@
 /**
- * 草稿箱 dropmenu —— 在"保存草稿"按钮后展示
- * 列出当前未完成检查单草稿（最多 5 个），点击切换
+ * 草稿箱 dropdown —— 工具栏右侧（原"保存草稿"按钮的位置）
+ * 列出浏览器本地保存的未完成检查单草稿（最多 5 个），点击切换。
+ *
+ * 渲染性能：只订阅草稿**条数**（角标用），完整列表在展开时才用
+ * useDraftStore.getState() 现取 —— 否则每 800ms 一次的草稿落盘都会
+ * 让这个下拉（连带工具栏）重渲染。
  */
 import { useState, useEffect, useRef } from "react";
-import { useDraftStore } from "../../../store/draftStore";
-import { Button } from "../../../components/ui/button";
+import { useDraftStore } from "../../../../store/draftStore";
+import { Button } from "../../../../components/ui/button";
 import { Inbox, Trash2, Clock, ChevronDown } from "lucide-react";
-import { cn } from "../../../lib/utils";
 
 function timeAgo(iso) {
     if (!iso) return "";
@@ -18,7 +21,7 @@ function timeAgo(iso) {
 }
 
 export default function DraftDropdown({ onSelect }) {
-    const drafts = useDraftStore((s) => s.drafts);
+    const draftCount = useDraftStore((s) => s.drafts.length);
     const removeDraft = useDraftStore((s) => s.removeDraft);
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
@@ -32,13 +35,16 @@ export default function DraftDropdown({ onSelect }) {
         return () => document.removeEventListener("mousedown", handler);
     }, [open]);
 
+    // 展开时才读取完整列表（不订阅，避免落盘即重渲染）
+    const drafts = open ? useDraftStore.getState().drafts : [];
+
     return (
         <div className="relative" ref={ref}>
             <Button variant="outline" size="sm" onClick={() => setOpen((v) => !v)} title="查看草稿箱">
                 <Inbox size={14} /> 草稿箱
-                {drafts.length > 0 && (
+                {draftCount > 0 && (
                     <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
-                        {drafts.length}
+                        {draftCount}
                     </span>
                 )}
                 <ChevronDown size={12} />
@@ -82,6 +88,9 @@ export default function DraftDropdown({ onSelect }) {
                                 </div>
                             ))
                         )}
+                    </div>
+                    <div className="border-t border-slate-100 bg-slate-50/60 px-3 py-1.5 text-[10px] text-slate-400">
+                        草稿保存在浏览器本地 · 编辑时自动保存
                     </div>
                 </div>
             )}
