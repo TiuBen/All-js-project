@@ -6,7 +6,7 @@ import VideoCheckItem from "./VideoCheckItem";
  * ============================================================
  * VideoPanel —— 视频监管检查重点面板（填写模式）
  * ------------------------------------------------------------
- * 数据源：videoFocus（前端静态模块 pages/ChecklistPage/videoFocus，
+ * 数据源：videoFocus（前端静态模块 pages/ChecklistPage/utils，
  *         按检查单 category 本地解析，不再请求后端），按 groups 分组：
  *   - 每个 group 是"视频监管检查重点（xxx）"大类，items 为子条目
  *   - 子条目含 applicable（全部/客运）：货运模板下隐藏"客运"限定条目

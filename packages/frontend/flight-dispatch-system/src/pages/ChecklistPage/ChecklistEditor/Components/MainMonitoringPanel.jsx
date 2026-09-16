@@ -1,7 +1,6 @@
 import { useCallback, useRef } from "react";
 import { ListChecks } from "lucide-react";
 import MainCheckItem from "./MainCheckItem";
-import { useChecklistStore } from "../../../../store/checklistStore";
 
 /**
  * ============================================================
@@ -14,10 +13,11 @@ import { useChecklistStore } from "../../../../store/checklistStore";
  * 本组件只负责容器/滚动/锚点等布局职责，单张卡片的展示与交互
  * 全部下沉到同目录的 MainCheckItem（memo 化，见其注释）。
  *
- * 渲染性能：
- *   面板**自行订阅 items**（而不是由编辑器透传）。编辑器因此不必订阅 items，
- *   改一项时只有本面板重渲染；卡片 props 里未改动项的 item 仍是原引用、
- *   formulaCtx 引用稳定 → memo 命中，只有被编辑的那张卡真正重渲染。
+ * ★ 渲染性能：本面板**不订阅 items**
+ *   逐项数据由每张 MainCheckItem 自己按 nodeId 订阅（useMainItem）。
+ *   以前这里写 `useChecklistStore(s => s.items)`，结果是"填任何一项 →
+ *   面板重渲染 → nodes.map 重跑一遍 → 所有卡片都拿到新 element 走一次 render"，
+ *   视觉上就是整列卡片闪一下。订阅下沉后，改一项只有那一张卡真正重渲染。
  * ============================================================
  * @param {Array}    nodes        主监控节点数组
  * @param {string|number} currentStep 当前聚焦节点 id
@@ -35,7 +35,6 @@ export default function MainMonitoringPanel({
     onFocusNode,
     setItemValue,
 }) {
-    const items = useChecklistStore((s) => s.items); // 逐项填写数据（keyed by `main-{nodeId}`）
     const mainTableRef = useRef(null); // 横向滚动容器（滚轮 → 水平移动）
 
     // 滚轮横滚：内容横向溢出时 preventDefault + scrollBy smooth
@@ -80,8 +79,6 @@ export default function MainMonitoringPanel({
                                 node={n}
                                 index={index}
                                 nodeId={nid}
-                                // 传原始引用（勿写 || {}）：未填写时由组件内部兜底，否则每次新对象会让 memo 失效
-                                item={items[`main-${nid}`]}
                                 isActive={currentStep === nid}
                                 // 只有带公式的节点需要求值上下文；其引用稳定，不会破坏其他卡片的 memo
                                 formulaCtx={n.formula ? formulaCtx : undefined}

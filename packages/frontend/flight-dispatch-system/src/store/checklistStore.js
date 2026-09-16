@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 import { checklistsApi } from '../api'
 import { useDraftStore, MAX_DRAFTS } from './draftStore'
-import { resolveVideoFocus, ALL_VIDEO_CHECK_IDS } from '../pages/ChecklistPage/videoFocus'
+import {
+  resolveVideoFocus,
+  ALL_VIDEO_CHECK_IDS,
+  getTemplateById,
+} from '../pages/ChecklistPage/utils'
 
 // ============================================================
 // 草稿自动落盘（浏览器本地无感保存）
@@ -124,22 +128,24 @@ export const useChecklistStore = create((set, get) => {
     // 视频监管逐项 setter（set_vCheckId1、set_vCheckId2 ...）
     ...videoCheckSetters,
 
+    /**
+     * 加载检查单模板 —— **纯本地、零网络**
+     * 模板已按 category 穷举静态化（pages/ChecklistPage/utils，编译期打包），
+     * 直接查表即可；切换检查单类型不再有请求往返与 loading 空窗。
+     * 保留 async 签名是为兼容既有 await 调用方（ChecklistPage / ChecklistEditor）。
+     * @param {string} templateId 模板 id（= 文件名 = checklist_category）
+     * @returns {Promise<Object>} 模板对象；无匹配抛错（由调用方兜底）
+     */
     loadTemplate: async (templateId) => {
-      set({ templateLoading: true })
-      try {
-        const tpl = await checklistsApi.getTemplate(templateId)
-        // videoFocus 已内联到前端（pages/ChecklistPage/videoFocus），此处忽略接口返回的同名字段
-        const { videoFocus: _ignored, ...templateBody } = tpl
-        set({
-          template: templateBody,
-          // 本地解析：客运 → 客运版；货运 → 货运版；顺航 → 顺航版（顺航为独立一份）
-          videoFocus: resolveVideoFocus(templateBody.category),
-          templateLoading: false,
-        })
-      } catch (err) {
-        set({ templateLoading: false })
-        throw err
-      }
+      const tpl = getTemplateById(templateId)
+      if (!tpl) throw new Error(`未找到检查单模板：${templateId}`)
+      set({
+        template: tpl,
+        // 本地解析：客运 → 客运版；货运 → 货运版；顺航 → 顺航版（顺航为独立一份）
+        videoFocus: resolveVideoFocus(tpl.category),
+        templateLoading: false,
+      })
+      return tpl
     },
 
     setFlight: (flight) => set({ flight, header: { flightNo: flight?.flightNo || '', aircraftType: flight?.aircraftType || '' } }),
@@ -299,6 +305,22 @@ export const useChecklistStore = create((set, get) => {
  * @param {string} id 如 "vCheckId2"
  */
 export const useVideoCheckItem = (id) => useChecklistStore((s) => s.videoItems[id])
+
+/**
+ * 订阅单项主监控填写数据（key = `main-{nodeId}`）
+ * selector 只取自己那一项 → 填别的节点时返回同一引用，本卡片不重渲染。
+ * 这是"改一项、整列卡片都跟着走一遍 render"的根治手段：
+ * 面板不再订阅整个 items，订阅下沉到每张卡片自己身上。
+ * @param {string|number} nodeId 节点定位键（getNodeId(node) 的结果）
+ */
+export const useMainItem = (nodeId) => useChecklistStore((s) => s.items[`main-${nodeId}`])
+
+/**
+ * 订阅单项辅助监控填写数据（key = `aux-{id|row}`）
+ * 同上，按 key 逐项订阅，避免面板整体订阅 items。
+ * @param {string} key items 里的 key（`aux-${aux.id ?? aux.row}`）
+ */
+export const useAuxItem = (key) => useChecklistStore((s) => s.items[key])
 
 /**
  * 取单项的 setter（store 里的 set_vCheckIdN），引用稳定

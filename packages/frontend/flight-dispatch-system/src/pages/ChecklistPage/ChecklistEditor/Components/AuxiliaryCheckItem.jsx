@@ -2,6 +2,7 @@ import { memo } from "react";
 import { cn } from "../../../../lib/utils";
 import { evaluateFormula } from "../../../../utils/timeFormula";
 import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../../CommonComponents/statusBadge";
+import { useAuxItem } from "../../../../store/checklistStore";
 
 /**
  * ============================================================
@@ -10,24 +11,27 @@ import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../../Co
  * 由 AuxiliaryPanel 渲染，一行 = 当前激活节点下的一条辅助监控指标：
  *   ↳ 名称 / 描述 / 状态 / 系统计算时间（formula 只读结果）/ 实际时间 / 备注
  *
- * 纯展示组件（数据由 props 传入，不直接读 store），面板负责列表容器与滚动。
+ * ★ 自行订阅自己那一项（useAuxItem(itemKey)）
+ *   面板不再订阅整个 items，订阅下沉到行；改一行只让该行重渲染，
+ *   同一节点下其他辅助行连 render 都不会被调用。
  *
- * 渲染性能（memo 生效的前提，面板侧需配合）：
- *   - aux / setItemValue 稳定引用；item 传原始引用（勿写 items[key] || {}）
- *   - formulaCtx 只在 aux.formula 存在时传入（它在 items 变化时重建）
+ * memo 生效的前提（面板侧需配合）：
+ *   - aux / setItemValue 稳定引用；formulaCtx 只在 aux.formula 存在时传入
+ *   - itemKey 由 aux.id ?? aux.row 推导，引用稳定（字符串）
  *
  * 锚点：isFirst 为 true 时渲染 id=anchorId，供主要面板点击节点后
  *       scrollIntoView 定位到本组辅助项首行。
  * ============================================================
  * @param {Object}   props.aux          辅助项定义（{ id, row, name, desc, formula }）
- * @param {Object}   props.item         该辅助项填写数据 { status, time, auto, note }
  * @param {string}   props.itemKey      items 里的 key（`aux-${aux.id ?? aux.row}`）
  * @param {string}   [props.anchorId]   首行的滚动锚点 id（非首行不传）
  * @param {Object}   [props.formulaCtx] 公式求值上下文（仅当 aux.formula 存在时传入）
  * @param {Function} props.setItemValue 写入单项字段 (itemKey, field, value) => void
  * ============================================================
  */
-export default memo(function AuxiliaryCheckItem({ aux, item, itemKey, anchorId, formulaCtx, setItemValue }) {
+export default memo(function AuxiliaryCheckItem({ aux, itemKey, anchorId, formulaCtx, setItemValue }) {
+    // 只订阅自己那一项：其他辅助项填写时本行不重渲染
+    const item = useAuxItem(itemKey);
     const data = item || {};
 
     return (

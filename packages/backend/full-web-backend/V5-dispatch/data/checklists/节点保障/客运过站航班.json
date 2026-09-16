@@ -74,8 +74,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "9f8dedb9-c36e-446e-8b23-9d3e4fbb84f7",
@@ -96,8 +95,7 @@
           "ref": "aircraftSeats"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "171b4956-e417-471a-bc1d-334d190f72c6",
@@ -123,8 +121,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "7e030894-51a5-43b6-83ca-0961a32ec03a",
@@ -150,8 +147,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb",
@@ -178,8 +174,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "6b0c6528-75c7-495b-975f-90e85acd8995",
@@ -197,8 +192,7 @@
         "ref": "E005",
         "time": "actual"
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "6327dff2-8d2c-44e1-8519-f72121dcb992",
@@ -225,8 +219,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "8d188972-9119-4d3c-8e5a-39cb5cf45b40",
@@ -252,8 +245,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "f64c0e41-de96-4f71-8754-3f4022ddf826",
@@ -279,8 +271,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "8312ff54-8dc5-4d87-8006-af86ca4dc7f0",
@@ -307,8 +298,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "69c82eb4-5c85-40ac-a3ad-64f60cae38b6",
@@ -335,8 +325,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "99c2588a-efb1-4e47-8bf9-1488d3ca2413",
@@ -362,8 +351,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "632974e5-4bde-4508-96f8-6a6a3f632045",
@@ -389,8 +377,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "9ce4bce8-77f3-4a73-9445-e6ea15b8b1ee",
@@ -416,8 +403,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "d2c3b1da-d5b0-47fc-bef5-858c018a084c",
@@ -435,8 +421,7 @@
         "ref": "E014",
         "time": "actual"
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "e3c8ffe5-bc97-4841-990c-01016926be64",
@@ -462,8 +447,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "c8b6ded2-0722-4e4f-8481-072ded9d2ad2",
@@ -489,8 +473,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     }
   ]
 }

@@ -168,8 +168,7 @@
           }
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "851d9108-f8fd-4745-8bc2-a1bccbdb3aa2",
@@ -197,8 +196,7 @@
           }
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "c5db665f-ab90-4ac4-b2af-a81c70479a3d",
@@ -223,8 +221,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "265107d1-54ee-459e-be4a-77af82f9c826",
@@ -252,8 +249,7 @@
           }
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "a2b63350-ccd7-49d3-99d5-ce3b1a8f36dc",
@@ -277,8 +273,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "808efbac-830a-4cf4-8520-507ed3d6d56c",
@@ -294,8 +289,7 @@
         "ref": "E003",
         "time": "actual"
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "5583d52a-2338-46e4-83d6-742e675f78b6",
@@ -320,8 +314,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "34615df6-e064-45f8-8b4f-afe4220a9e5d",
@@ -345,8 +338,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "bac9af15-7f72-4097-aa51-3c28745613db",
@@ -370,8 +362,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "f634af19-f656-4f84-8a21-e4c89474ec87",
@@ -395,8 +386,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "1055f883-dec2-4420-ae65-1616dd9f7c3e",
@@ -412,8 +402,7 @@
         "ref": "E010",
         "time": "actual"
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "3d9839f8-093d-4540-93aa-b08a717ecf0a",
@@ -437,8 +426,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     },
     {
       "uuid": "a81dc4b3-1a95-4017-b747-2c451812f60f",
@@ -463,8 +451,7 @@
           "unit": "minutes"
         }
       },
-      "auxiliaries": [],
-      "videoSupervision": []
+      "auxiliaries": []
     }
   ]
 }

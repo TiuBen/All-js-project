@@ -2,6 +2,7 @@ import { memo } from "react";
 import { cn } from "../../../../lib/utils";
 import { evaluateFormula } from "../../../../utils/timeFormula";
 import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../../CommonComponents/statusBadge";
+import { useMainItem } from "../../../../store/checklistStore";
 
 /**
  * ============================================================
@@ -10,19 +11,20 @@ import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../../Co
  * 由 MainMonitoringPanel 横向流式渲染，一张卡片 = 一个主监控节点：
  *   序号 + 名称 / 描述 / 最晚保障时间 / formula 计算明细 / 状态 / 实际完成时间
  *
- * 纯展示组件（数据由 props 传入，不直接读 store）：
- *   面板负责滚动 / 锚点 / 聚焦等布局职责，卡片只管自己这一张。
+ * ★ 自行订阅自己那一项（useMainItem(nodeId)）
+ *   面板**不再订阅整个 items**（否则填任何一项都会让整列 map 重跑一遍、
+ *   所有卡片都跟着走一次 render，即使 memo 最终没提交）。订阅下沉到卡片后：
+ *   改 A 卡片 → 只有 A 的 store 切片变化 → 只有 A 重渲染，
+ *   其余卡片连 render 都不会被调用。
  *
- * 渲染性能（memo 生效的前提，面板侧需配合）：
+ * memo 生效的前提（面板侧需配合）：
  *   - onFocusNode / setItemValue 必须是稳定引用（useCallback / store 方法）
- *   - item 传原始引用，**勿写 items[key] || {}**（每次新建对象会让 memo 失效；空值在本组件内兜底）
- *   - formulaCtx 只在 node.formula 存在时传入：它在 items 变化时会重建，
- *     无公式的节点不传，卡片即可在别的节点填写时保持不重渲染
+ *   - formulaCtx 只在 node.formula 存在时传入，且其引用稳定（见 useTimeFormulas）
+ *   - node / index / nodeId 引用稳定（来自 nodes 数组，不随填写变化）
  * ============================================================
  * @param {Object}   props.node         主监控节点（{ id, name, desc, formula, auxiliaries, ... }）
  * @param {number}   props.index        流内序号（从 0 起，展示为 index+1）
  * @param {string|number} props.nodeId  节点定位键（getNodeId(node) 的结果，与 items key 对应）
- * @param {Object}   props.item         该节点填写数据 { status, time, auto, note }
  * @param {boolean}  props.isActive     是否为当前聚焦节点（高亮）
  * @param {Object}   [props.formulaCtx] 公式求值上下文（仅当 node.formula 存在时传入）
  * @param {Function} props.onFocusNode  点击卡片 → 聚焦该节点 (node) => void
@@ -33,13 +35,14 @@ export default memo(function MainCheckItem({
     node,
     index,
     nodeId,
-    item,
     isActive = false,
     formulaCtx,
     onFocusNode,
     setItemValue,
 }) {
     const itemKey = `main-${nodeId}`;
+    // 只订阅自己那一项：其他节点填写时本卡片不重渲染
+    const item = useMainItem(nodeId);
     const data = item || {};
 
     return (

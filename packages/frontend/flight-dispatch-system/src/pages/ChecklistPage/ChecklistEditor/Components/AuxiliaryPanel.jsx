@@ -1,6 +1,5 @@
 import { ListChecks } from "lucide-react";
 import AuxiliaryCheckItem from "./AuxiliaryCheckItem";
-import { useChecklistStore } from "../../../../store/checklistStore";
 
 /**
  * ============================================================
@@ -13,7 +12,9 @@ import { useChecklistStore } from "../../../../store/checklistStore";
  * 本组件只负责标题栏、空态与列表容器，条目展示下沉到
  * 同目录的 AuxiliaryCheckItem（memo 化，见其注释）。
  *
- * 渲染性能：面板自行订阅 items（编辑器不订阅），memo 命中后只有被改的那一行重渲染。
+ * ★ 渲染性能：本面板**不订阅 items**
+ *   每行数据由 AuxiliaryCheckItem 自己按 itemKey 订阅（useAuxItem），
+ *   改一行只重渲染那一行，面板本身保持静止。
  * ============================================================
  * @param {Object|null} activeNode   当前激活节点（无则显示占位提示）
  * @param {string|number} activeNodeId 当前激活节点 id
@@ -23,7 +24,6 @@ import { useChecklistStore } from "../../../../store/checklistStore";
  * ============================================================
  */
 export default function AuxiliaryPanel({ activeNode, activeNodeId, formulaCtx, panelRef, setItemValue }) {
-    const items = useChecklistStore((s) => s.items); // 逐项填写数据（keyed by `aux-{id|row}`）
 
     return (
         <div className="flex h-full min-w-0 flex-col rounded-lg border border-slate-300 bg-white">
@@ -53,8 +53,6 @@ export default function AuxiliaryPanel({ activeNode, activeNodeId, formulaCtx, p
                                 <AuxiliaryCheckItem
                                     key={aKey}
                                     aux={a}
-                                    // 传原始引用（勿写 || {}）：保持 memo 有效，空值由组件内部兜底
-                                    item={items[aKey]}
                                     itemKey={aKey}
                                     // 仅首个辅助项带锚点：主要面板点击节点后 scrollIntoView 定位
                                     anchorId={ai === 0 ? `aux-anchor-${activeNodeId}` : undefined}
