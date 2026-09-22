@@ -52,7 +52,6 @@
   "schema": [
     {
       "uuid": "dcf4ee8b-7d6f-4fcf-8d7c-682b824a584f",
-      "id": 1,
       "eventId": "E001",
       "code": "AIRCRAFT_IN_POSITION",
       "category": "main",
@@ -78,7 +77,6 @@
     },
     {
       "uuid": "9f8dedb9-c36e-446e-8b23-9d3e4fbb84f7",
-      "id": 2,
       "eventId": "E002",
       "code": "CHOCK_AND_CONE_PLACEMENT",
       "category": "main",
@@ -99,7 +97,6 @@
     },
     {
       "uuid": "171b4956-e417-471a-bc1d-334d190f72c6",
-      "id": 3,
       "eventId": "E003",
       "code": "BRIDGE_DOCKING",
       "category": "main",
@@ -125,7 +122,6 @@
     },
     {
       "uuid": "7e030894-51a5-43b6-83ca-0961a32ec03a",
-      "id": 4,
       "eventId": "E004",
       "code": "STAIR_DOCKING",
       "category": "main",
@@ -151,7 +147,6 @@
     },
     {
       "uuid": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb",
-      "id": 5,
       "eventId": "E005",
       "code": "CABIN_DOOR_OPEN",
       "category": "main",
@@ -165,8 +160,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E003",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "171b4956-e417-471a-bc1d-334d190f72c6"
         },
         "right": {
           "type": "literal",
@@ -178,7 +173,6 @@
     },
     {
       "uuid": "6b0c6528-75c7-495b-975f-90e85acd8995",
-      "id": 6,
       "eventId": "E006",
       "code": "CARGO_DOOR_OPEN",
       "category": "main",
@@ -189,14 +183,13 @@
       "formula": {
         "type": "ref",
         "target": "event",
-        "ref": "E005",
-        "time": "actual"
+        "time": "actual",
+        "refUUID": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb"
       },
       "auxiliaries": []
     },
     {
       "uuid": "6327dff2-8d2c-44e1-8519-f72121dcb992",
-      "id": 7,
       "eventId": "E007",
       "code": "CABIN_CLEANING",
       "category": "main",
@@ -210,8 +203,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E005",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb"
         },
         "right": {
           "type": "literal",
@@ -223,7 +216,6 @@
     },
     {
       "uuid": "8d188972-9119-4d3c-8e5a-39cb5cf45b40",
-      "id": 8,
       "eventId": "E008",
       "code": "WASTEWATER_SERVICE",
       "category": "main",
@@ -249,7 +241,6 @@
     },
     {
       "uuid": "f64c0e41-de96-4f71-8754-3f4022ddf826",
-      "id": 9,
       "eventId": "E009",
       "code": "WATER_SERVICE",
       "category": "main",
@@ -275,7 +266,6 @@
     },
     {
       "uuid": "8312ff54-8dc5-4d87-8006-af86ca4dc7f0",
-      "id": 10,
       "eventId": "E010",
       "code": "CATERING_SUPPLY",
       "category": "main",
@@ -289,8 +279,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E005",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb"
         },
         "right": {
           "type": "literal",
@@ -302,7 +292,6 @@
     },
     {
       "uuid": "69c82eb4-5c85-40ac-a3ad-64f60cae38b6",
-      "id": 11,
       "eventId": "E011",
       "code": "FUELING",
       "category": "main",
@@ -316,8 +305,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E005",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "555a9601-fbb8-4c0d-adcd-dcdeaaaeb5bb"
         },
         "right": {
           "type": "literal",
@@ -329,7 +318,6 @@
     },
     {
       "uuid": "99c2588a-efb1-4e47-8bf9-1488d3ca2413",
-      "id": 12,
       "eventId": "E012",
       "code": "HANDLER_AND_EQUIPMENT_ARRIVAL",
       "category": "main",
@@ -355,7 +343,6 @@
     },
     {
       "uuid": "632974e5-4bde-4508-96f8-6a6a3f632045",
-      "id": 13,
       "eventId": "E013",
       "code": "CARGO_BAGGAGE_LOAD",
       "category": "main",
@@ -381,7 +368,6 @@
     },
     {
       "uuid": "9ce4bce8-77f3-4a73-9445-e6ea15b8b1ee",
-      "id": 14,
       "eventId": "E014",
       "code": "CABIN_DOOR_CLOSE",
       "category": "main",
@@ -407,7 +393,6 @@
     },
     {
       "uuid": "d2c3b1da-d5b0-47fc-bef5-858c018a084c",
-      "id": 15,
       "eventId": "E015",
       "code": "BRIDGE_RETRACT",
       "category": "main",
@@ -418,14 +403,13 @@
       "formula": {
         "type": "ref",
         "target": "event",
-        "ref": "E014",
-        "time": "actual"
+        "time": "actual",
+        "refUUID": "9ce4bce8-77f3-4a73-9445-e6ea15b8b1ee"
       },
       "auxiliaries": []
     },
     {
       "uuid": "e3c8ffe5-bc97-4841-990c-01016926be64",
-      "id": 16,
       "eventId": "E016",
       "code": "TOW_AND_MECHANIC_ARRIVAL",
       "category": "main",
@@ -451,7 +435,6 @@
     },
     {
       "uuid": "c8b6ded2-0722-4e4f-8481-072ded9d2ad2",
-      "id": 17,
       "eventId": "E017",
       "code": "PUSHBACK",
       "category": "main",

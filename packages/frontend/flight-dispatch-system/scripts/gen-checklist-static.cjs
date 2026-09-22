@@ -3,7 +3,7 @@
  * 生成前端静态检查单数据（节点保障模板 + 视频监管重点）
  * ------------------------------------------------------------
  * 用途：把后端 `data/checklists/**／*.json` 全量内联成前端模块，
- *       落到 `src/pages/ChecklistPage/utils/`，使模板在**编译期**确定，
+ *       落到 `ChecklistEditor/Template/TemplateJson/`，使模板在**编译期**确定，
  *       前端不再请求 `/api/checklists/templates`。
  *
  * 用法（项目根，需已装 node）：
@@ -31,10 +31,13 @@ const SRC = path.join(
   "packages/backend/full-web-backend/V5-dispatch/data/checklists"
 );
 // 前端产物目录（本脚本上一级 = flight-dispatch-system/）
-const OUT = path.resolve(__dirname, "../src/pages/ChecklistPage/utils");
+const OUT = path.resolve(
+  __dirname,
+  "../src/pages/ChecklistPage/ChecklistEditor/Template/TemplateJson"
+);
 
 // 源文件（相对 SRC）→ [产物文件名, 导出标识符, 产物中文注释名]
-// 导出标识符 = 产物文件名去掉 .js（前端按同名 import，如 `import cargoBypassFlight from "../utils/cargoBypassFlight"`）
+// 导出标识符 = 产物文件名去掉 .js（前端按同名 import，如 `import cargoBypassFlight from "./TemplateJson/cargoBypassFlight"`）
 const MAP = [
   ["节点保障/客运始发航班.json", "passengerInitFlight.js", "passengerInitFlight", "客运始发航班"],
   ["节点保障/客运过站航班.json", "passengerBypassFlight.js", "passengerBypassFlight", "客运过站航班"],
@@ -68,8 +71,8 @@ function build({ rel, outName, varName, title, data }) {
     " * 编译期即随前端产物打包，不再请求 /api/checklists/templates。",
     ` * 顶层字段：${keys.join(" / ")}`,
     isVideo
-      ? " * 结构：groups[] → items[]（id 为全局唯一 vCheckId，store 据此生成逐项 setter）"
-      : " * 结构：schema[]（主监控节点）→ auxiliaries[]（辅助监控项），节点带 formula 供时间公式求值",
+      ? " * 结构：groups[] → items[]（每项以 uuid 为唯一身份，填写的 key 即 uuid）"
+      : " * 结构：schema[]（主监控节点）→ auxiliaries[]（辅助监控项），节点以 uuid 为唯一身份；\n *       节点带 formula 供时间公式求值，引用其它节点时用 refUUID（各模板 eventId 会撞号，不可跨模板引用）",
     " * ------------------------------------------------------------",
     " * ⚠️ 本文件由 scripts/gen-checklist-static.cjs 生成，请勿手改；",
     " *    改内容请改后端 JSON 后重跑该脚本。",

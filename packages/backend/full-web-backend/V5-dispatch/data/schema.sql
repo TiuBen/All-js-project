@@ -187,6 +187,7 @@ ALTER SEQUENCE public.fresh_air_cargo_id_seq OWNED BY public.fresh_air_cargo.id;
 
 CREATE TABLE public.manual_fips (
     id integer NOT NULL,
+    uuid character varying(64) NOT NULL DEFAULT gen_random_uuid()::text,
     task character varying(16),
     flight_no character varying(32) NOT NULL,
     origin_station character varying(16),
@@ -311,6 +312,14 @@ ALTER TABLE ONLY public.manual_fips
 
 
 --
+-- Name: manual_fips_uuid_key; Type: INDEX; Schema: public; Owner: postgres
+-- 航班唯一身份：创建航班时由数据库生成，检查单/草稿以此关联航班（不随航班号修改而变）
+--
+
+CREATE UNIQUE INDEX manual_fips_uuid_key ON public.manual_fips USING btree (uuid);
+
+
+--
 -- Name: idx_flights_date; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -325,10 +334,13 @@ CREATE INDEX idx_records_flight_date ON public.checklist_records USING btree (fl
 
 
 --
--- Name: idx_records_flight_unique; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_records_flight; Type: INDEX; Schema: public; Owner: postgres
+--
+-- 一个航班可以有多份检查单（同航班重填 / 换类型各一份）→ flight_id 只建普通索引，
+-- 不做唯一约束（否则第二次"新建"只能退化成覆盖旧记录）。
 --
 
-CREATE UNIQUE INDEX idx_records_flight_unique ON public.checklist_records USING btree (flight_id);
+CREATE INDEX idx_records_flight ON public.checklist_records USING btree (flight_id);
 
 
 --

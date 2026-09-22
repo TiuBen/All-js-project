@@ -42,8 +42,7 @@ export default function ChecklistTreeView({ template, record }) {
     // 新结构：schema 顶层；兼容旧：flightTypes
     const nodes = template?.schema || template?.flightTypes?.[flightType] || [];
 
-    // 节点定位键：新结构用 id；兼容旧结构 source.seq / seq
-    const getNodeId = (n) => n?.id ?? n?.source?.seq ?? n?.seq;
+    // 节点身份 = uuid（模板 id 已删除），key 直接用 n.uuid
 
     // 视频项：新结构节点顶层 videoSupervision[]；兼容旧 auxiliaries[].auxiliary[]
     const videoByNode = useMemo(() => {
@@ -60,7 +59,7 @@ export default function ChecklistTreeView({ template, record }) {
                     });
                 });
             }
-            if (list.length) map[getNodeId(n)] = list;
+            if (list.length) map[n.uuid] = list;
         });
         return map;
     }, [nodes]);
@@ -80,13 +79,13 @@ export default function ChecklistTreeView({ template, record }) {
             else pending++;
         };
         nodes.forEach((n) => {
-            const nid = getNodeId(n);
+            const nid = n.uuid;
             countItem(items[`main-${nid}`]);
             (n.auxiliaries || []).forEach((a) => {
-                const aKey = `aux-${a.id ?? a.row ?? a.source?.row}`;
-                countItem(items[aKey] || items[`aux-${a.row}`]);
+                const aKey = `aux-${a.uuid}`;
+                countItem(items[aKey]);
             });
-            (videoByNode[nid] || []).forEach((v) => countItem(videoItems[v.id || `video-${v.uuid}`]));
+            (videoByNode[nid] || []).forEach((v) => countItem(videoItems[v.uuid]));
         });
         return { ok, abnormal, pending };
     }, [nodes, items, videoItems, videoByNode]);
@@ -144,7 +143,7 @@ export default function ChecklistTreeView({ template, record }) {
                 ) : (
                     <ul className={cn(colCls)} style={{ columnGap: "0.75rem" }}>
                         {nodes.map((n, index) => {
-                            const nid = getNodeId(n);
+                            const nid = n.uuid;
                             const mainKey = `main-${nid}`;
                             const mainItem = items[mainKey] || {};
                             const isExpanded = expanded.has(nid);

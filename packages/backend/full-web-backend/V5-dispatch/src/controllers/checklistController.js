@@ -67,8 +67,8 @@ export const getRecord = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/checklists/records
- * 创建填写记录（必填：flightId + checklistCategory）
- * 一航班一检查单：flight_id 已有记录时后端自动转为更新（upsert），不会新建第二条
+ * **新建**填写记录（必填：flightId + checklistCategory）→ 永远 INSERT 一条新记录
+ * 一个航班允许多份检查单；要改已有记录必须走 PUT /records/:id（不存在隐式 upsert）
  */
 export const createRecord = asyncHandler(async (req, res) => {
   const { flightId, checklistCategory } = req.body;
@@ -83,7 +83,7 @@ export const createRecord = asyncHandler(async (req, res) => {
 
 /**
  * PUT /api/checklists/records/:id
- * 更新填写记录（局部更新）
+ * **更新**填写记录（只改 id 指定的这一条；局部更新，未传字段保持原值）
  */
 export const updateRecord = asyncHandler(async (req, res) => {
   const record = await checklistService.updateRecord(req.params.id, req.body);
@@ -94,7 +94,8 @@ export const updateRecord = asyncHandler(async (req, res) => {
 });
 
 /**
- * 删除填写记录
+ * DELETE /api/checklists/records/:id
+ * **删除**填写记录（只删 id 指定的这一条）
  */
 export const deleteRecord = asyncHandler(async (req, res) => {
   const deleted = await checklistService.deleteRecord(req.params.id);

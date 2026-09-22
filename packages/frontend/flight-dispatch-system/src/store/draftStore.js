@@ -53,13 +53,14 @@ export const useDraftStore = create((set, get) => ({
   drafts: readDrafts(),
 
   /**
-   * 添加/更新一个草稿（按 flightId 唯一），超额时截断最旧的
-   * @param {Object} draft 草稿对象
+   * 添加/更新一个草稿（按**草稿键**唯一：key = 航班键::模板id）
+   * 同航班的不同检查单类型各占一条，互不覆盖；超额时截断最旧的
+   * @param {Object} draft 草稿对象（须含 key / flightId）
    */
   upsertDraft: (draft) => {
-    if (!draft || !draft.flightId) return
+    if (!draft || !draft.key) return
     const list = get().drafts
-    const idx = list.findIndex((d) => d.flightId === draft.flightId)
+    const idx = list.findIndex((d) => d.key === draft.key)
     let next
     if (idx >= 0) {
       next = [...list]
@@ -72,8 +73,15 @@ export const useDraftStore = create((set, get) => ({
     set({ drafts: next })
   },
 
-  /** 按 flightId 移除草稿 */
-  removeDraft: (flightId) => {
+  /** 按草稿键移除一条草稿 */
+  removeDraft: (key) => {
+    const next = get().drafts.filter((d) => d.key !== key)
+    writeDrafts(next)
+    set({ drafts: next })
+  },
+
+  /** 移除某航班的全部草稿（提交成功后调用：该航班各类型草稿一起清） */
+  removeDraftsByFlight: (flightId) => {
     const next = get().drafts.filter((d) => d.flightId !== flightId)
     writeDrafts(next)
     set({ drafts: next })
@@ -85,6 +93,6 @@ export const useDraftStore = create((set, get) => ({
     set({ drafts: [] })
   },
 
-  /** 按 flightId 取一个草稿 */
-  getDraft: (flightId) => get().drafts.find((d) => d.flightId === flightId),
+  /** 按草稿键取一条草稿 */
+  getDraft: (key) => get().drafts.find((d) => d.key === key),
 }))

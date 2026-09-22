@@ -7,7 +7,7 @@ import { statusStyle, StatusIcon } from "./statusView";
  * ------------------------------------------------------------
  * 渲染一个主节点下的全部辅助监控指标（type: time）：
  *   标题行（名称 + 时间 + 状态） + 描述行（可换行） + 备注
- * 兼容新（a.id）与旧（a.row / a.source.row）定位键。
+ * 以辅助项 uuid 定位（`aux-${uuid}`）。
  * ============================================================
  */
 export default function AuxiliaryList({ auxiliaries = [], items = {} }) {
@@ -18,9 +18,9 @@ export default function AuxiliaryList({ auxiliaries = [], items = {} }) {
     return (
         <ul className="space-y-1 px-2 pb-2 pt-1">
             {auxiliaries.map((a, ai) => {
-                // 定位键：新结构 a.id；兼容旧结构 a.row / a.source.row
-                const aKey = `aux-${a.id ?? a.row ?? a.source?.row}`;
-                const aItem = items[aKey] || items[`aux-${a.row}`] || {};
+                // 定位键：辅助项 uuid（模板 id 已删除）
+                const aKey = `aux-${a.uuid}`;
+                const aItem = items[aKey] || {};
                 return (
                     <li key={aKey ?? `${ai}-aux`} className="rounded-md border border-slate-100 bg-white">
                         {/* 标题行：名称 + 时间 + 状态图标 */}

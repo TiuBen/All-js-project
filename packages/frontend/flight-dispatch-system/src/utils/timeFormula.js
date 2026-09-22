@@ -6,7 +6,9 @@ import dayjs from "dayjs";
  * ------------------------------------------------------------
  * 模板（schemaVersion 3.0-test）的节点 formula 结构：
  *   - { type: "ref", target: "var", ref: "actualLanding" }       变量引用（时间）
- *   - { type: "ref", target: "event", ref: "E002", time: "actual" } 参照节点事件（时间）
+ *   - { type: "ref", target: "event", refUUID: "<节点uuid>", time: "actual" }  参照节点事件（时间）
+ *     ⚠️ 事件关联用 **uuid**（refUUID）而非 eventId —— 各模板的 eventId 都是 E001 起编，
+ *        跨模板会撞号；uuid 才是全局唯一身份
  *   - { type: "literal", value: 10, unit: "minutes" }              字面量（分钟）
  *   - { type: "lookup", param: "UNLOAD_TIME", key: { ref 机型 } }  机型参数表查询（分钟）
  *   - { type: "binary", operator: "+"|"-", left, right }           二元运算（时间±分钟 / 分钟±分钟）
@@ -44,9 +46,9 @@ function evalNode(node, ctx) {
         return { ok: true, kind: "time", value: t.format("HH:mm") };
       }
       if (node.target === "event") {
-        const t = ctx.getEventTime?.(node.ref);
+        const t = ctx.getEventTime?.(node.refUUID);
         if (t == null || String(t).trim() === "") {
-          const name = ctx.eventName?.(node.ref) || node.ref;
+          const name = ctx.eventName?.(node.refUUID) || "参照节点";
           return { ok: false, kind: null, value: null, reason: `需先填写「${name}」` };
         }
         const d = toDayjs(t);
@@ -165,7 +167,7 @@ function evalNode(node, ctx) {
 /**
  * 求值节点 formula
  * @param {Object} formula 节点 formula
- * @param {Object} ctx { vars, paramValue(code, ac), getEventTime(eventId), varName(ref), eventName(eventId) }
+ * @param {Object} ctx { vars, paramValue(code, ac), getEventTime(refUUID), varName(ref), eventName(refUUID) }
  * @returns {{ok:boolean, kind:'time'|'minutes'|null, value:(string|number|null), reason:string}}
  */
 export function evaluateFormula(formula, ctx) {

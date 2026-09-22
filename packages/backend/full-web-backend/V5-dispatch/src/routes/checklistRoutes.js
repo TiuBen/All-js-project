@@ -48,7 +48,7 @@ router.get('/records/:id', checklistController.getRecord);
 
 /**
  * @route   POST /api/checklists/records
- * @desc    创建填写记录（一航班一检查单，flight_id 已存在则更新）
+ * @desc    新建填写记录（永远 INSERT 一条新记录，一个航班可有多份）
  *          必填：flightId、checklistCategory
  * @access  公开
  */
@@ -56,10 +56,17 @@ router.post('/records', checklistController.createRecord);
 
 /**
  * @route   PUT /api/checklists/records/:id
- * @desc    更新填写记录（局部更新）
+ * @desc    更新填写记录（只改 id 指定的这一条；局部更新）
  * @access  公开
  */
 router.put('/records/:id', checklistController.updateRecord);
+
+/**
+ * @route   PATCH /api/checklists/records/:id
+ * @desc    局部更新填写记录（与 PUT 等价的 REST 语义别名，同一控制器）
+ * @access  公开
+ */
+router.patch('/records/:id', checklistController.updateRecord);
 
 /**
  * @route   DELETE /api/checklists/records/:id

@@ -74,8 +74,12 @@ async function ensureTables() {
         updated_at TIMESTAMPTZ DEFAULT now()
       );
     `);
-    await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_records_flight_unique ON checklist_records(flight_id);`);
+    // flight_id 不唯一：一个航班可以有多份检查单（重填 / 换类型各一份），
+    // 唯一约束会让"新建"退化成覆盖旧记录 —— 只建普通索引供按航班反查。
+    await p.query(`CREATE INDEX IF NOT EXISTS idx_records_flight ON checklist_records(flight_id);`);
     await p.query(`CREATE INDEX IF NOT EXISTS idx_records_flight_date ON checklist_records(flight_date);`);
+    // 迁移：老库里若还留着 flight_id 唯一索引，启动时顺手摘掉（幂等）
+    await p.query(`DROP INDEX IF EXISTS idx_records_flight_unique;`);
     console.log('[DB] 表 checklist_records 已就绪');
 
     // ---------- 2. 历史航班流量表（fips） ----------

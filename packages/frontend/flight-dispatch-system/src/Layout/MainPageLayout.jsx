@@ -1,0 +1,100 @@
+import { useTabsStore } from "../store/tabsStore";
+import { useDraftStore } from "../store/draftStore";
+import { useNavigate, useLocation, Link, Outlet } from "react-router-dom";
+import { Plane, ClipboardCheck, ListChecks, CalendarDays, Leaf } from "lucide-react";
+import DigitalClock from "../components/DigitalClock";
+import { cn } from "../lib/utils";
+
+/**
+ * ============================================================
+ * MainPageLayout —— 主页面布局（顶部导航栏 + 内容区）
+ * ------------------------------------------------------------
+ * 在 App.jsx 顶层包裹所有路由：
+ *   - 顶部导航栏（全站固定，路径驱动高亮，检查单草稿数角标）
+ *   - 内容区 <main>（children = 各页面；页面内部可用
+ *     Layout/ContentLayout 再做左右布局）
+ * ============================================================
+ */
+
+const tabs = [
+    { id: "fips", label: "航班列表", icon: CalendarDays, path: "/fips" },
+    { id: "checklist", label: "检查单", icon: ClipboardCheck, path: "/checklist" },
+    { id: "special", label: "生鲜保障", icon: Leaf, path: "/special" },
+    { id: "records", label: "填写记录", icon: ListChecks, path: "/records" },
+];
+
+export default function MainPageLayout() {
+    // 高亮由当前路由路径决定（见下方 isActive）；setActiveTab 仅用于点击 tab 时持久化记忆
+    const { setActiveTab } = useTabsStore();
+    // 只订阅条数（角标用）：否则编辑器每落盘一次草稿，整个页面外壳都要重渲染
+    const draftCount = useDraftStore((s) => s.drafts.length);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleTabClick = (tab) => {
+        setActiveTab(tab.id);
+        navigate(tab.path);
+    };
+
+    return (
+        <div className="flex min-h-screen flex-col">
+            {/* 顶部导航栏 —— 全站固定 */}
+            <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+                <div className="flex h-16 items-center justify-between gap-4 px-6">
+                    {/* 左侧：Logo + 标题 + 数码管时钟 */}
+                    <div className="flex items-center gap-4">
+                        <Link to="/" className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white">
+                                <Plane size={20} />
+                            </div>
+                            <div>
+                                <h1 className="text-[15px] font-bold leading-tight text-slate-900">航班调度检查系统</h1>
+                                <p className="text-[11px] leading-tight text-slate-400">Flight Dispatch Check System</p>
+                            </div>
+                        </Link>
+                        <DigitalClock />
+                    </div>
+
+                    {/* 中间：TAB 导航（全站可见） */}
+                    <nav className="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon;
+                            // 以当前路由路径决定高亮（任何入口跳转都准确，不依赖手动同步 activeTab）
+                            // fips：/ 与 /fips 都激活「航班列表」tab
+                            const isActive =
+                                tab.id === "fips"
+                                    ? location.pathname === "/" || location.pathname.startsWith("/fips")
+                                    : location.pathname.startsWith(tab.path);
+                            const badgeCount = tab.id === "checklist" ? Math.min(draftCount, 5) : 0;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => handleTabClick(tab)}
+                                    className={cn(
+                                        "relative flex cursor-pointer items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                                        isActive
+                                            ? "bg-white text-primary-700 shadow-sm"
+                                            : "text-slate-600 hover:text-slate-900"
+                                    )}
+                                >
+                                    <Icon size={15} />
+                                    {tab.label}
+                                    {/* 检查单：未提交草稿数小红点（最多 5） */}
+                                    {badgeCount > 0 && (
+                                        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white shadow">
+                                            {badgeCount}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </div>
+            </header>
+
+            <main className="flex flex-col flex-1 overflow-hidden p-2">
+                <Outlet />
+            </main>
+        </div>
+    );
+}

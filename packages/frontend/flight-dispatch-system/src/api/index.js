@@ -42,6 +42,8 @@ export const checklistsApi = {
   getRecord: (id) => request(`/checklists/records/${id}`),
   createRecord: (data) => request('/checklists/records', { method: 'POST', body: JSON.stringify(data) }),
   updateRecord: (id, data) => request(`/checklists/records/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  // REST 语义别名（后端 PATCH 路由与 PUT 同一控制器），局部更新用这个更贴切
+  patchRecord: (id, data) => request(`/checklists/records/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteRecord: (id) => request(`/checklists/records/${id}`, { method: 'DELETE' }),
 }
 

@@ -118,7 +118,6 @@
   "schema": [
     {
       "uuid": "a7e089ed-0f9b-404d-974b-0777b74ec89d",
-      "id": 1,
       "eventId": "E001",
       "code": "LANDING",
       "category": "main",
@@ -133,7 +132,6 @@
     },
     {
       "uuid": "35c6f11f-6d9c-4020-9798-31509396a93b",
-      "id": 2,
       "eventId": "E002",
       "code": "IN_POSITION",
       "category": "main",
@@ -156,7 +154,6 @@
       "auxiliaries": [
         {
           "uuid": "63c4783d-4271-4546-8daf-f205f59242f0",
-          "id": 3,
           "code": "MECHANIC_ARRIVAL",
           "type": "auxiliary",
           "name": "机务到位",
@@ -167,8 +164,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E002",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
             },
             "right": {
               "type": "literal",
@@ -181,7 +178,6 @@
     },
     {
       "uuid": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba",
-      "id": 5,
       "eventId": "E003",
       "code": "START_CHOCK",
       "category": "main",
@@ -190,13 +186,12 @@
       "formula": {
         "type": "ref",
         "target": "event",
-        "ref": "E002",
-        "time": "actual"
+        "time": "actual",
+        "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
       },
       "auxiliaries": [
         {
           "uuid": "6904f6d9-ec2e-4e8d-a671-8c43ad85d750",
-          "id": 6,
           "code": "CONNECT_GROUND_POWER",
           "type": "auxiliary",
           "name": "接地面电源",
@@ -220,7 +215,6 @@
     },
     {
       "uuid": "1526b9aa-7a8e-4525-a133-a97429312b47",
-      "id": 8,
       "eventId": "E004",
       "code": "OPEN_COCKPIT_DOOR",
       "category": "main",
@@ -232,8 +226,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E003",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "4b411293-c1f8-4ce5-8db4-9e4636aff6ba"
         },
         "right": {
           "type": "literal",
@@ -244,7 +238,6 @@
       "auxiliaries": [
         {
           "uuid": "0fdfcaff-e2bd-4f85-9cbd-5a735132cb76",
-          "id": 9,
           "code": "BOARDING_LADDER_ARRIVAL",
           "type": "auxiliary",
           "name": "登机梯/客梯车到位",
@@ -255,8 +248,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E002",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
             },
             "right": {
               "type": "literal",
@@ -267,7 +260,6 @@
         },
         {
           "uuid": "22a30937-ac79-4f27-b8d4-2bc04c1ebbc4",
-          "id": 10,
           "code": "HANDLING_AGENT_ARRIVAL",
           "type": "auxiliary",
           "name": "代办到位",
@@ -278,8 +270,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E002",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
             },
             "right": {
               "type": "literal",
@@ -290,7 +282,6 @@
         },
         {
           "uuid": "6c360b32-f27a-4308-8878-0338f9e740ed",
-          "id": 11,
           "code": "CUSTOMS_IMMIGRATION_ARRIVAL",
           "type": "auxiliary",
           "name": "海关/边检到位",
@@ -298,13 +289,12 @@
           "formula": {
             "type": "ref",
             "target": "event",
-            "ref": "E002",
-            "time": "actual"
+            "time": "actual",
+            "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
           }
         },
         {
           "uuid": "451e6387-2932-45d6-9eb4-cc27c299edaf",
-          "id": 12,
           "code": "START_FUELING",
           "type": "auxiliary",
           "name": "开始加油",
@@ -339,7 +329,6 @@
         },
         {
           "uuid": "d1b363c6-69ba-4232-860d-eda60fbab601",
-          "id": 13,
           "code": "START_WATER_SERVICE",
           "type": "auxiliary",
           "name": "开始加清水/排污水",
@@ -361,7 +350,6 @@
         },
         {
           "uuid": "b61e0c0c-cd93-406a-8ae0-4d08d09bad61",
-          "id": 14,
           "code": "PLATFORM_LOADER_ARRIVAL",
           "type": "auxiliary",
           "name": "平台车到位",
@@ -372,8 +360,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E002",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
             },
             "right": {
               "type": "literal",
@@ -386,7 +374,6 @@
     },
     {
       "uuid": "6499b169-933c-4aad-a204-859a829f9ef6",
-      "id": 21,
       "eventId": "E005",
       "code": "OPEN_CARGO_DOOR",
       "category": "main",
@@ -398,8 +385,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E004",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "1526b9aa-7a8e-4525-a133-a97429312b47"
         },
         "right": {
           "type": "literal",
@@ -410,7 +397,6 @@
       "auxiliaries": [
         {
           "uuid": "6d63367c-f805-4a39-b24b-692f21b598bd",
-          "id": 22,
           "code": "CUSTOMS_ARRIVAL_CHECK_COMPLETE",
           "type": "auxiliary",
           "name": "海关/边检进港登临检查结束",
@@ -421,8 +407,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E004",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "1526b9aa-7a8e-4525-a133-a97429312b47"
             },
             "right": {
               "type": "literal",
@@ -435,7 +421,6 @@
     },
     {
       "uuid": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f",
-      "id": 24,
       "eventId": "E006",
       "code": "START_UNLOAD",
       "category": "main",
@@ -447,8 +432,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E005",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "6499b169-933c-4aad-a204-859a829f9ef6"
         },
         "right": {
           "type": "literal",
@@ -460,7 +445,6 @@
     },
     {
       "uuid": "f2d47971-dee5-4f97-99af-6a91da5faf93",
-      "id": 27,
       "eventId": "E007",
       "code": "UNLOAD_COMPLETE",
       "category": "main",
@@ -472,8 +456,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E006",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "00fbfdb9-f0f0-49c3-bf56-d8f4d056034f"
         },
         "right": {
           "type": "lookup",
@@ -488,7 +472,6 @@
       "auxiliaries": [
         {
           "uuid": "ad1479db-a34c-4747-91cb-ccbfc4c3bb49",
-          "id": 28,
           "code": "INBOUND_CARGO_HANDOVER",
           "type": "auxiliary",
           "name": "进港货物交接",
@@ -499,8 +482,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E002",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "35c6f11f-6d9c-4020-9798-31509396a93b"
             },
             "right": {
               "type": "literal",
@@ -513,7 +496,6 @@
     },
     {
       "uuid": "42c02836-951e-4176-b95b-f8ab6b42c50c",
-      "id": 29,
       "eventId": "E008",
       "code": "START_LOAD",
       "category": "main",
@@ -526,8 +508,8 @@
           {
             "type": "ref",
             "target": "event",
-            "ref": "E007",
-            "time": "actual"
+            "time": "actual",
+            "refUUID": "f2d47971-dee5-4f97-99af-6a91da5faf93"
           },
           {
             "type": "binary",
@@ -561,7 +543,6 @@
       "auxiliaries": [
         {
           "uuid": "1647aa82-dafc-4cdb-b47e-49164cea4ddc",
-          "id": 30,
           "code": "OUTBOUND_CARGO_HANDOVER",
           "type": "auxiliary",
           "name": "出港货物交接",
@@ -608,7 +589,6 @@
         },
         {
           "uuid": "e651e4a9-2f73-4eb1-8153-861eac7d1083",
-          "id": 31,
           "code": "FIRST_PALLET_ARRIVAL",
           "type": "auxiliary",
           "name": "第一板出港货物到达机坪待装区",
@@ -630,7 +610,6 @@
         },
         {
           "uuid": "6c8b3827-0c8c-4c71-9c41-37e22959b99e",
-          "id": 32,
           "code": "ALL_OUTBOUND_CARGO_ARRIVAL",
           "type": "auxiliary",
           "name": "全部出港货物到达待装区/机坪",
@@ -652,7 +631,6 @@
         },
         {
           "uuid": "b2e76d59-5dec-4e71-b7bb-ff5464046bdb",
-          "id": 33,
           "code": "LOADING_MANIFEST_RECEIVE",
           "type": "auxiliary",
           "name": "装机单接收",
@@ -676,7 +654,6 @@
     },
     {
       "uuid": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63",
-      "id": 38,
       "eventId": "E009",
       "code": "LOAD_COMPLETE",
       "category": "main",
@@ -688,8 +665,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E008",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "42c02836-951e-4176-b95b-f8ab6b42c50c"
         },
         "right": {
           "type": "lookup",
@@ -705,7 +682,6 @@
     },
     {
       "uuid": "349a1528-8cca-4e06-832f-1da2823daa7b",
-      "id": 41,
       "eventId": "E010",
       "code": "CLOSE_CARGO_DOOR",
       "category": "main",
@@ -721,8 +697,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E009",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63"
             },
             "right": {
               "type": "literal",
@@ -749,7 +725,6 @@
       "auxiliaries": [
         {
           "uuid": "f56931df-41f2-4471-9ff0-6a0d968ddadc",
-          "id": 42,
           "code": "OUTBOUND_INSPECTION_START",
           "type": "auxiliary",
           "name": "出港登临检查开始",
@@ -761,8 +736,8 @@
               {
                 "type": "ref",
                 "target": "event",
-                "ref": "E009",
-                "time": "actual"
+                "time": "actual",
+                "refUUID": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63"
               },
               {
                 "type": "binary",
@@ -785,7 +760,6 @@
     },
     {
       "uuid": "69b44c8c-49e3-462c-a069-a09029bf12ef",
-      "id": 46,
       "eventId": "E011",
       "code": "CLOSE_COCKPIT_DOOR",
       "category": "main",
@@ -798,8 +772,8 @@
           {
             "type": "ref",
             "target": "event",
-            "ref": "E010",
-            "time": "actual"
+            "time": "actual",
+            "refUUID": "349a1528-8cca-4e06-832f-1da2823daa7b"
           },
           {
             "type": "binary",
@@ -820,7 +794,6 @@
       "auxiliaries": [
         {
           "uuid": "eaefd4a7-18e2-4bf1-b3f3-52535dd574d6",
-          "id": 47,
           "code": "FUELING_COMPLETE",
           "type": "auxiliary",
           "name": "完成加油",
@@ -842,7 +815,6 @@
         },
         {
           "uuid": "21f16589-3adb-4b34-ae6d-c53882f266f6",
-          "id": 48,
           "code": "WATER_SERVICE_COMPLETE",
           "type": "auxiliary",
           "name": "结束加清水/排污水",
@@ -864,7 +836,6 @@
         },
         {
           "uuid": "f262c0e1-7dff-4c6e-a1f5-b48cba44d767",
-          "id": 49,
           "code": "OUTBOUND_INSPECTION_COMPLETE",
           "type": "auxiliary",
           "name": "出港登临检查结束",
@@ -879,8 +850,8 @@
                 "left": {
                   "type": "ref",
                   "target": "event",
-                  "ref": "E009",
-                  "time": "actual"
+                  "time": "actual",
+                  "refUUID": "7843b7fe-6ee6-49ff-88a4-cbc25acf3d63"
                 },
                 "right": {
                   "type": "literal",
@@ -907,7 +878,6 @@
         },
         {
           "uuid": "f2ee8c9b-bfeb-4229-94b0-cba3e88fa93b",
-          "id": 50,
           "code": "OUTBOUND_CREW_ARRIVAL",
           "type": "auxiliary",
           "name": "出港机组到机下",
@@ -931,7 +901,6 @@
     },
     {
       "uuid": "0241073a-18d0-4df4-8e38-2729a661b729",
-      "id": 54,
       "eventId": "E012",
       "code": "PUSHBACK",
       "category": "main",
@@ -947,8 +916,8 @@
             "left": {
               "type": "ref",
               "target": "event",
-              "ref": "E011",
-              "time": "actual"
+              "time": "actual",
+              "refUUID": "69b44c8c-49e3-462c-a069-a09029bf12ef"
             },
             "right": {
               "type": "literal",
@@ -966,7 +935,6 @@
       "auxiliaries": [
         {
           "uuid": "91bb8c2f-fae0-4ceb-bd23-7a31a2400939",
-          "id": 55,
           "code": "TOW_TRUCK_ARRIVAL",
           "type": "auxiliary",
           "name": "牵引车到位",
@@ -988,7 +956,6 @@
         },
         {
           "uuid": "560d315d-4e5a-4357-870e-fa326818c141",
-          "id": 56,
           "code": "CONNECT_AIR_CART",
           "type": "auxiliary",
           "name": "接气源车",
@@ -1010,7 +977,6 @@
         },
         {
           "uuid": "9c39c79a-acff-4d34-b5ae-5e68a3285fc4",
-          "id": 57,
           "code": "DISCONNECT_AIR_AND_POWER",
           "type": "auxiliary",
           "name": "撤气源车/撤地面电源",
@@ -1023,7 +989,6 @@
         },
         {
           "uuid": "4357fb89-eb96-4bf3-a4a8-91c675282301",
-          "id": 58,
           "code": "REMOVE_CHOCKS",
           "type": "auxiliary",
           "name": "撤轮档",
@@ -1051,7 +1016,6 @@
     },
     {
       "uuid": "f624de97-ef00-4fe7-8608-c4755245f165",
-      "id": 63,
       "eventId": "E013",
       "code": "TAXI_OUT",
       "category": "main",
@@ -1063,8 +1027,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E012",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "0241073a-18d0-4df4-8e38-2729a661b729"
         },
         "right": {
           "type": "literal",
@@ -1076,7 +1040,6 @@
     },
     {
       "uuid": "77b2ca02-c0c3-47d5-93fa-4ea68eacf46d",
-      "id": 64,
       "eventId": "E014",
       "code": "TAKEOFF",
       "category": "main",
@@ -1088,8 +1051,8 @@
         "left": {
           "type": "ref",
           "target": "event",
-          "ref": "E013",
-          "time": "actual"
+          "time": "actual",
+          "refUUID": "f624de97-ef00-4fe7-8608-c4755245f165"
         },
         "right": {
           "type": "literal",
@@ -1100,7 +1063,6 @@
       "auxiliaries": [
         {
           "uuid": "d64d4cac-02e7-4a1b-b163-19fb83b46701",
-          "id": 65,
           "code": "HANDLING_AGENT_DEPARTURE",
           "type": "auxiliary",
           "name": "代办离场",
@@ -1108,8 +1070,8 @@
           "formula": {
             "type": "ref",
             "target": "event",
-            "ref": "E014",
-            "time": "actual"
+            "time": "actual",
+            "refUUID": "77b2ca02-c0c3-47d5-93fa-4ea68eacf46d"
           }
         }
       ]
