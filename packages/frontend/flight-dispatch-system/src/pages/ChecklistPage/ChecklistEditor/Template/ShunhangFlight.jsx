@@ -4,8 +4,8 @@ import MainMonitoringPanel from "../Components/CheckComponents/MainMonitoringPan
 import AuxiliaryPanel from "../Components/CheckComponents/AuxiliaryPanel";
 import VideoPanel from "../Components/CheckComponents/VideoPanel";
 // 本检查单专属数据：模板 + 视频监管（静态 import，编译期确定、零网络）
-import shunhangFlight from "./TemplateJson/shunhangFlight";
-import { SHUNHANG_VIDEO_FOCUS } from "./TemplateJson/shunhangVideoFocus";
+import shunhangFlight from "./EditorTemplateJson/shunhangFlight";
+import { SHUNHANG_VIDEO_FOCUS } from "./EditorTemplateJson/shunhangVideoFocus";
 
 /**
  * ============================================================
@@ -22,9 +22,9 @@ import { SHUNHANG_VIDEO_FOCUS } from "./TemplateJson/shunhangVideoFocus";
  * ★ 本类型的特殊之处：**模板是占位模板，schema 为空**
  *   后端 data/checklists 里顺航只有视频监管数据（4 组 42 条），没有节点保障
  *   模板。为避免 `loadTemplate("顺航检查单")` 查表得 null 抛错（CSS 前缀航班
- *   默认落到顺航），在 TemplateJson/shunhangFlight.js 手建了占位模板。当前表现：
+ *   默认落到顺航），在 EditorTemplateJson/shunhangFlight.js 手建了占位模板。当前表现：
  *   主/辅助列为空态，视频列正常展示 42 条顺航专属条目。
- *   拿到真实节点清单后只填 `TemplateJson/shunhangFlight.js` 的 schema，本文件无需改动。
+ *   拿到真实节点清单后只填 `EditorTemplateJson/shunhangFlight.js` 的 schema，本文件无需改动。
  *
  *   三个面板其余状态全部自己从 store 订阅，不在这里透传。
  * ============================================================

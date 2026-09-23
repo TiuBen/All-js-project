@@ -7,20 +7,24 @@ import { useAuxItem, setItemValue } from "../../../../../store/checklistDraft";
 import { useChecklistStore } from "../../../../../store/checklistStore";
 import useTimeFormulas from "../../hooks/useTimeFormulas";
 import useRegister from "../../hooks/useRegister";
+// 备注 + 截图（Ctrl+V 粘贴 / 选择 / 拖入）：与视频监管项共用同一套输入组件
+import BaseCheckInput from "../../../../../components/BaseCheckInput";
 
 /**
  * ============================================================
  * AuxiliaryCheckItem —— 辅助监控指标「单项行」（填写模式）
  * ------------------------------------------------------------
  * 由 AuxiliaryPanel 渲染，一行 = 当前选中节点下的一条辅助监控指标：
- *   ↳ 名称 / 描述 / 状态 / 系统计算时间（formula 只读结果）/ 实际时间 / 备注
+ *   ↳ 名称 / 描述 / 状态 / 系统计算时间（formula 只读结果）/ 实际时间 / 备注+截图
  *
  * ★ 表单写法仿 react-hook-form
- *   输入控件只写一行 `{...register("time")}` —— 没有 value、没有 ref、
+ *   时间输入只写一行 `{...register("time")}` —— 没有 value、没有 ref、
  *   没有手写 onChange，取值 / 写入 / 回填全部由 useRegister 接管；
- *   需要"改了时间就取消自动标记"时，用 also 选项顺手带上：
- *     <input type="datetime-local" {...register("time", { also: { auto: false } })} />
- *     <textarea {...register("note")} />
+ *   "改了时间就取消自动标记"由 also 选项顺手带上。
+ *
+ * ★ 备注 + 截图走 BaseCheckInput（受控：note / image 两个 prop）
+ *   粘贴/选择/拖拽三个来源都要写回同一字段，且带缩略图与"再次添加即替换"，
+ *   受控比非受控直白；图片 blob 由 checklistDraft 原样存进 IndexedDB。
  *
  * ★ 数据全部自己取
  *   - useAuxItem(itemKey)  只订阅自己那一项（checklistDraft）
@@ -46,7 +50,7 @@ export default memo(function AuxiliaryCheckItem({ aux, anchorId }) {
 
     // 表单：取值 / 写入 / 回填全部收进 register（setItemValue 是模块级函数，引用稳定）
     const writeField = useCallback((field, value) => setItemValue(itemKey, field, value), [itemKey]);
-    const register = useRegister({ time: data.time, note: data.note }, writeField);
+    const register = useRegister({ time: data.time }, writeField);
 
     return (
         <div id={anchorId} className="scroll-mt-2 rounded-lg border border-slate-200 p-2 hover:bg-primary-50/40 ">
@@ -93,9 +97,9 @@ export default memo(function AuxiliaryCheckItem({ aux, anchorId }) {
                     ) : null;
                 })()}
 
-            {/* 实际时间 + 备注：仿 RHF，一行展开搞定取值 / 写入 */}
-            <div className="mt-1.5 flex flex-row items-start  gap-2">
-                <label className="flex flex-row items-center shrink-0 gap-2 text-[14px] text-blue-500">
+            {/* 实际时间：仿 RHF，一行展开搞定取值 / 写入 */}
+            <div className="mt-1.5 flex flex-row items-center gap-2">
+                <label className="flex shrink-0 flex-row items-center gap-2 text-[14px] text-blue-500">
                     实际时间
                     <input
                         type="datetime-local"
@@ -103,13 +107,16 @@ export default memo(function AuxiliaryCheckItem({ aux, anchorId }) {
                         className="input flex-1 px-1.5 py-0.5 "
                     />
                 </label>
-                <textarea
-                    {...register("note")}
-                    className="input flex-1 resize-y px-1.5 py-0.5 "
-                    rows={2}
-                    placeholder="备注（可换行）"
-                />
             </div>
+
+            {/* 备注 + 截图：与视频监管项同一个组件（Ctrl+V 粘贴 / 选择文件 / 拖入） */}
+            <BaseCheckInput
+                note={data.note || ""}
+                image={data.image || null}
+                onNoteChange={(v) => writeField("note", v)}
+                onImageChange={(img) => writeField("image", img)}
+                placeholder="备注 / 检查记录，可直接 Ctrl + V 粘贴截图"
+            />
         </div>
     );
 });

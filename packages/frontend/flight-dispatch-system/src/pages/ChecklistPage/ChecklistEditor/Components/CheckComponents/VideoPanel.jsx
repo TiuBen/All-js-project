@@ -14,7 +14,7 @@ import VideoCheckItem from "./VideoCheckItem";
  * ★ 数据源由所属面板组显式声明
  *   `<VideoPanel source={CARGO_VIDEO_FOCUS} />`
  *   source 就是面板组顶部**静态 import** 的那份视频监管数据
- *   （TemplateJson/passengerVideoFocus · cargoVideoFocus · shunhangVideoFocus），
+ *   （EditorTemplateJson/passengerVideoFocus · cargoVideoFocus · shunhangVideoFocus），
  *   编译期确定、零网络。
  *
  * ★ 本面板**零 store 订阅、零副作用**（重渲染红线，别破坏）
@@ -23,7 +23,7 @@ import VideoCheckItem from "./VideoCheckItem";
  *   - 不订阅 selectedCheckNode：选中节点与视频栏无关（不滚顶、不联动）
  *   结论：只有 source 换份（切换检查单类型）时本面板才重渲染。
  * ============================================================
- * @param {Object|string} props.source 本类型的视频监管数据（或其在 TemplateJson 中的导出名）
+ * @param {Object|string} props.source 本类型的视频监管数据（或其在 EditorTemplateJson 中的导出名）
  * ============================================================
  */
 export default memo(function VideoPanel({ source }) {

@@ -5,12 +5,12 @@ import { useRecordsStore } from './recordsStore'
 // 来源航班表（manual_fips）：记录 → 航班行的反查走它（列表已缓存时零请求）
 import { useManualFipsStore } from './manualFipsStore'
 // 模板静态数据（编译期打包，零网络）：loadTemplate 直接查表，不再有聚合入口文件
-import passengerInitFlight from '../pages/ChecklistPage/ChecklistEditor/Template/TemplateJson/passengerInitFlight'
-import passengerBypassFlight from '../pages/ChecklistPage/ChecklistEditor/Template/TemplateJson/passengerBypassFlight'
-import cargoInitFlight from '../pages/ChecklistPage/ChecklistEditor/Template/TemplateJson/cargoInitFlight'
-import cargoBypassFlight from '../pages/ChecklistPage/ChecklistEditor/Template/TemplateJson/cargoBypassFlight'
+import passengerInitFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/passengerInitFlight'
+import passengerBypassFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/passengerBypassFlight'
+import cargoInitFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/cargoInitFlight'
+import cargoBypassFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/cargoBypassFlight'
 // 顺航：后端无节点保障 JSON，手工维护的占位模板（schema 为空），不进生成脚本
-import shunhangFlight from '../pages/ChecklistPage/ChecklistEditor/Template/TemplateJson/shunhangFlight'
+import shunhangFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/shunhangFlight'
 // 填写数据（items/videoItems/inspector）不在本 store —— 见 checklistDraft.js（内存 + IndexedDB）
 import {
   setContext as setDraftContext,
@@ -21,7 +21,11 @@ import {
   flushDraft,
   resetTracking as resetDraftTracking,
   removeIdbDraftsByFlight,
+  setItemValue,
+  setVideoItemField,
 } from './checklistDraft'
+// 截图元信息剥离（提交落库只带 { id,name,type,size,url }，二进制不进 JSON）
+import { imageMeta } from '../utils/checkImage'
 
 // ============================================================
 // checklistStore —— 检查单页全局状态（只存"全局响应式"该存的东西）
@@ -94,7 +98,7 @@ export const withAlpha = (hex, alpha = 1) => {
 };
 
 // ############################################################
-// 模块级资产：模板查表（原 TemplateJson/index.js，并入 store）
+// 模块级资产：模板查表（原 EditorTemplateJson/index.js，并入 store）
 // ------------------------------------------------------------
 // 放这里的理由：模板 id = 配色键 = 下拉 label = 落库 checklist_category，
 // 与 TYPE_COLORS 天然同源；loadTemplate 与 ChecklistPage 的 category 校验都查这张表。
@@ -238,6 +242,47 @@ export const useChecklistStore = create((set, get) => {
   }
 
   /**
+   * 提交前把本机暂存的截图传到服务端（只传"有 blob 且还没 url"的那些）
+   * ------------------------------------------------------------
+   * 截图的完整生命周期：
+   *   粘贴/选择 → 只是本机 Blob（存 IndexedDB 草稿，离线也不丢）
+   *     ↓ 点提交
+   *   uploadImage（原始二进制，不走 Base64）→ 服务端落盘 → 拿到 /api/uploads/xxx.png
+   *     ↓
+   *   内存里的 image 换成 { ...meta, url }（草稿随之变轻，重复提交不重传）
+   *     ↓
+   *   组 payload → 记录里只存 url，任何设备打开都能看到这张图
+   *
+   * ⚠️ 上传失败就抛出去 —— 宁可不落库，也不让"截图静默消失"。
+   * @param {Object} d 草案快照
+   * @returns {Promise<{items: Object, videoItems: Object}>} 可落库的两份填写数据
+   *          （image 只含元信息 + url）—— **两处都要回传**，别只回 videoItems：
+   *            · items      = 主 / 辅助项的填写（key = main-xxx / aux-xxx）
+   *            · videoItems = 视频监管项（key = 视频项 uuid）
+   *          漏掉 items 的话，辅助项的截图会被 JSON.stringify 变成 {}，图静默消失。
+   */
+  const uploadDraftImages = async (d) => {
+    /** 扫一份填写数据，把"有 blob 还没 url"的图传上去，并同步回内存 */
+    const uploadMap = async (map, syncImage) => {
+      const list = Object.entries(map || {}).filter(([, v]) => v?.image?.blob && !v.image.url)
+      if (!list.length) return map
+      const next = { ...map }
+      for (const [key, v] of list) {
+        const img = v.image
+        const uploaded = await checklistsApi.uploadImage(img.blob, img.name)
+        next[key] = { ...v, image: { ...imageMeta(img), url: uploaded.url } }
+        syncImage(key, next[key].image) // 内存同步换 url（省掉下次重传）
+      }
+      return next
+    }
+
+    return {
+      items: await uploadMap(d.items, (key, image) => setItemValue(key, 'image', image)),
+      videoItems: await uploadMap(d.videoItems, (uuid, image) => setVideoItemField(uuid, 'image', image)),
+    }
+  }
+
+  /**
    * 组装提交载荷（新建 / 更新共用）
    * header 注入模板元信息（记录自描述：这份单子用的是哪个模板/版本）；
    * 其余字段口径与后端 service 一致（更新时后端对未传字段 COALESCE 保持原值）。
@@ -257,6 +302,8 @@ export const useChecklistStore = create((set, get) => {
         schemaVersion: s.template.schemaVersion || null,
       },
     },
+    // 主 / 辅助项 + 视频监管项：image 只带元信息 + url
+    // （blob 已在 uploadDraftImages 里换成 url，二进制绝不进 JSON）
     items: d.items,
     videoSupervision: d.videoItems,
     inspector: d.inspector,
@@ -303,7 +350,7 @@ export const useChecklistStore = create((set, get) => {
 
     /**
      * 加载检查单模板 —— **纯本地、零网络**
-     * 模板已按 category 穷举静态化（TemplateJson，编译期打包），直接查表即可；
+     * 模板已按 category 穷举静态化（EditorTemplateJson，编译期打包），直接查表即可；
      * 切换检查单类型不再有请求往返与 loading 空窗。
      *
      * ★ **默认类型由本 action 保证**：未命中（含传空）→ 落到 `FALLBACK_TEMPLATE_ID`（货运过站航班），
@@ -571,7 +618,10 @@ export const useChecklistStore = create((set, get) => {
       const { s, d } = pre
       set({ saveStatus: 'saving' })
       try {
-        const record = await checklistsApi.createRecord(buildPayload(s, d, status))
+        const { items, videoItems } = await uploadDraftImages(d) // 先把本机暂存的截图传上服务端
+        const record = await checklistsApi.createRecord(
+          buildPayload(s, { ...d, items, videoItems }, status),
+        )
         set({ recordId: record.id })
         afterSaved(record, status, s)
         return record
@@ -600,7 +650,11 @@ export const useChecklistStore = create((set, get) => {
       const { s, d } = pre
       set({ saveStatus: 'saving' })
       try {
-        const record = await checklistsApi.updateRecord(id, buildPayload(s, d, status))
+        const { items, videoItems } = await uploadDraftImages(d) // 先把本机暂存的截图传上服务端
+        const record = await checklistsApi.updateRecord(
+          id,
+          buildPayload(s, { ...d, items, videoItems }, status),
+        )
         if (!record) throw new Error('记录不存在或已被删除')
         afterSaved(record, status, s)
         return record

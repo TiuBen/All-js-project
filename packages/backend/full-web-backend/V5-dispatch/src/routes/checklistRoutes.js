@@ -75,4 +75,22 @@ router.patch('/records/:id', checklistController.updateRecord);
  */
 router.delete('/records/:id', checklistController.deleteRecord);
 
+/* ==================== 截图上传 ==================== */
+
+/**
+ * @route   POST /api/checklists/uploads?name=xxx.png
+ * @desc    上传检查项截图（请求体 = 图片**原始二进制**，Content-Type: image/*）
+ *          返回 { url, name, type, size }；url 形如 /api/uploads/xxx.png
+ * @access  公开
+ *
+ * ⚠️ 这里单独挂 express.raw：全局是 express.json，它只解析 application/json，
+ *    遇到 image/* 会跳过（不消费请求体），所以到这里 req.body 是 Buffer。
+ *    刻意不用 multer / FormData —— 单文件无字段，raw 足够且不引新依赖。
+ */
+router.post(
+  '/uploads',
+  express.raw({ type: 'image/*', limit: '10mb' }),
+  checklistController.uploadImage,
+);
+
 export { router as checklistRouter };

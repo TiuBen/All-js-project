@@ -26,8 +26,18 @@ const ROOT_DIR = path.resolve(__dirname, '..', '..');
 const DATA_DIR = path.resolve(ROOT_DIR, 'data');
 const CHECKLISTS_DIR = path.join(DATA_DIR, 'checklists');
 
+/** 检查项截图上传目录（原始二进制落盘，一个文件 = 一张图） */
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+
+/**
+ * 截图的对外访问前缀
+ * ⚠️ 刻意挂在 /api 下面：开发环境的 vite 代理、线上 nginx 都只反代 /api，
+ *    这样上传的图在两个环境里都能直接访问，不需要改任何代理配置。
+ */
+const UPLOADS_URL_PREFIX = '/api/uploads';
+
 // 确保数据目录存在
-for (const dir of [DATA_DIR, CHECKLISTS_DIR]) {
+for (const dir of [DATA_DIR, CHECKLISTS_DIR, UPLOADS_DIR]) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
@@ -56,5 +66,11 @@ export const config = {
     root: ROOT_DIR,
     data: DATA_DIR,
     checklists: CHECKLISTS_DIR,
+    uploads: UPLOADS_DIR,
   },
+
+  /** 截图访问前缀（静态托管挂载点，如 /api/uploads/xxx.png） */
+  uploadsUrlPrefix: UPLOADS_URL_PREFIX,
+  /** 单张截图体积上限（字节）：与前端 BaseCheckInput 的 IMAGE_MAX_BYTES 对齐 */
+  uploadMaxBytes: 8 * 1024 * 1024,
 };

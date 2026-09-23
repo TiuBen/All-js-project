@@ -10,6 +10,7 @@
  */
 import * as templateService from '../services/templateService.js';
 import * as checklistService from '../services/checklistService.js';
+import * as uploadService from '../services/uploadService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 /* ==================== 模板相关 ==================== */
@@ -103,4 +104,23 @@ export const deleteRecord = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'record not found' });
   }
   res.json({ success: true });
+});
+
+/* ==================== 截图上传 ==================== */
+
+/**
+ * POST /api/checklists/uploads?name=截图.png
+ * 接收**原始二进制**（Content-Type: image/png 之类，express.raw 已解析为 Buffer），
+ * 落盘到 data/uploads，返回 { url, name, type, size }。
+ *
+ * 前端用法：粘贴/选中的截图先在浏览器里作为 Blob 存在本地草稿（IndexedDB），
+ * 提交检查单前才调本接口上传，把返回的 url 写进 checklist_records.video_supervision。
+ */
+export const uploadImage = asyncHandler(async (req, res) => {
+  const result = await uploadService.saveImage({
+    buffer: req.body,
+    type: req.headers['content-type'],
+    name: req.query.name,
+  });
+  res.status(201).json(result);
 });

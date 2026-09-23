@@ -14,12 +14,12 @@
  *   <ContentLayout>纯内容页</ContentLayout>                          // 无侧栏
  * ============================================================
  */
-export default function ContentLayout({ sidebar, children, sidebarWidth = 360 }) {
+export default function ContentLayout({ sidebar, children, sidebarWidth = 320 }) {
     return (
-        <div className="flex flex-1  gap-2 overflow-hidden">
+        <div className="flex flex-1  gap-1 overflow-hidden">
             {/* 左侧边栏：可选；固定宽度、内部可滚动 */}
             {sidebar != null && (
-                <aside className="flex shrink-0 flex-col gap-3 overflow-y-auto" style={{ width: sidebarWidth }}>
+                <aside className="flex shrink-0 flex-col gap-2 overflow-y-auto" style={{ width: sidebarWidth }}>
                     {sidebar}
                 </aside>
             )}

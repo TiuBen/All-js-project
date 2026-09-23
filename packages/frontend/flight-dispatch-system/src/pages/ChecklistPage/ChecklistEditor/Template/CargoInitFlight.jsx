@@ -4,8 +4,8 @@ import MainMonitoringPanel from "../Components/CheckComponents/MainMonitoringPan
 import AuxiliaryPanel from "../Components/CheckComponents/AuxiliaryPanel";
 import VideoPanel from "../Components/CheckComponents/VideoPanel";
 // 本检查单专属数据：模板 + 视频监管（静态 import，编译期确定、零网络）
-import cargoInitFlight from "./TemplateJson/cargoInitFlight";
-import { CARGO_VIDEO_FOCUS } from "./TemplateJson/cargoVideoFocus";
+import cargoInitFlight from "./EditorTemplateJson/cargoInitFlight";
+import { CARGO_VIDEO_FOCUS } from "./EditorTemplateJson/cargoVideoFocus";
 
 /**
  * ============================================================

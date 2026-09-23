@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
  * ------------------------------------------------------------
  * key 与模板的 category（= 类型名 = 落库 checklist_category）一一对应；
  * 未命中时（理论上不应发生）回退货运过站航班。
- * 新增检查单类型：建 Template/TemplateJson/Xxx.js + Template/Xxx.jsx，然后在下面补一行。
+ * 新增检查单类型：建 Template/EditorTemplateJson/Xxx.js + Template/Xxx.jsx，然后在下面补一行。
  */
 const PANEL_BY_CATEGORY = {
     客运始发航班: PassengerInitFlight,

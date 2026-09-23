@@ -8,7 +8,10 @@ import { useCallback, useEffect, useRef } from "react";
  *       看不到 value、看不到 ref、也不用手写 onChange。
  *
  *   <input type="datetime-local" {...register("time", { also: { auto: false } })} />
- *   <textarea {...register("note")} />
+ *
+ * ⚠️ 备注（note）现在不走 register —— 它和截图一起交给 BaseCheckInput
+ *    受控处理（粘贴/选择/拖拽三个来源要写回同一字段）。register 仍用于
+ *    纯 DOM 持值的时间输入。
  *
  * 三个职责全部收进本 hook：
  *   1. 取值  由 DOM 自己持有（非受控）—— 不传 value

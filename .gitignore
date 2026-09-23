@@ -40,3 +40,6 @@ node_modules/
 # Ignore OS-generated files
 **/.DS_Store
 **/Thumbs.db
+
+# 检查单截图（运行时上传的现场证据，属于数据不是代码，不入版本控制）
+**/data/uploads/

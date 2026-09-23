@@ -2,13 +2,11 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import ChecklistTreeView from "./Components/ChecklistTreeView";
-import {
-    useChecklistStore,
-    useIsLocked,
-    typeColorOf,
-    checkTemplateOfType,
-} from "../../../store/checklistStore";
+// 主体三块：三个 CheckList（各自零 props，自订阅 store + 自己的扁平视图数据）
+import MainCheckList from "./Components/MainCheckList";
+import AuxiliaryCheckList from "./Components/AuxiliaryCheckList";
+import VideoCheckList from "./Components/VideoCheckList";
+import { useChecklistStore, useIsLocked, typeColorOf, checkTemplateOfType } from "../../../store/checklistStore";
 import { AlertCircle, ArrowLeft, FilePlus2, Loader2, Pencil } from "lucide-react";
 
 /**
@@ -18,12 +16,17 @@ import { AlertCircle, ArrowLeft, FilePlus2, Loader2, Pencil } from "lucide-react
  * ★ **零 props**：身份来自 URL（/checklists/:checkedId），数据全部自订阅 store
  *   - checkedId          → loadRecord() 拉记录并装配 航班 / 模板 / 记录元数据
  *   - flight / template  → 标题栏（航班号 · 航线 · 机型 · 检查单类型配色）
- *   - loadedRecord       → 树形只读展示（ChecklistTreeView）
+ *   - loadedRecord  → 只读展示：**三个并排的 CheckList**
+ *                       主监控指标   MainCheckList
+ *                       辅助监控指标 AuxiliaryCheckList
+ *                       视频监管     VideoCheckList
  *   - recordStatus / checkedAt / isLocked → 已提交徽章 · 24h 锁定
  *
- * 场景：
- *   - 编辑器提交成功 → replace 跳本页（记录已在 store，不再重复请求）
- *   - 填写记录页点"查看" / 直接粘贴链接 / 刷新 → 按 URL 主键重新拉取
+ * ★ 三块列表都是「一维」，不是树
+ *   查看页要的是通读：拍平这件事在编译期做完了
+ *   （EditorTemplateJson → scripts/gen-view-static.cjs → ViewTemplateJson），
+ *   所以三个 List 只管 map 数组，三个列表组件各自零 props、各自订阅。
+ *   配色统一走 utils/ViewColor.js（目前异常红、其余灰）。
  *
  * ★ 两个出口各走一条装载路径（URL 决定提交语义，不靠 store 残留态猜）：
  *   - **新建检查单（默认动作）**：回该航班的编辑器，**URL 不带 ?record** →
@@ -40,7 +43,6 @@ export default function ChecklistViewer() {
     // ===== store 订阅（细粒度 selector：取自渲染真正需要的）=====
     const flight = useChecklistStore((s) => s.flight);
     const loadedRecord = useChecklistStore((s) => s.loadedRecord);
-    const template = useChecklistStore((s) => s.template);
     const tplId = useChecklistStore((s) => s.template?.id);
     const recordStatus = useChecklistStore((s) => s.recordStatus);
     const checkedAt = useChecklistStore((s) => s.checkedAt);
@@ -89,8 +91,7 @@ export default function ChecklistViewer() {
                     <div style={{ color: typeColorOf(tplId) }}>
                         <div className="flex items-center gap-2">
                             <h2 className="text-base font-bold">
-                                <span>{flight.flightNo}</span>{" "}
-                                <span className="font-normal">{tplId}</span>
+                                <span>{flight.flightNo}</span> <span className="font-normal">{tplId}</span>
                             </h2>
                             {recordStatus === "submitted" && (
                                 <Badge variant="success">
@@ -108,9 +109,7 @@ export default function ChecklistViewer() {
                         <div className="mt-0.5 text-xs text-slate-400">
                             {flight.origin || "起飞机场"} → {flight.destination || "目的地机场"} · 机型{" "}
                             {flight.aircraftType} · 日期 {flight.flightDate}
-                            {loadedRecord?.inspector && (
-                                <span className="ml-2">· 检查人 {loadedRecord.inspector}</span>
-                            )}
+                            {loadedRecord?.inspector && <span className="ml-2">· 检查人 {loadedRecord.inspector}</span>}
                         </div>
                     </div>
                 </div>
@@ -154,16 +153,25 @@ export default function ChecklistViewer() {
                 </div>
             </div>
 
-            {/* 树形只读展示 */}
-            <div className="min-h-0 flex-1 overflow-hidden">
-                {loadedRecord ? (
-                    <ChecklistTreeView template={template} record={loadedRecord} />
-                ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                        <Loader2 className="mr-2 animate-spin" size={18} /> 正在加载记录…
+            {/* 主体：三个 CheckList 并排（窄窗口自动改纵向堆叠）
+                —— 主监控 / 辅助监控 / 视频监管，各自独立滚动，互不联动 */}
+            {loadedRecord ? (
+                <div className="flex min-h-0 flex-1 flex-col gap-2 xl:flex-row">
+                    <div className="min-h-0 min-w-0 flex-1">
+                        <MainCheckList />
                     </div>
-                )}
-            </div>
+                    <div className="min-h-0 min-w-0 flex-1">
+                        <AuxiliaryCheckList />
+                    </div>
+                    <div className="min-h-0 min-w-0 flex-1">
+                        <VideoCheckList />
+                    </div>
+                </div>
+            ) : (
+                <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-slate-400">
+                    <Loader2 className="mr-2 animate-spin" size={18} /> 正在加载记录…
+                </div>
+            )}
         </div>
     );
 }

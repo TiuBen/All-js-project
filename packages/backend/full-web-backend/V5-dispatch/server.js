@@ -40,6 +40,20 @@ app.use(express.json({ limit: "10mb" }));
 app.use(morgan("dev"));
 
 /* ---------- 路由 ---------- */
+
+// 检查项截图（静态文件）：上传时落盘到 data/uploads，这里直接托管
+// ⚠️ 挂在 /api 前缀下 —— 开发环境的 vite 代理与线上 nginx 都只反代 /api，
+//    这样两个环境都不用改代理配置就能取到图（见 config.uploadsUrlPrefix）。
+app.use(
+    config.uploadsUrlPrefix,
+    express.static(config.paths.uploads, {
+        maxAge: "7d",       // 文件名自带时间戳+随机串，内容不会变 → 可放心缓存
+        immutable: true,
+        index: false,       // 不列目录
+        dotfiles: "ignore",
+    })
+);
+
 app.use("/api", apiRouter);
 
 /* ---------- 404 兜底 ---------- */

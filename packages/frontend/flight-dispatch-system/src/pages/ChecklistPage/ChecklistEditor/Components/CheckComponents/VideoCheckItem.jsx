@@ -3,18 +3,22 @@ import { cn } from "../../../../../lib/utils";
 import { STATUS_LABELS, STATUS_ICONS, STATUS_COLORS, nextStatus } from "../OtherComponents/statusBadge";
 // 填写数据在 checklistDraft（内存 + IndexedDB）：逐项订阅 + 绑定 uuid 的写入器
 import { useVideoCheckItem, useVideoCheckSetter } from "../../../../../store/checklistDraft";
-import useRegister from "../../hooks/useRegister";
+// 检查记录输入：文字 + 1 张截图（Ctrl+V 粘贴 / 选择 / 拖拽）
+import BaseCheckInput from "../../../../../components/BaseCheckInput";
 
 /**
  * ============================================================
  * VideoCheckItem —— 视频监管检查重点「单项」（填写模式）
  * ------------------------------------------------------------
  * 由 VideoPanel 按 groups 分组渲染，一行 = 一条视频监管检查重点：
- *   描述 / 状态（单击循环切换）/ 备注（截图信息）
+ *   描述 / 状态（单击循环切换）/ 检查记录（文字 + 1 张截图）
  *
- * ★ 表单写法仿 react-hook-form
- *   备注框只写一行 `{...register("note")}` —— 没有 value、没有 ref、
- *   没有手写 onChange。
+ * ★ 检查记录交给 BaseCheckInput（受控：note + image 两个 prop）
+ *   - 文字：item.note → 受控 textarea
+ *   - 截图：item.image → Ctrl+V 粘贴 / 选择文件 / 拖入；
+ *     二进制作 Blob 原样交给 checklistDraft 存 IndexedDB（不转 Base64）
+ *   - 截图**不**走 useRegister：粘贴/选择/拖拽三个来源都要写回同一字段，
+ *     还带缩略图与"再次添加即替换"，React 受控比非受控直白
  *
  * ★ 数据全部自己订阅（checklistDraft）
  *   - useVideoCheckItem(checkUuid)  → 只订阅自己这条数据（key = 视频项 uuid）
@@ -28,9 +32,6 @@ import useRegister from "../../hooks/useRegister";
 export default memo(function VideoCheckItem({ checkUuid, name }) {
     const item = useVideoCheckItem(checkUuid) || {};
     const setField = useVideoCheckSetter(checkUuid); // 绑定 uuid 的写入器，引用稳定
-
-    // 表单：取值 / 写入 / 回填全部收进 register
-    const register = useRegister({ note: item.note }, setField);
 
     return (
         <div className="rounded-lg border border-sky-100 p-2 hover:bg-sky-50/40">
@@ -57,12 +58,13 @@ export default memo(function VideoCheckItem({ checkUuid, name }) {
                 </label>
             </div>
 
-            {/* 备注 / 截图信息：仿 RHF，一行展开 */}
-            <textarea
-                {...register("note")}
-                className="input mt-1.5 w-full resize-y px-1.5 py-0.5 "
-                rows={2}
-                placeholder="备注 / 截图信息（可换行）"
+            {/* 检查记录：文字 + 截图（截图以 Blob 存 IndexedDB，刷新 / 离线都在） */}
+            <BaseCheckInput
+                note={item.note || ""}
+                image={item.image || null}
+                onNoteChange={(v) => setField("note", v)}
+                onImageChange={(img) => setField("image", img)}
+                placeholder="检查记录 / 截图信息，可直接 Ctrl + V 粘贴截图"
             />
         </div>
     );

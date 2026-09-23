@@ -1,25 +1,40 @@
-import { CheckCircle2, CircleDot, Circle } from "lucide-react";
+import { CheckCircle2, Circle, CircleDot, MinusCircle } from "lucide-react";
+import { viewStatusOf } from "../../../../utils/ViewColor";
 
 /**
  * ============================================================
- * 检查单只读视图：共享的状态样式与图标
+ * 查看页共享：状态显示（颜色 + 图标）
  * ------------------------------------------------------------
- * 供主监控 / 辅助监控 / 视频监管 三个列表组件复用：
- *   - statusStyle(item) → 文字颜色类名
- *   - <StatusIcon item={item} /> → 状态图标（绿勾 / 红点 / 灰圈）
+ * 供三个 CheckList（MainCheckList / AuxiliaryCheckList / VideoCheckList）
+ * 复用 —— 一行记录的状态怎么显示，三处只有这一份实现。
+ *
+ * ★ 颜色**不在这里定义**：一律经 utils/ViewColor.js 的 viewStatusOf() 取，
+ *   本文件只负责"把颜色画到图标上"。
+ * ★ 图标与颜色都随 ViewColor 的状态表走：
+ *     abnormal → 红点（唯一有色的状态）
+ *     na       → 灰 minus
+ *     pending  → 灰空心圈
+ *     ok       → 灰勾（暂时灰，见 ViewColor 注释）
  * ============================================================
  */
 
-/** 文字颜色：异常红、正常深灰、未填灰 */
-export const statusStyle = (item) => {
-  if (!item?.status) return "text-slate-400";
-  if (item.status === "abnormal") return "text-red-600";
-  return "text-slate-700";
-};
+/** 状态文字色（hex，配合 inline style 用） */
+export const statusTextColor = (item) => viewStatusOf(item?.status).color;
 
-/** 状态图标：ok 绿勾 / abnormal 红点 / 其他 灰圈 */
-export function StatusIcon({ item }) {
-  if (!item?.status) return <Circle size={13} className="text-slate-300" />;
-  if (item.status === "abnormal") return <CircleDot size={13} className="text-red-500" />;
-  return <CheckCircle2 size={13} className="text-emerald-500" />;
+/** 状态图标：颜色来自 ViewColor，形状区分四个状态（不靠颜色区分，色盲也分得清） */
+export function StatusIcon({ item, size = 13 }) {
+    const s = viewStatusOf(item?.status);
+    const Icon =
+        s.key === "abnormal" ? CircleDot : s.key === "ok" ? CheckCircle2 : s.key === "na" ? MinusCircle : Circle;
+    return <Icon size={size} style={{ color: s.color }} />;
+}
+
+/** 状态文字（统计条以外的行内小标签用） */
+export function StatusLabel({ item, className = "" }) {
+    const s = viewStatusOf(item?.status);
+    return (
+        <span className={className} style={{ color: s.color }}>
+            {s.label}
+        </span>
+    );
 }

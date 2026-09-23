@@ -3,7 +3,7 @@
  * 生成前端静态检查单数据（节点保障模板 + 视频监管重点）
  * ------------------------------------------------------------
  * 用途：把后端 `data/checklists/**／*.json` 全量内联成前端模块，
- *       落到 `ChecklistEditor/Template/TemplateJson/`，使模板在**编译期**确定，
+ *       落到 `ChecklistEditor/Template/EditorTemplateJson/`，使模板在**编译期**确定，
  *       前端不再请求 `/api/checklists/templates`。
  *
  * 用法（项目根，需已装 node）：
@@ -33,11 +33,11 @@ const SRC = path.join(
 // 前端产物目录（本脚本上一级 = flight-dispatch-system/）
 const OUT = path.resolve(
   __dirname,
-  "../src/pages/ChecklistPage/ChecklistEditor/Template/TemplateJson"
+  "../src/pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson"
 );
 
 // 源文件（相对 SRC）→ [产物文件名, 导出标识符, 产物中文注释名]
-// 导出标识符 = 产物文件名去掉 .js（前端按同名 import，如 `import cargoBypassFlight from "./TemplateJson/cargoBypassFlight"`）
+// 导出标识符 = 产物文件名去掉 .js（前端按同名 import，如 `import cargoBypassFlight from "./EditorTemplateJson/cargoBypassFlight"`）
 const MAP = [
   ["节点保障/客运始发航班.json", "passengerInitFlight.js", "passengerInitFlight", "客运始发航班"],
   ["节点保障/客运过站航班.json", "passengerBypassFlight.js", "passengerBypassFlight", "客运过站航班"],

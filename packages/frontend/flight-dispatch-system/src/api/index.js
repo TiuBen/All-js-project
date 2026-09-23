@@ -45,6 +45,25 @@ export const checklistsApi = {
   // REST 语义别名（后端 PATCH 路由与 PUT 同一控制器），局部更新用这个更贴切
   patchRecord: (id, data) => request(`/checklists/records/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteRecord: (id) => request(`/checklists/records/${id}`, { method: 'DELETE' }),
+  /**
+   * 上传检查项截图：请求体就是图片**原始二进制**（不走 Base64、不用 FormData）
+   * @param {Blob} blob 图片二进制（粘贴/选中的截图）
+   * @param {string} [name] 原始文件名（仅用于展示与类型兜底）
+   * @returns {Promise<{url:string,name:string,type:string,size:number}>}
+   */
+  uploadImage: async (blob, name = '') => {
+    const qs = name ? `?name=${encodeURIComponent(name)}` : ''
+    const res = await fetch(`${API_BASE}/checklists/uploads${qs}`, {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type || 'image/png' },
+      body: blob,
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error || `上传失败 HTTP ${res.status}`)
+    }
+    return res.json()
+  },
 }
 
 // fips 原始数据详情（双击航班号打开 Dialog 用）

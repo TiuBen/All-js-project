@@ -1,11 +1,12 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import { useDraftStore, MAX_DRAFTS } from './draftStore'
+import { imageMeta } from '../utils/checkImage'
 
 // ============================================================
 // checklistDraft —— 检查单填写层（非受控草案 · 内存 + IndexedDB）
 // ------------------------------------------------------------
 // 架构（UUID 即身份）：
-//   静态模板（TemplateJson，编译期内联，只管"检查什么"）
+//   静态模板（EditorTemplateJson，编译期内联，只管"检查什么"）
 //        ↓ react render
 //   每个检查项独立组件（非受控：DOM 持值，defaultValue 只管首挂）
 //        ↓ 用户修改
@@ -109,7 +110,7 @@ const memory = {
   flightNo: '',
   templateId: null, // 当前检查单类型；与 flightId 共同构成草稿键（见 draftKeyOf）
   items: {},        // { "main-{节点uuid}" | "aux-{辅助项uuid}": { status, time, note, auto } }
-  videoItems: {},   // { "<视频项uuid>": { status, note } }
+  videoItems: {},   // { "<视频项uuid>": { status, note, image } }  image 见 utils/checkImage.js（每项最多 1 张，blob 可存）
   inspector: '',
 }
 
@@ -141,9 +142,40 @@ let persistTimer = null
 let lastDraftSig = null
 let persistEnabled = true // 已提交/锁定 → setEnabled(false)，不再产生草稿
 
-/** 内容是否值得落盘：至少一项填了 status / time / note（避免"打开页面就产生空草稿"） */
+/** 内容是否值得落盘：至少一项填了 status / time / note / image（避免"打开页面就产生空草稿"）
+ *  ⚠️ videoItems 必须一起看：只填视频监管项（尤其只贴了一张截图）时，
+ *     若只检查 items，草稿永远不会落盘 —— 刷新即丢。 */
 function hasContent() {
-  return Object.values(memory.items).some((v) => v && (v.status || v.time || v.note))
+  const filled = (v) => !!v && (v.status || v.time || v.note || v.image)
+  return Object.values(memory.items).some(filled) || Object.values(memory.videoItems).some(filled)
+}
+
+/**
+ * 落盘签名（判断"内容有没有变化"，一致则跳过 IndexedDB 事务）
+ * ⚠️ 必须把 blob 摘掉再序列化：Blob 会被 JSON 静默变成 {}，
+ *    保留 id/type/size/url 就足以代表"这张图换了没有"，且不会试图序列化二进制。
+ */
+function contentSig() {
+  return JSON.stringify(
+    [memory.items, memory.videoItems, memory.inspector],
+    (key, value) => (key === 'blob' ? undefined : value),
+  )
+}
+
+/** 剥掉一项里的 image 二进制（localStorage 装不下 Blob，也不该装） */
+const stripImage = (v) => (v?.image ? { ...v, image: imageMeta(v.image) } : v)
+const stripImages = (map) =>
+  Object.fromEntries(Object.entries(map).map(([k, v]) => [k, stripImage(v)]))
+
+/** 草稿箱（localStorage）用副本：二进制换成元信息，绝不把 Blob 写进 localStorage
+ *  ⚠️ items（主 / 辅助项）与 videoItems 都要剥 —— 辅助项的截图现在也存在 items 里，
+ *     漏一处就会让 JSON.stringify 把 Blob 静默变成 {}（草稿箱里显示"有图但打不开"） */
+function boxSnapshot() {
+  return {
+    items: stripImages(memory.items),
+    videoItems: stripImages(memory.videoItems),
+    inspector: memory.inspector,
+  }
 }
 
 /**
@@ -170,10 +202,11 @@ function persistNow() {
   if (box.length >= MAX_DRAFTS && !alreadyInBox) return finishPersist()
 
   // 签名只比内容，内容一致则跳过写入（省 IDB 事务 + drafts 列表刷新）
-  const sig = JSON.stringify([memory.items, memory.videoItems, memory.inspector])
+  const sig = contentSig()
   if (sig === lastDraftSig) return finishPersist()
   lastDraftSig = sig
 
+  // IndexedDB 记录：**原样带 Blob**（结构化克隆天然支持），这是图片真正的归宿
   const record = {
     key,                          // 主键：航班键::模板id（同航班不同类型各留一份）
     flightId: memory.flightId,    // 航班键（草稿箱跳转 / 按航班清理用）
@@ -186,8 +219,9 @@ function persistNow() {
     updatedAt: new Date().toISOString(),
   }
   // IndexedDB 是权威存储；localStorage 草稿箱只作为"最近草稿列表"的索引
+  // （只存图片元信息 —— 二进制出不了 localStorage，也不该出）
   idbPut(record).catch((err) => console.warn('[checklistDraft] 写入 IndexedDB 失败：', err))
-  useDraftStore.getState().upsertDraft(record)
+  useDraftStore.getState().upsertDraft({ ...record, ...boxSnapshot() })
   setDraftStatus(false, record.updatedAt)
   notify()
 }

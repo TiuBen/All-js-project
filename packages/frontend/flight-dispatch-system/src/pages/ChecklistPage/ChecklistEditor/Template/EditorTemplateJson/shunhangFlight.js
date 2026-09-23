@@ -9,7 +9,7 @@
  *
  * 为什么需要它：
  *   checklistStore 的 TYPE_COLORS 有「顺航检查单」这一项，
- *   且 CSS 前缀航班会默认落到顺航；若 TemplateJson/TEMPLATES 里没有它，
+ *   且 CSS 前缀航班会默认落到顺航；若 EditorTemplateJson/TEMPLATES 里没有它，
  *   loadTemplate("顺航检查单") 会查表得 null 进而抛错，页面直接断链。
  *
  * 当前状态：**schema 为空** → 主监控 / 辅助监控列显示空态，
