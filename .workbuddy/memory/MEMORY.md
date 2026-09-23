@@ -67,3 +67,11 @@
 - **真交互实测用内置 CDP（2026-09-22，比 dump-dom 强一档，零依赖）**：`chrome --headless=new --remote-debugging-port=9222 --user-data-dir=临时目录 about:blank` → `GET /json/version` 再 `/json/list` 拿 `webSocketDebuggerUrl` → **Node 22 自带全局 `WebSocket`** 直连，`Page.enable`/`Runtime.enable`/`Page.navigate` + `Runtime.evaluate{awaitPromise:true,returnByValue:true}`（异常从 `exceptionDetails` 抛回）、`Page.captureScreenshot` 存 PNG。能做的：派发 `ClipboardEvent('paste',{clipboardData:new DataTransfer()})` 造粘贴、用 `HTMLTextAreaElement.prototype.value` 的 setter + `new Event('input')` 触发受控输入的 onChange、直接读页内 IndexedDB 校验落盘、点按钮走完提交链路。⚠️ 两个坑：①页面里 `sleep` 要先注入 `window.__sleep`；②React 同一 tick 连点两下会拿到旧 props（状态循环点击要**分次 evaluate**）；③要测「选文件」路径就 `DOM.getDocument` + `DOM.querySelector` 拿 nodeId（先在页面里给目标 `input[type=file]` 打个 `data-probe` 属性更好定位，页面上有 40+ 个同名 input）再 `DOM.setFileInputFiles`；④CDP 与 `_cprofile` 目录用完要删（Chrome 进程没退干净时 EPERM，稍后重试）
 - bash shim 常挂（dirname/ls/tail not found）但 **`node -e` 可用**；PowerShell 吞 stdout、`*>` 写成 UTF-16；批量替换用一次性 .cjs 每处 includes() 校验；删文件用 fs.unlinkSync
 - ⚠️ 用户编辑器可能把旧缓冲回写磁盘（改完的 App.jsx 标签被还原过）→ 改完必须重读核对
+
+## 部署（V5-dispatch → 阿里云，2026-09-23 核对）
+- 入口是**根 `server.js`**（不是 src/server.js）；`npm start` = `node server.js`；PM2 必须 `pm2 start server.js --name v5-dispatch --cwd /opt/v5-dispatch`（`dotenv.config()` 读的是 **CWD/.env**，从别处启动读不到配置）
+- 「代码自动建表」与「导 SQL」两条路都要出正确结构：`src/db/schema.js` ↔ `data/schema.sql` **列级对齐已实测**（manual_fips 22 列含 uuid + manual_fips_uuid_key + fresh_air_cargo 外键）；**改表结构两处都得改**
+- 部署产物在 `frontend/flight-dispatch-system/资料/`：`flight_dispatch_full_20260923.sql`（全量 6 表，已剔除 pg_dump18 的 `\restrict`/`transaction_timeout`）+ `import_flight_dispatch.sh`（免密导入 + 校验 uuid 列）；⚠️ 旧 `flight_dispatch.sql` 只有 3 表别用，`V5-dispatch/flight_info.sql` 是 MySQL 的
+- nginx：`backend/nginx/sites-available/dd.atc1215.cn.conf`（前端 dist + `/api/` 反代 5183，同源无跨域）；**必须 `client_max_body_size 20m`**（默认 1m → 8MB 截图 413）；`location /api/` 的 proxy_pass **不带尾斜杠**
+- 环境：后端 5183 / Node≥18 / PG≥13（gen_random_uuid）；只开 80/443 走反代，5183 别对公网（接口全无鉴权）
+- 数据基线：fips 10300 · flights 10310 · manual_fips 8 · checklist_records 8 · fresh_air_cargo 1 · flight_info 203（遗留表，代码未引用）

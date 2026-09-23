@@ -56,6 +56,14 @@ async function ensureDatabase() {
 async function ensureTables() {
   const p = getPool();
   try {
+    // ---------- 0. gen_random_uuid() 依赖（PG < 13 需 pgcrypto；13+ 已内置） ----------
+    // 失败不阻断：13+ 上本就无需扩展，缺权限时下面的 uuid 默认值仍能用内置函数。
+    try {
+      await p.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    } catch (err) {
+      console.warn('[DB] 跳过 pgcrypto 扩展（PG 13+ 通常无需）：', err.message);
+    }
+
     // ---------- 1. 检查单填写记录表 ----------
     await p.query(`
       CREATE TABLE IF NOT EXISTS checklist_records (
@@ -133,6 +141,9 @@ async function ensureTables() {
     console.log('[DB] 表 flights 已就绪');
 
     // ---------- 4. 手动添加航班表（manual_fips） ----------
+    // ⚠️ uuid 列是**航班身份标识**（前端创建检查单时用它当 flightId / 草稿归档键），
+    //    必须与 data/schema.sql 保持一致 —— 早先本文件漏建此列，导致
+    //    "靠 initDb 建空库"的服务器上缺列、创建检查单全线失败。
     await p.query(`
       CREATE TABLE IF NOT EXISTS manual_fips (
         id SERIAL PRIMARY KEY,
@@ -158,6 +169,13 @@ async function ensureTables() {
         created_at TIMESTAMPTZ DEFAULT now()
       );
     `);
+    // 迁移 1：老库补 uuid 列（幂等；已有行会自动回填默认值）
+    await p.query(`
+      ALTER TABLE manual_fips
+        ADD COLUMN IF NOT EXISTS uuid VARCHAR(64) NOT NULL DEFAULT gen_random_uuid()::text;
+    `);
+    // 迁移 2：uuid 唯一索引（与 schema.sql 的 manual_fips_uuid_key 同名）
+    await p.query(`CREATE UNIQUE INDEX IF NOT EXISTS manual_fips_uuid_key ON manual_fips(uuid);`);
     console.log('[DB] 表 manual_fips 已就绪');
 
     // ---------- 5. 生鲜货物航班表（fresh_air_cargo） ----------
