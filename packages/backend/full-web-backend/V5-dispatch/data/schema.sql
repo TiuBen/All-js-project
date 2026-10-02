@@ -148,10 +148,16 @@ ALTER TABLE public.flights OWNER TO postgres;
 --
 -- Name: fresh_air_cargo; Type: TABLE; Schema: public; Owner: postgres
 --
+-- 跨来源生鲜标记表：业务自然键 = (source_table, source_id)
+--   source_table —— 来源表名，默认 'manual_fips'
+--   source_id    —— 来源表里的行 UUID（如 manual_fips.uuid），不是自增整型 id
+-- 老结构（manual_fips_id integer + 外键）由 db/schema.js 的 ensureFreshAirCargo() 自动迁移。
+--
 
 CREATE TABLE public.fresh_air_cargo (
     id integer NOT NULL,
-    manual_fips_id integer NOT NULL,
+    source_table character varying(32) DEFAULT 'manual_fips'::character varying NOT NULL,
+    source_id uuid NOT NULL,
     content jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT now()
 );
@@ -288,14 +294,6 @@ ALTER TABLE ONLY public.flights
 
 
 --
--- Name: fresh_air_cargo fresh_air_cargo_manual_fips_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.fresh_air_cargo
-    ADD CONSTRAINT fresh_air_cargo_manual_fips_id_key UNIQUE (manual_fips_id);
-
-
---
 -- Name: fresh_air_cargo fresh_air_cargo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -317,6 +315,15 @@ ALTER TABLE ONLY public.manual_fips
 --
 
 CREATE UNIQUE INDEX manual_fips_uuid_key ON public.manual_fips USING btree (uuid);
+
+
+--
+-- Name: fresh_air_cargo_source_key; Type: INDEX; Schema: public; Owner: postgres
+--
+-- 业务自然键：同一来源表里的同一行只能有一条生鲜标记（mark 的 upsert 冲突目标）
+--
+
+CREATE UNIQUE INDEX fresh_air_cargo_source_key ON public.fresh_air_cargo USING btree (source_table, source_id);
 
 
 --
@@ -344,11 +351,10 @@ CREATE INDEX idx_records_flight ON public.checklist_records USING btree (flight_
 
 
 --
--- Name: fresh_air_cargo fresh_air_cargo_manual_fips_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- fresh_air_cargo 不再有外键：该表已泛化为 (source_table, source_id) 跨来源标记，
+-- 无法对外键指向单一表。删除航班时的连带清理改由 manualFipsService.deleteManualFips()
+-- 显式执行（原来靠这里的 ON DELETE CASCADE）。
 --
-
-ALTER TABLE ONLY public.fresh_air_cargo
-    ADD CONSTRAINT fresh_air_cargo_manual_fips_id_fkey FOREIGN KEY (manual_fips_id) REFERENCES public.manual_fips(id) ON DELETE CASCADE;
 
 
 --

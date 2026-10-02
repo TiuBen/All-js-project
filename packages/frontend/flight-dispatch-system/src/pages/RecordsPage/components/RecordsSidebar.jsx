@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { Card, CardContent } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import FlightSearchCard from "../../../components/search/FlightSearchCard";
-import DateFilterPanel from "../../../components/ui/DateFilterPanel";
+import Calendar from "../../../components/search/Calendar";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
 /**
@@ -43,7 +43,7 @@ export default function RecordsSidebar({
                 onRefresh={onRefresh}
             />
 
-            <DateFilterPanel dayMarkers={dayMarkers} />
+            <Calendar dayMarkers={dayMarkers} />
 
             {/* 选中记录的操作（日期组件下方，与航班列表页同位置） */}
             <Card>

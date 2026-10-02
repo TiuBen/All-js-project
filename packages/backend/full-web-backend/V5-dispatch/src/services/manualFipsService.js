@@ -37,6 +37,10 @@ const FIELD_MAP = {
 /**
  * 查询全部手动添加航班（最新在前）
  * LEFT JOIN fresh_air_cargo → 附带 is_fresh（是否标记生鲜）与 fresh_content
+ *
+ * ★ fresh_air_cargo 用 (source_table, source_id) 定位：这里限定
+ *   source_table='manual_fips'，且 source_id 存的是 manual_fips.uuid（UUID 列），
+ *   与 m.uuid（VARCHAR）按**文本**比较，避免脏数据 ::uuid 转换报错。
  * @returns {Promise<Array>} manual_fips 行数组（snake_case + is_fresh + fresh_content）
  */
 export async function listManualFips() {
@@ -45,7 +49,9 @@ export async function listManualFips() {
            CASE WHEN f.id IS NULL THEN false ELSE true END AS is_fresh,
            f.content AS fresh_content
     FROM manual_fips m
-    LEFT JOIN fresh_air_cargo f ON f.manual_fips_id = m.id
+    LEFT JOIN fresh_air_cargo f
+           ON f.source_table = 'manual_fips'
+          AND f.source_id::text = m.uuid
     ORDER BY m.id DESC
   `);
   return rows;
@@ -82,12 +88,25 @@ export async function createManualFips(data = {}) {
 
 /**
  * 按主键删除一条手动航班
+ *
+ * ★ 原来 fresh_air_cargo.manual_fips_id 带 ON DELETE CASCADE，删航班会连带删生鲜标记；
+ *   该表泛化成 (source_table, source_id) 后不再有外键，所以这里**显式**清掉
+ *   该航班在 'manual_fips' 来源下的标记，避免留下指向已删航班的孤儿行。
  * @param {number|string} id 主键
  * @returns {Promise<boolean>} 是否删除成功
  */
 export async function deleteManualFips(id) {
-  const { rows } = await query('DELETE FROM manual_fips WHERE id = $1 RETURNING id', [id]);
-  return rows.length > 0;
+  const { rows } = await query('DELETE FROM manual_fips WHERE id = $1 RETURNING id, uuid', [id]);
+  if (rows.length === 0) return false;
+  const { uuid } = rows[0];
+  if (uuid) {
+    // source_id 是 UUID 列，按文本比避免脏数据转换报错
+    await query(
+      `DELETE FROM fresh_air_cargo WHERE source_table = 'manual_fips' AND source_id::text = $1`,
+      [uuid],
+    );
+  }
+  return true;
 }
 
 /**

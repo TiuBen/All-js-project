@@ -1,0 +1,80 @@
+# ============================================================
+# ecyilang 航班计划接口测试（/api/ecyilang*）
+# 使用 VS Code REST Client 插件
+# 数据来源：src/db/ecyilang.json（抓包快照 69 组，启动时自动灌种子）
+# ============================================================
+
+@base = http://localhost:5183/api
+
+### 1. 航班计划列表（★ 前端 pnpm testWW 用的就是它）
+# 一行原始数据会拆成「离港 + 进港」两条，69 组 → 最多 138 条
+GET {{base}}/ecyilang/flights
+Accept: application/json
+
+### 2. 航班计划列表（按批次日期过滤）
+GET {{base}}/ecyilang/flights?date=2026-09-29
+Accept: application/json
+
+### 3. 航班计划列表（日期范围）
+GET {{base}}/ecyilang/flights?from=2026-09-01&to=2026-09-30
+Accept: application/json
+
+### 4. 单条航班计划（离港侧：ecy-<行id>-d）
+GET {{base}}/ecyilang/flights/ecy-1-d
+Accept: application/json
+
+### 5. 单条航班计划（进港侧：ecy-<行id>-a）
+GET {{base}}/ecyilang/flights/ecy-1-a
+Accept: application/json
+
+### 6. 字段字典（列名 → 中文含义 / 取值说明）
+GET {{base}}/ecyilang/fields
+Accept: application/json
+
+### 7. 原始行列表（一行 = 一组成对航班 d_/a_）
+GET {{base}}/ecyilang
+Accept: application/json
+
+### 8. 原始行详情
+GET {{base}}/ecyilang/1
+Accept: application/json
+
+### 9. 新增原始行（至少给一个航班号；空串 '' 表示"已取消"，传 null 表示无该侧）
+POST {{base}}/ecyilang
+Content-Type: application/json
+
+{
+  "d_flight_type_code": "H/Z",
+  "d_flight_no_full": "TEST0001",
+  "d_name": "测试城市",
+  "d_jx": "B738",
+  "d_country_type": "DOM",
+  "d_state_name": "起飞",
+  "d_plan_time": "08:00",
+  "d_time": "08:05",
+  "d_craft_seat_code": "301",
+  "d_flight_date": "2026-09-29T08:00:00",
+  "a_flight_no_full": "TEST0002",
+  "a_name": "测试城市",
+  "a_jx": "B738",
+  "a_country_type": "DOM",
+  "a_state_name": "到达",
+  "a_plan_time": "06:00",
+  "a_time": "08:30",
+  "a_craft_seat_code": "302",
+  "a_flight_date": "2026-09-29T08:00:00",
+  "k_h": "H"
+}
+
+### 10. 更新原始行（只更新传入的列）
+PUT {{base}}/ecyilang/1
+Content-Type: application/json
+
+{
+  "d_state_name": "起飞",
+  "d_abnormal_state": "DLY"
+}
+
+### 11. 删除原始行（把 id 换成上一步 POST 返回的 id）
+DELETE {{base}}/ecyilang/1
+Accept: application/json

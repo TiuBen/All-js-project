@@ -80,11 +80,75 @@ export const manualFipsApi = {
 }
 
 // 生鲜货物航班标记（fresh_air_cargo 表）
+// ★ 业务键是 (sourceTable, sourceId)：sourceTable 是来源表名（默认 manual_fips），
+//   sourceId 是**来源表里的行 UUID**（manual_fips 用 row.uuid，不是自增 id）。
 export const freshAirCargoApi = {
   list: () => request('/fresh-air-cargo'),
-  mark: (manualFipsId, content = {}) =>
-    request('/fresh-air-cargo/mark', { method: 'POST', body: JSON.stringify({ manualFipsId, content }) }),
-  unmark: (manualFipsId) => request(`/fresh-air-cargo/mark/${manualFipsId}`, { method: 'DELETE' }),
+  mark: (sourceId, content = {}, sourceTable = 'manual_fips') =>
+    request('/fresh-air-cargo/mark', {
+      method: 'POST',
+      body: JSON.stringify({ sourceId, sourceTable, content }),
+    }),
+  unmark: (sourceId, sourceTable = 'manual_fips') =>
+    request(`/fresh-air-cargo/mark/${sourceId}?sourceTable=${encodeURIComponent(sourceTable)}`, {
+      method: 'DELETE',
+    }),
+}
+
+// 航班计划（ecyilang 表 —— 接口抓包快照）
+// listFlightPlans：后端已把每组的 d_/a_ 两侧拆成「离港 + 进港」两条，
+// 返回结构与 manualFipsApi.list() 一致（{ total, items }），页面可直接换源。
+export const ecyilangApi = {
+  listFlights: (params = {}) => {
+    const qs = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+    })
+    const q = qs.toString()
+    return request(`/ecyilang/flights${q ? `?${q}` : ''}`)
+  },
+  getFlight: (id) => request(`/ecyilang/flights/${id}`),
+  // 原始行（一行 = 一组成对航班 d_/a_）
+  listRows: (params = {}) => {
+    const qs = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+    })
+    const q = qs.toString()
+    return request(`/ecyilang${q ? `?${q}` : ''}`)
+  },
+  fields: () => request('/ecyilang/fields'),
+  create: (data) => request('/ecyilang', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => request(`/ecyilang/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  remove: (id) => request(`/ecyilang/${id}`, { method: 'DELETE' }),
+}
+
+// 生鲜航班保障节点台账（special 表 —— 由 9 月人工台账 Excel 导入 + 页面回写）
+// 业务自然键 = (callsign, belongTime)，所以「保存」统一走 upsert，不会写出重复行。
+// ⚠️ 列名是驼峰，后端返回的 JSON 键也是驼峰（belongTime / nodesTime / createTime / updateTime）。
+export const specialApi = {
+  /** 台账列表：?date= 精确 / ?from=~?to= 范围 / ?callsign= 模糊 */
+  list: (params = {}) => {
+    const qs = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') qs.set(k, v)
+    })
+    const q = qs.toString()
+    return request(`/special${q ? `?${q}` : ''}`)
+  },
+  /** 按业务键取一条（航班号 + 归属日期） */
+  getByKey: (callsign, belongTime) =>
+    request(`/special/key/${encodeURIComponent(callsign)}/${belongTime}`),
+  get: (id) => request(`/special/${id}`),
+  /** 每日条数（日历徽标用） */
+  dates: () => request('/special/dates'),
+  /** 字段字典 */
+  fields: () => request('/special/fields'),
+  create: (data) => request('/special', { method: 'POST', body: JSON.stringify(data) }),
+  /** 按 (callsign, belongTime) 新增或覆盖 nodesTime —— 页面保存到台账用这个 */
+  upsert: (data) => request('/special/upsert', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => request(`/special/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  remove: (id) => request(`/special/${id}`, { method: 'DELETE' }),
 }
 
 export default API_BASE

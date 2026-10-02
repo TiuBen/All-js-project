@@ -1,9 +1,10 @@
 import { create } from 'zustand'
-import { checklistsApi, manualFipsApi } from '../api'
+import { checklistsApi } from '../api'
 import { useDraftStore } from './draftStore'
 import { useRecordsStore } from './recordsStore'
-// 来源航班表（manual_fips）：记录 → 航班行的反查走它（列表已缓存时零请求）
-import { useManualFipsStore } from './manualFipsStore'
+// 来源航班表：记录 → 航班行的反查走它（列表已缓存时零请求）。
+// 具体是 manual_fips 还是 ecyilang 由构建模式决定，见 store/flightSource.js。
+import { useFlightStore, flightSourceApi } from './flightSource'
 // 模板静态数据（编译期打包，零网络）：loadTemplate 直接查表，不再有聚合入口文件
 import passengerInitFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/passengerInitFlight'
 import passengerBypassFlight from '../pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson/passengerBypassFlight'
@@ -139,7 +140,7 @@ export const isLockedBy = (recordStatus, checkedAt) =>
 const datePartOf = (v) => String(v || '').match(/^\d{4}-\d{2}-\d{2}/)?.[0] || ''
 
 /**
- * 由记录反查来源航班行（manual_fips）
+ * 由记录反查来源航班行（当前生效的数据源）
  * flight_id 历史上有两种写法（'manual-5' / '5'）→ 一律取尾部数字匹配。
  * 优先用内存里已缓存的航班列表（从航班列表点进来时零请求），没有再发一次查询；
  * 后端不可用也返回 null —— 查看页用记录自带字段兜底，绝不因反查失败打不开。
@@ -148,10 +149,10 @@ async function findSourceFlight(record) {
   const numId = Number(String(record?.flight_id ?? '').match(/(\d+)$/)?.[1])
   if (!numId) return null
   const pick = (list) => (list || []).find((f) => Number(f.id) === numId) || null
-  const cached = pick(useManualFipsStore.getState().flights)
+  const cached = pick(useFlightStore.getState().flights)
   if (cached) return cached
   try {
-    return pick((await manualFipsApi.list())?.items)
+    return pick((await flightSourceApi.list())?.items)
   } catch {
     return null
   }
@@ -180,8 +181,9 @@ function flightOfRecord(record, row) {
 }
 
 /**
- * 按航班键反查来源航班行（manual_fips）
- * 航班键 = uuid（现用）；同时兼容旧的 'manual-2' / '5' 写法 → 取尾部数字按 id 匹配。
+ * 按航班键反查来源航班行（当前生效的数据源，见 store/flightSource.js）
+ * 航班键 = uuid（现用；ecyilang 源形如 '<uuid>-d' / '<uuid>-a'）；
+ * 同时兼容旧的 'manual-2' / '5' 写法 → 取尾部数字按 id 匹配。
  * 优先用内存里缓存的航班列表（从航班列表点进来时零请求），没有再查一次；查不到返回 null。
  */
 async function findFlightByKey(flightKey) {
@@ -193,10 +195,10 @@ async function findFlightByKey(flightKey) {
     (list || []).find((f) => String(f.id) === key) ||
     (list || []).find((f) => numId && Number(f.id) === numId) ||
     null
-  const cached = pick(useManualFipsStore.getState().flights)
+  const cached = pick(useFlightStore.getState().flights)
   if (cached) return cached
   try {
-    return pick((await manualFipsApi.list())?.items)
+    return pick((await flightSourceApi.list())?.items)
   } catch {
     return null
   }

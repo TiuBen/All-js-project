@@ -5,13 +5,22 @@
  * 结构与 data/schema.sql（pg_dump 导出的权威库结构）严格一致：
  *   1. 若数据库不存在则创建（flight_dispatch）
  *   2. 建 5 张表：checklist_records / fips / flights / manual_fips / fresh_air_cargo
- *   3. 唯一约束、索引、外键与 schema.sql 一致
+ *   3. 建 ecyilang（航班计划快照）—— 结构见 db/ecyilangSchema.js，并做空表种子导入
+ *   4. 建 special（生鲜航班保障节点台账）—— 结构见 db/specialSchema.js，并做空表种子导入
+ * 唯一约束、索引、外键与 schema.sql 一致
  * 幂等：CREATE TABLE IF NOT EXISTS + IF NOT EXISTS 索引，可重复执行。
+ *
+ * ★ fresh_air_cargo 已泛化为「跨来源生鲜标记表」：
+ *   (source_table, source_id) 是业务自然键 —— source_table 标明来源表名，
+ *   source_id 是**该来源表的 UUID 标识**（manual_fips.uuid 这种，不再是自增整型 id）。
+ *   老库（manual_fips_id INTEGER + 外键）由 ensureFreshAirCargo() 自动迁移。
  * ============================================================
  */
 import pg from 'pg';
 import { config } from '../config/index.js';
 import { getPool } from './pool.js';
+import { initEcyilang } from './ecyilangSchema.js';
+import { initSpecial } from './specialSchema.js';
 
 /**
  * 初始化数据库：确保库存在 + 所有表存在
@@ -19,6 +28,11 @@ import { getPool } from './pool.js';
 export async function initDb() {
   await ensureDatabase();
   await ensureTables();
+  // ecyilang（航班计划快照）：建表 + 空表时从 ecyilang.json 灌种子。
+  // 表结构/字段字典都在该模块里，这里只负责触发。
+  await initEcyilang();
+  // special（生鲜保障节点台账）：建表 + 空表时从 special.json 灌种子（9 月 50 条）。
+  await initSpecial();
 }
 
 /**
@@ -179,16 +193,105 @@ async function ensureTables() {
     console.log('[DB] 表 manual_fips 已就绪');
 
     // ---------- 5. 生鲜货物航班表（fresh_air_cargo） ----------
-    await p.query(`
-      CREATE TABLE IF NOT EXISTS fresh_air_cargo (
-        id SERIAL PRIMARY KEY,
-        manual_fips_id INTEGER NOT NULL UNIQUE REFERENCES manual_fips(id) ON DELETE CASCADE,
-        content JSONB DEFAULT '{}'::jsonb,
-        created_at TIMESTAMPTZ DEFAULT now()
-      );
-    `);
+    // 跨来源生鲜标记：source_table 标明来源表名，source_id 是该来源表的 UUID 标识。
+    // 建表 + 老库迁移都在 ensureFreshAirCargo 里（迁移步骤较多，单独成函数）。
+    await ensureFreshAirCargo(p);
     console.log('[DB] 表 fresh_air_cargo 已就绪');
   } catch (err) {
     console.error('[DB] 建表失败：', err.message);
   }
+}
+
+/**
+ * 5) fresh_air_cargo —— 建表 + 迁移（幂等）
+ *
+ * 目标结构（业务自然键 = source_table + source_id）：
+ *   id SERIAL PK
+ *   source_table VARCHAR(32) NOT NULL DEFAULT 'manual_fips'  -- 来源表名
+ *   source_id    UUID        NOT NULL                        -- 来源表里那行的 UUID
+ *   content      JSONB DEFAULT '{}'
+ *   created_at   TIMESTAMPTZ DEFAULT now()
+ *
+ * 老结构是 manual_fips_id INTEGER NOT NULL UNIQUE REFERENCES manual_fips(id)
+ * ON DELETE CASCADE —— 迁移时把它换成对应 manual_fips.uuid 的 UUID：
+ *   整数 id → 查 manual_fips.uuid → 写入新列 → 拆掉旧外键/唯一索引 → 删旧列。
+ * 全程 IF EXISTS / IF NOT EXISTS，可重复执行；老库跑一次就完成转型。
+ *
+ * @param {import('pg').Pool} p
+ */
+async function ensureFreshAirCargo(p) {
+  // 1) 全新库：直接按新结构建（source_id 是 UUID，不是整型）
+  await p.query(`
+    CREATE TABLE IF NOT EXISTS fresh_air_cargo (
+      id SERIAL PRIMARY KEY,
+      source_table VARCHAR(32) NOT NULL DEFAULT 'manual_fips',
+      source_id UUID NOT NULL,
+      content JSONB DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+
+  // 2) 老库迁移：只要还留着 manual_fips_id 列，就说明是旧结构
+  const legacy = await p.query(`
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'fresh_air_cargo' AND column_name = 'manual_fips_id'
+  `);
+  if (legacy.rowCount > 0) {
+    console.log('[DB] fresh_air_cargo 检测到旧结构（manual_fips_id INTEGER），开始迁移 → source_id UUID');
+
+    // 2.1 source_table：一步补齐默认值与 NOT NULL
+    await p.query(`
+      ALTER TABLE fresh_air_cargo
+        ADD COLUMN IF NOT EXISTS source_table VARCHAR(32) NOT NULL DEFAULT 'manual_fips';
+    `);
+
+    // 2.2 source_id：先可空，回填后再收紧为 NOT NULL
+    await p.query(`ALTER TABLE fresh_air_cargo ADD COLUMN IF NOT EXISTS source_id UUID;`);
+
+    // 整数 manual_fips_id → 对应 manual_fips.uuid
+    // （条件里加 UUID 正则，避免历史脏数据在 ::uuid 转换时报错中断启动）
+    const filled = await p.query(`
+      UPDATE fresh_air_cargo f
+         SET source_id = m.uuid::uuid
+        FROM manual_fips m
+       WHERE m.id = f.manual_fips_id
+         AND f.source_id IS NULL
+         AND m.uuid ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+    `);
+
+    // 回填不到的（原航班已被删且外键没级联到）只能丢弃，否则 NOT NULL 加不上
+    const orphan = await p.query(
+      `DELETE FROM fresh_air_cargo WHERE source_id IS NULL RETURNING id, manual_fips_id;`,
+    );
+    if (orphan.rowCount > 0) {
+      console.warn(
+        '[DB] fresh_air_cargo 丢弃无主的旧标记（manual_fips 里找不到对应 uuid）：',
+        orphan.rows.map((r) => `id=${r.id}→manual_fips_id=${r.manual_fips_id}`).join(', '),
+      );
+    }
+
+    // 2.3 拆掉旧约束（外键指向 manual_fips(id)，新结构不再适用）
+    // ⚠️ manual_fips_id_key 是**列上的 UNIQUE 约束**（不是裸索引）——
+    //    DROP INDEX 会被 PG 拒绝（"cannot drop index ... because constraint ... requires it"），
+    //    必须先 DROP CONSTRAINT；后面那句 DROP INDEX 只是给「裸唯一索引」形态的库兜底。
+    await p.query(
+      `ALTER TABLE fresh_air_cargo DROP CONSTRAINT IF EXISTS fresh_air_cargo_manual_fips_id_fkey;`,
+    );
+    await p.query(
+      `ALTER TABLE fresh_air_cargo DROP CONSTRAINT IF EXISTS fresh_air_cargo_manual_fips_id_key;`,
+    );
+    await p.query(`DROP INDEX IF EXISTS fresh_air_cargo_manual_fips_id_key;`);
+
+    // 2.4 删旧列 + 收紧新列
+    await p.query(`ALTER TABLE fresh_air_cargo DROP COLUMN IF EXISTS manual_fips_id;`);
+    await p.query(`ALTER TABLE fresh_air_cargo ALTER COLUMN source_id SET NOT NULL;`);
+
+    console.log(`[DB] fresh_air_cargo 迁移完成，回填 ${filled.rowCount} 行`);
+  }
+
+  // 3) 业务自然键：同一来源表里的同一行只能有一条标记（upsert 的冲突目标）
+  await p.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS fresh_air_cargo_source_key
+      ON fresh_air_cargo(source_table, source_id);
+  `);
 }

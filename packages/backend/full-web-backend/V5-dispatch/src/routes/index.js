@@ -10,6 +10,8 @@ import { flightRouter } from './flightRoutes.js';
 import { checklistRouter } from './checklistRoutes.js';
 import { manualFipsRouter } from './manualFipsRoutes.js';
 import { freshAirCargoRouter } from './freshAirCargoRoutes.js';
+import { ecyilangRouter } from './ecyilangRoutes.js';
+import { specialRouter } from './specialRoutes.js';
 import { healthCheck } from '../controllers/healthController.js';
 import * as fipsService from '../services/fipsService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -30,6 +32,12 @@ router.use('/manual-fips', manualFipsRouter);
 
 /** 生鲜货物航班资源 */
 router.use('/fresh-air-cargo', freshAirCargoRouter);
+
+/** 航班计划（接口抓包快照）资源 */
+router.use('/ecyilang', ecyilangRouter);
+
+/** 生鲜航班保障节点台账资源 */
+router.use('/special', specialRouter);
 
 /**
  * GET /api/fips/:id —— 按主键查询 fips 原始行（用于详情 Dialog）

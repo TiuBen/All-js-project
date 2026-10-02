@@ -1,0 +1,2608 @@
+{
+  "source": "生鲜航班调度节点.xlsx",
+  "month": "2026-09",
+  "sheets": 29,
+  "count": 50,
+  "rows": [
+    {
+      "callsign": "O3182",
+      "belongTime": "2026-09-01",
+      "nodesTime": {
+        "sheet": "9.1",
+        "aircraftType": null,
+        "boardCount": 12,
+        "boardRaw": "12",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 72,
+        "totalRaw": "72",
+        "steps": {
+          "landing": {
+            "time": "12:28",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "12:38",
+            "gap": 10
+          },
+          "open_door": {
+            "time": "12:45",
+            "gap": 7
+          },
+          "start_unload": {
+            "time": "12:49",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "12:58",
+            "gap": 9
+          },
+          "first_truck_leave": {
+            "time": "13:02",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "13:20",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "13:19",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "13:40",
+            "gap": 21
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-02",
+      "nodesTime": {
+        "sheet": "9.2",
+        "aircraftType": null,
+        "boardCount": 32,
+        "boardRaw": "32",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 85,
+        "totalRaw": "85",
+        "steps": {
+          "landing": {
+            "time": "20:09",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "20:21",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "20:33",
+            "gap": 12
+          },
+          "start_unload": {
+            "time": "20:37",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "21:15",
+            "gap": 52
+          },
+          "first_truck_leave": {
+            "time": "20:47",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "21:03",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "21:18",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "21:34",
+            "gap": 16
+          }
+        }
+      }
+    },
+    {
+      "callsign": "A7950",
+      "belongTime": "2026-09-02",
+      "nodesTime": {
+        "sheet": "9.2",
+        "aircraftType": null,
+        "boardCount": 7,
+        "boardRaw": "7",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 68,
+        "totalRaw": "68",
+        "steps": {
+          "landing": {
+            "time": "00:27",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "00:45",
+            "gap": 18
+          },
+          "open_door": {
+            "time": "00:54",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "00:59",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "01:15",
+            "gap": 16
+          },
+          "first_truck_leave": {
+            "time": "01:01",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "01:11",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "01:25",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "01:35",
+            "gap": 10
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3122",
+      "belongTime": "2026-09-02",
+      "nodesTime": {
+        "sheet": "9.2",
+        "aircraftType": null,
+        "boardCount": 24,
+        "boardRaw": "24",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 77,
+        "totalRaw": "77",
+        "steps": {
+          "landing": {
+            "time": "10:37",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:44",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "10:49",
+            "gap": 5
+          },
+          "start_unload": {
+            "time": "10:56",
+            "gap": 7
+          },
+          "end_unload": {
+            "time": "11:33",
+            "gap": 37
+          },
+          "first_truck_leave": {
+            "time": "11:05",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:24",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:41",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:54",
+            "gap": 13
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3490",
+      "belongTime": "2026-09-03",
+      "nodesTime": {
+        "sheet": "9.3",
+        "aircraftType": null,
+        "boardCount": 26,
+        "boardRaw": "26",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 119,
+        "totalRaw": "119",
+        "steps": {
+          "landing": {
+            "time": "22:08",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "22:19",
+            "gap": 11
+          },
+          "open_door": {
+            "time": "22:30",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "22:31",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "23:18",
+            "gap": 47
+          },
+          "first_truck_leave": {
+            "time": "22:49",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "23:07",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "23:50",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "00:07",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "I99816",
+      "belongTime": "2026-09-03",
+      "nodesTime": {
+        "sheet": "9.3",
+        "aircraftType": null,
+        "boardCount": 18,
+        "boardRaw": "18",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 69,
+        "totalRaw": "69",
+        "steps": {
+          "landing": {
+            "time": "07:49",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "07:52",
+            "gap": 3
+          },
+          "open_door": {
+            "time": "08:03",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "08:04",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "08:50",
+            "gap": 46
+          },
+          "first_truck_leave": {
+            "time": "08:10",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "08:17",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "08:53",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "08:58",
+            "gap": 5
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-04",
+      "nodesTime": {
+        "sheet": "9.4",
+        "aircraftType": null,
+        "boardCount": 17,
+        "boardRaw": "17",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 84,
+        "totalRaw": "84",
+        "steps": {
+          "landing": {
+            "time": "19:11",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "19:18",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "19:29",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "19:35",
+            "gap": 6
+          },
+          "end_unload": {
+            "time": "20:09",
+            "gap": 34
+          },
+          "first_truck_leave": {
+            "time": "19:49",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:09",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:16",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "20:35",
+            "gap": 19
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3290",
+      "belongTime": "2026-09-05",
+      "nodesTime": {
+        "sheet": "9.5",
+        "aircraftType": null,
+        "boardCount": 26,
+        "boardRaw": "26",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 134,
+        "totalRaw": "134",
+        "steps": {
+          "landing": {
+            "time": "03:15",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "03:20",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "03:33",
+            "gap": 13
+          },
+          "start_unload": {
+            "time": "03:39",
+            "gap": 6
+          },
+          "end_unload": {
+            "time": "04:11",
+            "gap": 32
+          },
+          "first_truck_leave": {
+            "time": "03:53",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "04:20",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "05:12",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "05:29",
+            "gap": 78
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3122",
+      "belongTime": "2026-09-05",
+      "nodesTime": {
+        "sheet": "9.5",
+        "aircraftType": null,
+        "boardCount": 25,
+        "boardRaw": "25",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 72,
+        "totalRaw": "72",
+        "steps": {
+          "landing": {
+            "time": "10:43",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:52",
+            "gap": 9
+          },
+          "open_door": {
+            "time": "10:57",
+            "gap": 5
+          },
+          "start_unload": {
+            "time": "11:01",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "11:31",
+            "gap": 30
+          },
+          "first_truck_leave": {
+            "time": "11:09",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:23",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:31",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:55",
+            "gap": 24
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3690",
+      "belongTime": "2026-09-06",
+      "nodesTime": {
+        "sheet": "9.6",
+        "aircraftType": null,
+        "boardCount": 29,
+        "boardRaw": "29板一箱",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 117,
+        "totalRaw": "117",
+        "steps": {
+          "landing": {
+            "time": "18:30",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "17:07",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "17:12",
+            "gap": 5
+          },
+          "start_unload": {
+            "time": "17:16",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "18:06",
+            "gap": 50
+          },
+          "first_truck_leave": {
+            "time": "17:26",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "17:44",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "18:37",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "18:52",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3182",
+      "belongTime": "2026-09-06",
+      "nodesTime": {
+        "sheet": "9.6",
+        "aircraftType": null,
+        "boardCount": 15,
+        "boardRaw": "15板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 66,
+        "totalRaw": "66",
+        "steps": {
+          "landing": {
+            "time": "19:33",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "19:18",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "19:26",
+            "gap": 8
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "19:56",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "19:42",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:03",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:05",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "20:20",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-07",
+      "nodesTime": {
+        "sheet": "9.7",
+        "aircraftType": null,
+        "boardCount": 40,
+        "boardRaw": "40板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 89,
+        "totalRaw": "89",
+        "steps": {
+          "landing": {
+            "time": "19:33",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "19:41",
+            "gap": 8
+          },
+          "open_door": {
+            "time": "19:50",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "20:33",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "20:07",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:22",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:41",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "21:02",
+            "gap": 21
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3490",
+      "belongTime": "2026-09-07",
+      "nodesTime": {
+        "sheet": "9.7",
+        "aircraftType": null,
+        "boardCount": 35,
+        "boardRaw": "35板",
+        "programStarted": true,
+        "programRaw": "是（B）",
+        "totalMinutes": 117,
+        "totalRaw": "117",
+        "steps": {
+          "landing": {
+            "time": "18:30",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "18:42",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "18:51",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "18:55",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "19:47",
+            "gap": 52
+          },
+          "first_truck_leave": {
+            "time": "19:10",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "19:29",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:09",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "20:27",
+            "gap": 18
+          }
+        }
+      }
+    },
+    {
+      "callsign": "I99816",
+      "belongTime": "2026-09-08",
+      "nodesTime": {
+        "sheet": "9.8",
+        "aircraftType": null,
+        "boardCount": 9,
+        "boardRaw": "9板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 72,
+        "totalRaw": "72",
+        "steps": {
+          "landing": {
+            "time": "03:19",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "03:25",
+            "gap": 6
+          },
+          "open_door": {
+            "time": "03:31",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "03:39",
+            "gap": 8
+          },
+          "end_unload": {
+            "time": "04:23",
+            "gap": 44
+          },
+          "first_truck_leave": {
+            "time": "03:41",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "03:51",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "04:31",
+            "gap": null
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3182",
+      "belongTime": "2026-09-08",
+      "nodesTime": {
+        "sheet": "9.8",
+        "aircraftType": null,
+        "boardCount": 17,
+        "boardRaw": "17板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 61,
+        "totalRaw": "61",
+        "steps": {
+          "landing": {
+            "time": "13:22",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "13:26",
+            "gap": 4
+          },
+          "open_door": {
+            "time": "13:35",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "13:40",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "14:07",
+            "gap": 7
+          },
+          "first_truck_leave": {
+            "time": "13:52",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "14:04",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "14:09",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "14:23",
+            "gap": 14
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-09",
+      "nodesTime": {
+        "sheet": "9.9",
+        "aircraftType": null,
+        "boardCount": 32,
+        "boardRaw": "32板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 80,
+        "totalRaw": "80",
+        "steps": {
+          "landing": {
+            "time": "20:55",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "21:03",
+            "gap": 8
+          },
+          "open_door": {
+            "time": "21:18",
+            "gap": 15
+          },
+          "start_unload": {
+            "time": "21:20",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "21:45",
+            "gap": 7
+          },
+          "first_truck_leave": {
+            "time": "21:28",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "21:42",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "22:00",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "22:16",
+            "gap": 16
+          }
+        }
+      }
+    },
+    {
+      "callsign": "A7950",
+      "belongTime": "2026-09-09",
+      "nodesTime": {
+        "sheet": "9.9",
+        "aircraftType": null,
+        "boardCount": 4,
+        "boardRaw": "4板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 69,
+        "totalRaw": "69",
+        "steps": {
+          "landing": {
+            "time": "00:20",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "00:35",
+            "gap": 15
+          },
+          "open_door": {
+            "time": "00:41",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "00:46",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "01:08",
+            "gap": 20
+          },
+          "first_truck_leave": {
+            "time": "00:57",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "01:03",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "01:07",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "01:11",
+            "gap": 4
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3122",
+      "belongTime": "2026-09-09",
+      "nodesTime": {
+        "sheet": "9.9",
+        "aircraftType": null,
+        "boardCount": 24,
+        "boardRaw": "24板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 83,
+        "totalRaw": "83",
+        "steps": {
+          "landing": {
+            "time": "10:43",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:50",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "10:54",
+            "gap": 4
+          },
+          "start_unload": {
+            "time": "10:56",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "11:24",
+            "gap": 27
+          },
+          "first_truck_leave": {
+            "time": "11:04",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:21",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:30",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:43",
+            "gap": 13
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3490",
+      "belongTime": "2026-09-10",
+      "nodesTime": {
+        "sheet": "9.10",
+        "aircraftType": null,
+        "boardCount": 28,
+        "boardRaw": "28板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 107,
+        "totalRaw": "107",
+        "steps": {
+          "landing": {
+            "time": "21:14",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "21:19",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "21:27",
+            "gap": 8
+          },
+          "start_unload": {
+            "time": "21:33",
+            "gap": 6
+          },
+          "end_unload": {
+            "time": "22:20",
+            "gap": 47
+          },
+          "first_truck_leave": {
+            "time": "21:50",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "22:06",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "22:42",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "23:01",
+            "gap": 19
+          }
+        }
+      }
+    },
+    {
+      "callsign": "I99816",
+      "belongTime": "2026-09-10",
+      "nodesTime": {
+        "sheet": "9.10",
+        "aircraftType": null,
+        "boardCount": 10,
+        "boardRaw": "10板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 119,
+        "totalRaw": "119",
+        "steps": {
+          "landing": {
+            "time": "07:58",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "08:12",
+            "gap": 14
+          },
+          "open_door": {
+            "time": "08:23",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "08:24",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "09:21",
+            "gap": 57
+          },
+          "first_truck_leave": {
+            "time": "08:35",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "09:50",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "08:40",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "09:57",
+            "gap": 77
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-11",
+      "nodesTime": {
+        "sheet": "9.11",
+        "aircraftType": null,
+        "boardCount": 15,
+        "boardRaw": "15板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 80,
+        "totalRaw": "80",
+        "steps": {
+          "landing": {
+            "time": "19:00",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "19:09",
+            "gap": 9
+          },
+          "open_door": {
+            "time": "19:18",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "19:55",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "19:36",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "19:51",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:03",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "20:20",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3290",
+      "belongTime": "2026-09-12",
+      "nodesTime": {
+        "sheet": "9.12",
+        "aircraftType": null,
+        "boardCount": 22,
+        "boardRaw": "22板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 79,
+        "totalRaw": "79",
+        "steps": {
+          "landing": {
+            "time": "08:52",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "08:59",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "09:05",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "09:07",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "09:39",
+            "gap": 32
+          },
+          "first_truck_leave": {
+            "time": "09:20",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "09:35",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "09:51",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "10:11",
+            "gap": 20
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3122",
+      "belongTime": "2026-09-12",
+      "nodesTime": {
+        "sheet": "9.12",
+        "aircraftType": null,
+        "boardCount": 24,
+        "boardRaw": "24板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 65,
+        "totalRaw": "65",
+        "steps": {
+          "landing": {
+            "time": "10:37",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:44",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "10:48",
+            "gap": 4
+          },
+          "start_unload": {
+            "time": "10:53",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "11:23",
+            "gap": 30
+          },
+          "first_truck_leave": {
+            "time": "11:06",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:20",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:30",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:42",
+            "gap": 12
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CKS866",
+      "belongTime": "2026-09-13",
+      "nodesTime": {
+        "sheet": "9.13",
+        "aircraftType": null,
+        "boardCount": 4,
+        "boardRaw": "4板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 69,
+        "totalRaw": "69",
+        "steps": {
+          "landing": {
+            "time": "13:55",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "14:10",
+            "gap": 16
+          },
+          "open_door": {
+            "time": "14:18",
+            "gap": 8
+          },
+          "start_unload": {
+            "time": "14:20",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "14:41",
+            "gap": 21
+          },
+          "first_truck_leave": {
+            "time": "14:45",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "15:04",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "",
+            "gap": null
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3690",
+      "belongTime": "2026-09-13",
+      "nodesTime": {
+        "sheet": "9.13",
+        "aircraftType": null,
+        "boardCount": 21,
+        "boardRaw": "21板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 93,
+        "totalRaw": "93",
+        "steps": {
+          "landing": {
+            "time": "15:00",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "15:11",
+            "gap": 11
+          },
+          "open_door": {
+            "time": "15:18",
+            "gap": 7
+          },
+          "start_unload": {
+            "time": "15:25",
+            "gap": 7
+          },
+          "end_unload": {
+            "time": "16:01",
+            "gap": 36
+          },
+          "first_truck_leave": {
+            "time": "15:34",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "15:54",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "16:18",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "16:33",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3490",
+      "belongTime": "2026-09-14",
+      "nodesTime": {
+        "sheet": "9.14",
+        "aircraftType": null,
+        "boardCount": 26,
+        "boardRaw": "26",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 86,
+        "totalRaw": "86",
+        "steps": {
+          "landing": {
+            "time": "22:44",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "22:50",
+            "gap": 6
+          },
+          "open_door": {
+            "time": "22:56",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "23:00",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "23:32",
+            "gap": 32
+          },
+          "first_truck_leave": {
+            "time": "23:13",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "23:30",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "23:52",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "00:10",
+            "gap": 18
+          }
+        }
+      }
+    },
+    {
+      "callsign": "GTI8608",
+      "belongTime": "2026-09-14",
+      "nodesTime": {
+        "sheet": "9.14",
+        "aircraftType": null,
+        "boardCount": 35,
+        "boardRaw": "35",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 78,
+        "totalRaw": "78",
+        "steps": {
+          "landing": {
+            "time": "20:09",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "20:14",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "20:23",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "20:25",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "21:01",
+            "gap": 36
+          },
+          "first_truck_leave": {
+            "time": "20:35",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:52",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "21:10",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "21:27",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CSS182",
+      "belongTime": "2026-09-15",
+      "nodesTime": {
+        "sheet": "9.15",
+        "aircraftType": null,
+        "boardCount": 5,
+        "boardRaw": "5",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 60,
+        "totalRaw": "60",
+        "steps": {
+          "landing": {
+            "time": "13:35",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "13:47",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "13:53",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "13:57",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "14:19",
+            "gap": 22
+          },
+          "first_truck_leave": {
+            "time": "14:15",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "14:32",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "14:19",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "14:35",
+            "gap": 16
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CSS122",
+      "belongTime": "2026-09-16",
+      "nodesTime": {
+        "sheet": "9.16",
+        "aircraftType": null,
+        "boardCount": 20,
+        "boardRaw": "20",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 60,
+        "totalRaw": "60",
+        "steps": {
+          "landing": {
+            "time": "10:28",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:33",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "10:38",
+            "gap": 5
+          },
+          "start_unload": {
+            "time": "10:40",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "11:09",
+            "gap": 29
+          },
+          "first_truck_leave": {
+            "time": "10:51",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:02",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:11",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:26",
+            "gap": 35
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3490",
+      "belongTime": "2026-09-17",
+      "nodesTime": {
+        "sheet": "9.17",
+        "aircraftType": null,
+        "boardCount": 37,
+        "boardRaw": "37",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 125,
+        "totalRaw": "125\n驳运超时首末车离坪隔了75分钟，海关查验12分钟",
+        "steps": {
+          "landing": {
+            "time": "22:50",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "22:59",
+            "gap": 9
+          },
+          "open_door": {
+            "time": "23:11",
+            "gap": 12
+          },
+          "start_unload": {
+            "time": "23:13",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "00:05",
+            "gap": 48
+          },
+          "first_truck_leave": {
+            "time": "23:23",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "23:43",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "00:38",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "00:55",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CSS122",
+      "belongTime": "2026-09-19",
+      "nodesTime": {
+        "sheet": "9.19",
+        "aircraftType": null,
+        "boardCount": 24,
+        "boardRaw": "24",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 69,
+        "totalRaw": "69",
+        "steps": {
+          "landing": {
+            "time": "10:04",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:08",
+            "gap": 4
+          },
+          "open_door": {
+            "time": "10:12",
+            "gap": 4
+          },
+          "start_unload": {
+            "time": "10:16",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "10:54",
+            "gap": 38
+          },
+          "first_truck_leave": {
+            "time": "10:34",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "10:47",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:00",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:13",
+            "gap": 19
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3290",
+      "belongTime": "2026-09-19",
+      "nodesTime": {
+        "sheet": "9.19",
+        "aircraftType": null,
+        "boardCount": 30,
+        "boardRaw": "30",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 117,
+        "totalRaw": "117",
+        "steps": {
+          "landing": {
+            "time": "06:40",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "06:52",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "06:59",
+            "gap": 7
+          },
+          "start_unload": {
+            "time": "07:02",
+            "gap": 3
+          },
+          "end_unload": {
+            "time": "07:51",
+            "gap": 49
+          },
+          "first_truck_leave": {
+            "time": "07:19",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "07:36",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "08:23",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "08:37",
+            "gap": 46
+          }
+        }
+      }
+    },
+    {
+      "callsign": "GTI8608",
+      "belongTime": "2026-09-19",
+      "nodesTime": {
+        "sheet": "9.19",
+        "aircraftType": null,
+        "boardCount": 34,
+        "boardRaw": "34",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 85,
+        "totalRaw": "85",
+        "steps": {
+          "landing": {
+            "time": "09:12",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "09:22",
+            "gap": 10
+          },
+          "open_door": {
+            "time": "09:31",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "09:36",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "10:12",
+            "gap": 36
+          },
+          "first_truck_leave": {
+            "time": "09:53",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "10:09",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "10:19",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "10:37",
+            "gap": 25
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3690",
+      "belongTime": "2026-09-20",
+      "nodesTime": {
+        "sheet": "9.20",
+        "aircraftType": null,
+        "boardCount": 33,
+        "boardRaw": "33",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 96,
+        "totalRaw": "96",
+        "steps": {
+          "landing": {
+            "time": "17:40",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "17:45",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "17:51",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "17:52",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "18:42",
+            "gap": 50
+          },
+          "first_truck_leave": {
+            "time": "18:04",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "18:19",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "19:02",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "19:16",
+            "gap": 14
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3691",
+      "belongTime": "2026-09-21",
+      "nodesTime": {
+        "sheet": "9.21",
+        "aircraftType": "B77L",
+        "boardCount": 24,
+        "boardRaw": "24",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 104,
+        "totalRaw": "104",
+        "steps": {
+          "landing": {
+            "time": "21:49",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "22:05",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "22:11",
+            "gap": 6
+          },
+          "start_unload": {
+            "time": "22:25",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "23:03",
+            "gap": 50
+          },
+          "first_truck_leave": {
+            "time": "22:32",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "22:47",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "23:10",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "23:33",
+            "gap": 14
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CSS182",
+      "belongTime": "2026-09-22",
+      "nodesTime": {
+        "sheet": "9.22",
+        "aircraftType": null,
+        "boardCount": null,
+        "boardRaw": null,
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "",
+            "gap": null
+          },
+          "open_door": {
+            "time": "",
+            "gap": null
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "",
+            "gap": null
+          }
+        }
+      }
+    },
+    {
+      "callsign": "GTI8608",
+      "belongTime": "2026-09-22",
+      "nodesTime": {
+        "sheet": "9.22",
+        "aircraftType": null,
+        "boardCount": null,
+        "boardRaw": null,
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "",
+            "gap": null
+          },
+          "open_door": {
+            "time": "",
+            "gap": null
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "",
+            "gap": null
+          }
+        }
+      }
+    },
+    {
+      "callsign": "CSS122",
+      "belongTime": "2026-09-23",
+      "nodesTime": {
+        "sheet": "9.23",
+        "aircraftType": "B763",
+        "boardCount": 24,
+        "boardRaw": "24板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 119,
+        "totalRaw": "119",
+        "steps": {
+          "landing": {
+            "time": "10:36",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "10:41",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "10:45",
+            "gap": 4
+          },
+          "start_unload": {
+            "time": "10:49",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "11:20",
+            "gap": 31
+          },
+          "first_truck_leave": {
+            "time": "11:00",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "11:12",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "11:25",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "11:35",
+            "gap": 10
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3490",
+      "belongTime": "2026-09-24",
+      "nodesTime": {
+        "sheet": "9.24",
+        "aircraftType": "B77L",
+        "boardCount": 31,
+        "boardRaw": "31板",
+        "programStarted": true,
+        "programRaw": "B类",
+        "totalMinutes": 112,
+        "totalRaw": "112",
+        "steps": {
+          "landing": {
+            "time": "19:24",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "19:35",
+            "gap": 11
+          },
+          "open_door": {
+            "time": "19:45",
+            "gap": 10
+          },
+          "start_unload": {
+            "time": "19:53",
+            "gap": 8
+          },
+          "end_unload": {
+            "time": "20:42",
+            "gap": 49
+          },
+          "first_truck_leave": {
+            "time": "20:04",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:24",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "20:59",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "21:16",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "HLF9816",
+      "belongTime": "2026-09-24",
+      "nodesTime": {
+        "sheet": "9.24",
+        "aircraftType": "B77L",
+        "boardCount": 12,
+        "boardRaw": "12板",
+        "programStarted": false,
+        "programRaw": null,
+        "totalMinutes": 78,
+        "totalRaw": "78  备注:0902-0943更换轮胎，暂停保障。",
+        "steps": {
+          "landing": {
+            "time": "07:47",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "07:55",
+            "gap": 8
+          },
+          "open_door": {
+            "time": "08:03",
+            "gap": 8
+          },
+          "start_unload": {
+            "time": "08:05",
+            "gap": 2
+          },
+          "end_unload": {
+            "time": "09:02",
+            "gap": 57
+          },
+          "first_truck_leave": {
+            "time": "08:17",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "08:25",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "09:00",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "09:05",
+            "gap": 5
+          }
+        }
+      }
+    },
+    {
+      "callsign": "GTI8608",
+      "belongTime": "2026-09-25",
+      "nodesTime": {
+        "sheet": "9.25",
+        "aircraftType": "B77L",
+        "boardCount": 32,
+        "boardRaw": "32板",
+        "programStarted": true,
+        "programRaw": "启动生鲜保障",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "09:27",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "09:35",
+            "gap": 8
+          },
+          "open_door": {
+            "time": "09:44",
+            "gap": 9
+          },
+          "start_unload": {
+            "time": "09:47",
+            "gap": 3
+          },
+          "end_unload": {
+            "time": "10:37",
+            "gap": 50
+          },
+          "first_truck_leave": {
+            "time": "10:02",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "10:15",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "10:37",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "10:51",
+            "gap": 14
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ETH3290/1",
+      "belongTime": "2026-09-26",
+      "nodesTime": {
+        "sheet": "9.26",
+        "aircraftType": "B77L",
+        "boardCount": 35,
+        "boardRaw": "35板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": 104,
+        "totalRaw": "104",
+        "steps": {
+          "landing": {
+            "time": "09:14",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "09:26",
+            "gap": 12
+          },
+          "open_door": {
+            "time": "09:38",
+            "gap": 12
+          },
+          "start_unload": {
+            "time": "09:39",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "10:24",
+            "gap": 45
+          },
+          "first_truck_leave": {
+            "time": "09:44",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "09:59",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "10:43",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "10:58",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "I99816",
+      "belongTime": "2026-09-26",
+      "nodesTime": {
+        "sheet": "9.26",
+        "aircraftType": "B77L",
+        "boardCount": 12,
+        "boardRaw": "12板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 67,
+        "totalRaw": "67",
+        "steps": {
+          "landing": {
+            "time": "12:56",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "13:01",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "13:12",
+            "gap": 11
+          },
+          "start_unload": {
+            "time": "13:16",
+            "gap": 4
+          },
+          "end_unload": {
+            "time": "14:02",
+            "gap": 46
+          },
+          "first_truck_leave": {
+            "time": "13:35",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "13:39",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "13:59",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "14:03",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3122",
+      "belongTime": "2026-09-26",
+      "nodesTime": {
+        "sheet": "9.26",
+        "aircraftType": "B763",
+        "boardCount": 24,
+        "boardRaw": "24板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 64,
+        "totalRaw": "64",
+        "steps": {
+          "landing": {
+            "time": "11:58",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "12:03",
+            "gap": 5
+          },
+          "open_door": {
+            "time": "12:07",
+            "gap": 4
+          },
+          "start_unload": {
+            "time": "12:08",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "12:38",
+            "gap": 30
+          },
+          "first_truck_leave": {
+            "time": "12:21",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "12:48",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "13:35",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "13:02",
+            "gap": 15
+          }
+        }
+      }
+    },
+    {
+      "callsign": "K4866",
+      "belongTime": "2026-09-27",
+      "nodesTime": {
+        "sheet": "9.27",
+        "aircraftType": "B744",
+        "boardCount": 3,
+        "boardRaw": "3版",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": 66,
+        "totalRaw": "66",
+        "steps": {
+          "landing": {
+            "time": "06:18",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "06:25",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "06:40",
+            "gap": 15
+          },
+          "start_unload": {
+            "time": "06:45",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "06:57",
+            "gap": 12
+          },
+          "first_truck_leave": {
+            "time": "06:54",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "07:24",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "06:54",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "07:24",
+            "gap": 30
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3690",
+      "belongTime": "2026-09-28",
+      "nodesTime": {
+        "sheet": "9.28",
+        "aircraftType": "B77L",
+        "boardCount": 24,
+        "boardRaw": "24板1箱",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "00:34",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "00:47",
+            "gap": 13
+          },
+          "open_door": {
+            "time": "00:57",
+            "gap": 10
+          },
+          "start_unload": {
+            "time": "01:02",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "01:41",
+            "gap": 39
+          },
+          "first_truck_leave": {
+            "time": "01:09",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "01:28",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "01:44",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "02:01",
+            "gap": 17
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3190",
+      "belongTime": "2026-09-28",
+      "nodesTime": {
+        "sheet": "9.28",
+        "aircraftType": "B744",
+        "boardCount": 30,
+        "boardRaw": "30板",
+        "programStarted": false,
+        "programRaw": "否",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "02:32",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "02:45",
+            "gap": 13
+          },
+          "open_door": {
+            "time": "02:50",
+            "gap": 5
+          },
+          "start_unload": {
+            "time": "02:51",
+            "gap": 1
+          },
+          "end_unload": {
+            "time": "03:33",
+            "gap": 42
+          },
+          "first_truck_leave": {
+            "time": "03:09",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "03:26",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "03:37",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "03:53",
+            "gap": 16
+          }
+        }
+      }
+    },
+    {
+      "callsign": "5Y8608",
+      "belongTime": "2026-09-29",
+      "nodesTime": {
+        "sheet": "9.29",
+        "aircraftType": "B77L",
+        "boardCount": 35,
+        "boardRaw": "35板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "17:41",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "17:52",
+            "gap": 11
+          },
+          "open_door": {
+            "time": "18:02",
+            "gap": 10
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "18:50",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "18:19",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "18:33",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "18:52",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "19:05",
+            "gap": 13
+          }
+        }
+      }
+    },
+    {
+      "callsign": "ET3690",
+      "belongTime": "2026-09-29",
+      "nodesTime": {
+        "sheet": "9.29",
+        "aircraftType": "B77L",
+        "boardCount": 37,
+        "boardRaw": "37板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "23:36",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "23:43",
+            "gap": 7
+          },
+          "open_door": {
+            "time": "23:50",
+            "gap": 7
+          },
+          "start_unload": {
+            "time": "23:55",
+            "gap": 5
+          },
+          "end_unload": {
+            "time": "00:39",
+            "gap": 44
+          },
+          "first_truck_leave": {
+            "time": "00:07",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "00:36",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "00:55",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "01:17",
+            "gap": 23
+          }
+        }
+      }
+    },
+    {
+      "callsign": "O3182",
+      "belongTime": "2026-09-29",
+      "nodesTime": {
+        "sheet": "9.29",
+        "aircraftType": "B744",
+        "boardCount": 15,
+        "boardRaw": "15板",
+        "programStarted": true,
+        "programRaw": "是",
+        "totalMinutes": null,
+        "totalRaw": null,
+        "steps": {
+          "landing": {
+            "time": "20:04",
+            "gap": null
+          },
+          "arrive_stand": {
+            "time": "20:10",
+            "gap": 6
+          },
+          "open_door": {
+            "time": "20:17",
+            "gap": 7
+          },
+          "start_unload": {
+            "time": "",
+            "gap": null
+          },
+          "end_unload": {
+            "time": "21:01",
+            "gap": null
+          },
+          "first_truck_leave": {
+            "time": "20:32",
+            "gap": null
+          },
+          "first_truck_arrive": {
+            "time": "20:38",
+            "gap": null
+          },
+          "last_truck_leave": {
+            "time": "21:02",
+            "gap": null
+          },
+          "last_truck_arrive": {
+            "time": "21:06",
+            "gap": 4
+          }
+        }
+      }
+    }
+  ]
+}

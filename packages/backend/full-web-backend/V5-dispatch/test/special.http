@@ -1,0 +1,110 @@
+# ============================================================
+# special 生鲜航班保障节点台账接口测试（/api/special*）
+# 使用 VS Code REST Client 插件
+# 数据来源：src/db/生鲜航班调度节点.xlsx 的 9. 开头 sheet
+#           → src/db/tools/xlsx-to-special-json.py → src/db/special.json
+#           → 启动时自动灌种子（2026 年 9 月，50 条）
+# ⚠️ 列名是驼峰，JSON 键就是驼峰（belongTime / nodesTime / createTime / updateTime）
+# ============================================================
+
+@base = http://localhost:5183/api
+@callsign = O3182
+@belongTime = 2026-09-01
+
+### 1. 台账列表（★ 生鲜保障页按日期取数用的就是它）
+# ?date= 精确 / ?from=~?to= 范围 / ?callsign= 模糊，可组合
+GET {{base}}/special
+Accept: application/json
+
+### 2. 按日期取当天全部台账
+GET {{base}}/special?date=2026-09-29
+Accept: application/json
+
+### 3. 日期范围
+GET {{base}}/special?from=2026-09-01&to=2026-09-07
+Accept: application/json
+
+### 4. 航班号模糊匹配
+GET {{base}}/special?callsign=5Y86
+Accept: application/json
+
+### 5. 每日条数（侧边栏日历徽标用）
+GET {{base}}/special/dates
+Accept: application/json
+
+### 6. 字段字典（列名 → 中文含义 / 类型 / 取值说明）
+GET {{base}}/special/fields
+Accept: application/json
+
+### 7. 按业务键取一条（航班号 + 归属日期）
+GET {{base}}/special/key/{{callsign}}/{{belongTime}}
+Accept: application/json
+
+### 8. 详情（按主键）
+GET {{base}}/special/1
+Accept: application/json
+
+### 9. 新增（同 key 已存在返回 409，覆盖请走 /upsert）
+POST {{base}}/special
+Content-Type: application/json
+
+{
+  "callsign": "ZZTEST99",
+  "belongTime": "2026-09-30",
+  "nodesTime": {
+    "sheet": "9.30",
+    "aircraftType": "B77L",
+    "boardCount": 5,
+    "programStarted": true,
+    "steps": { "landing": { "time": "10:00", "gap": null } }
+  }
+}
+
+### 10. 按业务键新增或覆盖（★ 前端「保存到台账」走这个）
+POST {{base}}/special/upsert
+Content-Type: application/json
+
+{
+  "callsign": "ZZTEST99",
+  "belongTime": "2026-09-30",
+  "nodesTime": {
+    "sheet": "9.30",
+    "aircraftType": "B77L",
+    "boardCount": 7,
+    "programStarted": false,
+    "steps": {
+      "landing": { "time": "10:00", "gap": null },
+      "arrive_stand": { "time": "10:12", "gap": 12 },
+      "last_truck_arrive": { "time": "11:20", "gap": 20 }
+    }
+  }
+}
+
+### 11. 更新（只更新传入字段；下面的 id 改成上一步返回的 id）
+PUT {{base}}/special/51
+Content-Type: application/json
+
+{
+  "nodesTime": { "sheet": "9.30", "boardCount": 9 }
+}
+
+### 12. 删除（id 改成上面新增出来的那条）
+DELETE {{base}}/special/51
+Accept: application/json
+
+### 13. 参数校验：缺 callsign → 400
+POST {{base}}/special
+Content-Type: application/json
+
+{
+  "belongTime": "2026-09-30"
+}
+
+### 14. 参数校验：日期格式不对 → 400
+POST {{base}}/special/upsert
+Content-Type: application/json
+
+{
+  "callsign": "X",
+  "belongTime": "9月30"
+}

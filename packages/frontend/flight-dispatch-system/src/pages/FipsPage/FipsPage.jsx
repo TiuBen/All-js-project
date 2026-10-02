@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import dayjs from "dayjs";
 import { Card, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import AddFlightDialog from "./components/AddFlightDialog";
 import Sidebar from "./components/Sidebar";
 import { freshAirCargoApi } from "../../api";
-import { useManualFipsStore } from "../../store/manualFipsStore";
+import {
+    useFlightStore,
+    FLIGHT_SOURCE_LABEL,
+    IS_READONLY_SOURCE,
+    READONLY_HINT,
+} from "../../store/flightSource";
 import { useChecklistStore } from "../../store/checklistStore";
-import { useDateFilterParams } from "../../components/ui/DateFilterPanel";
+import { useDateFilterParams } from "../../store/appStore";
 import {
     FileText,
     Loader2,
@@ -51,21 +55,29 @@ const DEP_COLUMNS = SINGLE_COLUMNS.filter((c) => c.key !== "origin_station");
 // 本场机场（进/离港判断依据）
 const BASE_AIRPORT = "ZHEC";
 
+// 本场四字码 → 显示名
+// （manual_fips / fips 数据源存四字码；ecyilang 快照的远端存中文城市名，
+//   本场仍统一输出 ZHEC 以便 isDep/isArr 判断，展示时在这里换成中文。）
+const STATION_LABEL = { ZHEC: "鄂州" };
+
 // 进/离港归类：进港 = 落地机场（landing_station，缺省用目的地 dest_station）是 ZHEC；离港 = 起飞机场是 ZHEC
 const isDep = (f) => String(f.origin_station || "").toUpperCase() === BASE_AIRPORT;
 const isArr = (f) => String(f.landing_station || f.dest_station || "").toUpperCase() === BASE_AIRPORT;
 
 /**
- * 航班列表页 —— 手动添加航班（manual-fips 表）
- * - 数据源：manualFipsStore（manual_fips 表）
- * - 日期筛选：按「创建手动航班的日期」（createdDate 本地日），左侧日期控件选择
+ * 航班列表页 —— 航班计划 / 手动添加航班
+ * - 数据源：由构建模式决定（见 store/flightSource.js）
+ *     pnpm dev / build  → manual_fips 表（手动添加航班，可增删改）
+ *     pnpm testWW       → ecyilang 表（后端航班计划快照，只读）
+ *   页面本身不关心具体是哪个源，只消费 useFlightStore。
+ * - 日期筛选：按「航班日期」（createdDate 本地日），左侧日期控件选择
  * - 视图三态：全部（单表）/ 进港左离港右 / 离港左进港右
- * - 左侧：搜索 + 日期 + 添加/修改/删除 + 生鲜标记
+ * - 左侧：搜索 + 日期 +（可写源才有）添加/修改/删除 + 生鲜标记
  */
 export default function FipsPage() {
     const navigate = useNavigate();
-    const { flights, loading, error, fetchFlights } = useManualFipsStore();
-    // 日期筛选参数（左侧 DateFilterPanel 全局状态：{date} 或 {from,to}）
+    const { flights, loading, error, fetchFlights } = useFlightStore();
+    // 日期筛选参数（左侧 Calendar 全局状态：{date} 或 {from,to}）
     const dateParams = useDateFilterParams();
 
     const [keyword, setKeyword] = useState("");
@@ -84,14 +96,13 @@ export default function FipsPage() {
     // 日期变更后清空选中行：换了日期再显示上一个日期的航班号是不对的
     useEffect(() => {
         setSelectedId(null);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dateParams.date, dateParams.from, dateParams.to]);
 
-    // 按创建日期过滤（store 提供；无日期的航班始终展示）
+    // 按航班日期过滤（store 提供；无日期的航班始终展示）
     const byDate = useMemo(() => {
         try {
             return dateParams && (dateParams.date || dateParams.from)
-                ? useManualFipsStore.getState().filterByDate(dateParams)
+                ? useFlightStore.getState().filterByDate(dateParams)
                 : flights;
         } catch {
             return flights;
@@ -175,22 +186,25 @@ export default function FipsPage() {
     const depList = useMemo(() => sorted.filter(isDep), [sorted]);
     const arrList = useMemo(() => sorted.filter(isArr), [sorted]);
 
-    // 删除选中的航班
+    // 删除选中的航班（只读数据源不可用）
     const handleDelete = async () => {
+        if (IS_READONLY_SOURCE) return alert(READONLY_HINT);
         if (selectedId == null) return;
         const row = flights.find((f) => f.id === selectedId);
         if (!window.confirm(`确定删除航班 ${row?.flight_no || selectedId} 吗？`)) return;
         try {
-            await freshAirCargoApi.unmark(selectedId).catch(() => {});
-            await useManualFipsStore.getState().removeFlight(selectedId);
+            // 生鲜标记按「来源表 + 行 UUID」定位，手动航班传 row.uuid（不是自增 id）
+            if (row?.uuid) await freshAirCargoApi.unmark(row.uuid).catch(() => {});
+            await useFlightStore.getState().removeFlight(selectedId);
             setSelectedId(null);
         } catch (err) {
             alert(`删除失败：${err.message}`);
         }
     };
 
-    // 打开修改对话框（回填选中行）
+    // 打开修改对话框（回填选中行；只读数据源不可用）
     const openEdit = () => {
+        if (IS_READONLY_SOURCE) return alert(READONLY_HINT);
         if (selectedId == null) return;
         const row = flights.find((f) => f.id === selectedId);
         if (!row) return;
@@ -198,32 +212,37 @@ export default function FipsPage() {
         setAddOpen(true);
     };
 
-    // 打开新增对话框
+    // 打开新增对话框（只读数据源不可用）
     const openAdd = () => {
+        if (IS_READONLY_SOURCE) return alert(READONLY_HINT);
         setEditing(null);
         setAddOpen(true);
     };
 
-    // 标记选中的航班为生鲜
+    // 标记选中的航班为生鲜（只读数据源不可用）
     const handleMarkFresh = async () => {
+        if (IS_READONLY_SOURCE) return alert(READONLY_HINT);
         if (selectedId == null) return;
         const row = flights.find((f) => f.id === selectedId);
         if (!row || row.is_fresh) return;
+        if (!row.uuid) return alert("该航班缺少 uuid，无法标记生鲜");
         try {
-            await freshAirCargoApi.mark(selectedId);
+            await freshAirCargoApi.mark(row.uuid);
             await fetchFlights();
         } catch (err) {
             alert(`标记失败：${err.message}`);
         }
     };
 
-    // 取消选中航班的生鲜标记
+    // 取消选中航班的生鲜标记（只读数据源不可用）
     const handleUnmarkFresh = async () => {
+        if (IS_READONLY_SOURCE) return alert(READONLY_HINT);
         if (selectedId == null) return;
         const row = flights.find((f) => f.id === selectedId);
         if (!row || !row.is_fresh) return;
+        if (!row.uuid) return alert("该航班缺少 uuid，无法取消生鲜标记");
         try {
-            await freshAirCargoApi.unmark(selectedId);
+            await freshAirCargoApi.unmark(row.uuid);
             await fetchFlights();
         } catch (err) {
             alert(`取消失败：${err.message}`);
@@ -254,6 +273,11 @@ export default function FipsPage() {
         }
         if (TIME_KEYS.includes(col.key)) {
             return <span className="tabular-nums">{fmtTime(f[col.key])}</span>;
+        }
+        if (col.key.endsWith("_station")) {
+            const raw = f[col.key];
+            // 本场四字码显示成中文名；远端机场直接展示（ecyilang 快照本就是中文城市名）
+            return STATION_LABEL[String(raw || "").toUpperCase()] || raw || "—";
         }
         return f[col.key] || "—";
     };
@@ -356,6 +380,8 @@ export default function FipsPage() {
                     onDelete={handleDelete}
                     onMarkFresh={handleMarkFresh}
                     onUnmarkFresh={handleUnmarkFresh}
+                    dataSource={FLIGHT_SOURCE_LABEL}
+                    readOnly={IS_READONLY_SOURCE}
                 />
             }
         >

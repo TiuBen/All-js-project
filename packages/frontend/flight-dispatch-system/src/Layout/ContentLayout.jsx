@@ -6,8 +6,15 @@
  *   - sidebar 为**可选**：不传则内容全宽（无侧栏的页面直接用）
  *   - 左侧边栏宽度统一（默认 360px，可调）
  *   - 边栏与内容间距统一（gap-3）
- *   - 视口高度固定（h-[calc(100vh-90px)]），不产生页面滚动
+ *   - 视口高度**定高**（h-[calc(100vh-90px)]），不产生页面滚动
  *   - 左侧边栏超高时内部垂直滚动，右侧内容填满剩余空间
+ *
+ * ★ 这里必须是「确定高度」，不能用 flex-1：
+ *   父链 MainPageLayout 的根节点是 min-h-screen（最小高度，不是固定高度），
+ *   高度由内容撑开，因此向下传递的每一个 flex-1 都拿不到确定高度，
+ *   overflow-hidden / overflow-y-auto 全部失效 —— 结果是整页（body）滚动，
+ *   而不是侧栏与表格各自独立滚动。
+ *   与 ChecklistEditor 的 h-[calc(100vh-90px)] 保持同一约定。
  *
  * 用法：
  *   <ContentLayout sidebar={<Sidebar />}>右侧内容</ContentLayout>   // 有侧栏
@@ -16,7 +23,7 @@
  */
 export default function ContentLayout({ sidebar, children, sidebarWidth = 320 }) {
     return (
-        <div className="flex flex-1  gap-1 overflow-hidden">
+        <div className="flex h-[calc(100vh-90px)] shrink-0 gap-1 overflow-hidden">
             {/* 左侧边栏：可选；固定宽度、内部可滚动 */}
             {sidebar != null && (
                 <aside className="flex shrink-0 flex-col gap-2 overflow-y-auto" style={{ width: sidebarWidth }}>
