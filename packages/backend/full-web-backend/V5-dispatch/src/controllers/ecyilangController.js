@@ -18,7 +18,7 @@
  * ============================================================
  */
 import * as ecyilangService from '../services/ecyilangService.js';
-import { ECYILANG_FIELDS } from '../db/ecyilangSchema.js';
+import { ECYILANG_FIELDS } from '../db/tableMeta.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**

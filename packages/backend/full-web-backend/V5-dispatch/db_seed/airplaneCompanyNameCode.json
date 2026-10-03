@@ -1,0 +1,21 @@
+{
+  "msg": "seed",
+  "source": "航空公司名称-代码参照表。iata 代码 = ecyilang 表 d_flight_no_full / a_flight_no_full 的前两位；行序按现网航班量降序。",
+  "rows": [
+    { "chinese_airplane_company_name": "顺丰航空", "airplane_company_iata_code": "O3", "airplane_company_icao_code": "CSS" },
+    { "chinese_airplane_company_name": "阿特拉斯航空", "airplane_company_iata_code": "5Y", "airplane_company_icao_code": "GTI" },
+    { "chinese_airplane_company_name": "中州航空", "airplane_company_iata_code": "I9", "airplane_company_icao_code": "HLF" },
+    { "chinese_airplane_company_name": "埃塞俄比亚航空", "airplane_company_iata_code": "ET", "airplane_company_icao_code": "ETH" },
+    { "chinese_airplane_company_name": "奥凯航空", "airplane_company_iata_code": "BK", "airplane_company_icao_code": "OKA" },
+    { "chinese_airplane_company_name": "阿提哈德航空", "airplane_company_iata_code": "EY", "airplane_company_icao_code": "ETD" },
+    { "chinese_airplane_company_name": "天租货运航空", "airplane_company_iata_code": "GG", "airplane_company_icao_code": "KYE" },
+    { "chinese_airplane_company_name": "四川航空", "airplane_company_iata_code": "3U", "airplane_company_icao_code": "CSC" },
+    { "chinese_airplane_company_name": "天津货运航空", "airplane_company_iata_code": "HT", "airplane_company_icao_code": "CTJ" },
+    { "chinese_airplane_company_name": "圆通航空", "airplane_company_iata_code": "YG", "airplane_company_icao_code": "HYT" },
+    { "chinese_airplane_company_name": "卓越货运航空", "airplane_company_iata_code": "A7", "airplane_company_icao_code": "WIN" },
+    { "chinese_airplane_company_name": "阿里斯货运航空", "airplane_company_iata_code": "CP", "airplane_company_icao_code": "LSI" },
+    { "chinese_airplane_company_name": "壹航空", "airplane_company_iata_code": "HE", "airplane_company_icao_code": "HGO" },
+    { "chinese_airplane_company_name": "卡利塔航空", "airplane_company_iata_code": "K4", "airplane_company_icao_code": "CKS" },
+    { "chinese_airplane_company_name": "西部环球航空", "airplane_company_iata_code": "KD", "airplane_company_icao_code": "WGN" }
+  ]
+}

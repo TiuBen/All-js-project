@@ -1,0 +1,271 @@
+/**
+ * ============================================================
+ * ecyilang 表 Schema —— 航班计划（接口抓包快照）
+ * ------------------------------------------------------------
+ * 数据源文件：
+ *   - src/db/ecyilang.json            首批快照（2026-09-29，69 条）→ 空表种子
+ *   - src/db/ecyilangYYYYMMDD.json    之后每天的抓包快照（一天一份，如
+ *     ecyilang20260930.json / ecyilang20261001.json），用
+ *     `node src/db/tools/import-ecyilang-snapshot.mjs <file...>` 追加导入；
+ *     该工具按批次日期判重，重复跑会整份跳过（要覆盖加 --replace）。
+ *   文件形状都是接口响应原样落盘：{ msg, code, count, data[] }。
+ *
+ * 每行 = 一组「成对航班」（同一时间段内的一离一进）：
+ *   d_*  离港侧 —— 本站起飞，d_name 是它的**目的地机场**
+ *   a_*  进港侧 —— 前方起飞，a_name 是它的**前方（起飞）机场**
+ *   k_h  客/货 标识
+ * 佐证：a_plan_time 的中文含义是「前方计划起飞时间」，与 a_name（前方机场）成对。
+ *
+ * ⚠️ 时间/日期字段一律 VARCHAR 存原始字符串，不做时区转换 —— 与 fips 表保持一致。
+ * ⚠️ 空串 '' 与 NULL 语义不同，不能互相替换：
+ *      state_name = ''   → 该航班已取消（abnormal_state = CAN）
+ *      state_name = NULL → 该侧本来就没有航班
+ *
+ * ★ 4 个机场代码列（d_name_iata_code / d_name_icao_code /
+ *   a_name_iata_code / a_name_icao_code）：抓包原始数据里**没有**这几个字段，
+ *   它们由 db/nameCodeSchema.js 拿 airport_name_code 参照表按
+ *   d_name / a_name 字面相等去回填。因此：
+ *     - 全 NULL = 该机场还没进参照表；
+ *     - 换一个机场名就会丢掉代码，往参照表补一条即自动补回。
+ *
+ * 下表 ECYILANG_FIELDS 是**唯一事实来源**：DDL 列、可选字段白名单、
+ * 前端字段字典接口都从它派生，避免三处各写一遍导致漂移。
+ * （字段含义整理自原 ecyilangSchema.js 里的中文注释片段。）
+ * ============================================================
+ */
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { getPool } from "./pool.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/** 种子数据文件路径（与表同名，便于对照） */
+export const SEED_FILE = path.join(__dirname, "ecyilang.json");
+
+/**
+ * 字段字典：列名 → 中文含义 / 所属侧 / 数据类型 / 取值说明
+ * @typedef {Object} EcyilangField
+ * @property {string} column  数据库列名（与接口 JSON 键完全一致）
+ * @property {string} label   中文含义
+ * @property {'d'|'a'|'k'} side  归属：d=离港侧 / a=进港侧 / k=公共
+ * @property {'enum'|'time'|'code'|'text'|'date'} kind 语义类型
+ * @property {string} sqlType PostgreSQL 列类型
+ * @property {string} [note]  取值说明
+ */
+
+/** @type {EcyilangField[]} */
+export const ECYILANG_FIELDS = [
+    {
+        column: "d_flight_type_code",
+        label: "离场任务性质",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(16)",
+        note: "任务性质代码，已见 H/Z、H/G、W/Z；NULL = 该侧无航班",
+    },
+    {
+        column: "d_plan_time",
+        label: "计划起飞时间",
+        side: "d",
+        kind: "time",
+        sqlType: "VARCHAR(16)",
+        note: "HH:mm，可带跨天后缀 (+1)",
+    },
+    {
+        column: "d_jx",
+        label: "离港机型",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(16)",
+        note: "如 B763 / B77L / B744 / A321",
+    },
+    {
+        column: "d_flight_date",
+        label: "离港航班归属日期",
+        side: "d",
+        kind: "date",
+        sqlType: "VARCHAR(32)",
+        note: "航班计划获取时间，作为跨天时间换算的基准日",
+    },
+    {
+        column: "d_flight_no_full",
+        label: "离港航班号",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(32)",
+        note: "含航司前缀，如 O37212 / 5Y8255 / 3U9196",
+    },
+    {
+        column: "d_country_type",
+        label: "离港航班类型（国内/国际/地区）",
+        side: "d",
+        kind: "enum",
+        sqlType: "VARCHAR(16)",
+        note: "DOM 国内 / INT 国际 / REG 地区（样本中 REG 仅对应香港）",
+    },
+    {
+        column: "d_name",
+        label: "离港目的地机场",
+        side: "d",
+        kind: "text",
+        sqlType: "VARCHAR(64)",
+        note: "中文城市名，如 上海浦东 / 安克雷奇",
+    },
+    {
+        column: "d_name_iata_code",
+        label: "离港目的地机场 IATA 三字码",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(8)",
+        note: "由 airport_name_code 参照表按 d_name 回填；NULL = 未收录或未回填",
+    },
+    {
+        column: "d_name_icao_code",
+        label: "离港目的地机场 ICAO 四字码",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(8)",
+        note: "同 d_name_iata_code",
+    },
+    {
+        column: "d_craft_seat_code",
+        label: "离港机位代码",
+        side: "d",
+        kind: "code",
+        sqlType: "VARCHAR(16)",
+        note: "### / ###L / ###R，样本范围 301~721",
+    },
+    {
+        column: "d_state_name",
+        label: "离港状态",
+        side: "d",
+        kind: "enum",
+        sqlType: "VARCHAR(32)",
+        note: "起飞；空串=已取消；NULL=该侧无航班",
+    },
+    {
+        column: "d_time",
+        label: "离港时间",
+        side: "d",
+        kind: "time",
+        sqlType: "VARCHAR(16)",
+        note: "预计或实际离港时间，无跨天后缀",
+    },
+    {
+        column: "d_abnormal_state",
+        label: "离港不正常状态",
+        side: "d",
+        kind: "enum",
+        sqlType: "VARCHAR(16)",
+        note: "CAN 取消 / DLY 延误；正常为 NULL",
+    },
+
+    {
+        column: "a_flight_type_code",
+        label: "进港任务性质",
+        side: "a",
+        kind: "code",
+        sqlType: "VARCHAR(16)",
+        note: "任务性质代码，已见 H/Z、H/G、W/Z、N/M；NULL = 该侧无航班",
+    },
+    {
+        column: "a_plan_time",
+        label: "前方计划起飞时间",
+        side: "a",
+        kind: "time",
+        sqlType: "VARCHAR(16)",
+        note: "HH:mm，可带跨天后缀 (-1)；即进港航班在前方机场的计划起飞时刻",
+    },
+    { column: "a_jx", label: "进港机型", side: "a", kind: "code", sqlType: "VARCHAR(16)", note: "同 d_jx" },
+    {
+        column: "a_flight_date",
+        label: "进港航班归属日期",
+        side: "a",
+        kind: "date",
+        sqlType: "VARCHAR(32)",
+        note: "进港侧的批次日期，作跨天换算基准",
+    },
+    {
+        column: "a_flight_no_full",
+        label: "进港航班号",
+        side: "a",
+        kind: "code",
+        sqlType: "VARCHAR(32)",
+        note: "同 d_flight_no_full",
+    },
+    {
+        column: "a_country_type",
+        label: "进港航班类型（国内/国际/地区）",
+        side: "a",
+        kind: "enum",
+        sqlType: "VARCHAR(16)",
+        note: "DOM / INT / REG",
+    },
+    {
+        column: "a_name",
+        label: "进港前方（起飞）机场",
+        side: "a",
+        kind: "text",
+        sqlType: "VARCHAR(64)",
+        note: "中文城市名",
+    },
+    {
+        column: "a_name_iata_code",
+        label: "进港前方机场 IATA 三字码",
+        side: "a",
+        kind: "code",
+        sqlType: "VARCHAR(8)",
+        note: "由 airport_name_code 参照表按 a_name 回填；NULL = 未收录或未回填",
+    },
+    {
+        column: "a_name_icao_code",
+        label: "进港前方机场 ICAO 四字码",
+        side: "a",
+        kind: "code",
+        sqlType: "VARCHAR(8)",
+        note: "同 a_name_iata_code",
+    },
+    {
+        column: "a_craft_seat_code",
+        label: "进港机位代码",
+        side: "a",
+        kind: "code",
+        sqlType: "VARCHAR(16)",
+        note: "### / ###L / ###R",
+    },
+    {
+        column: "a_state_name",
+        label: "进港状态",
+        side: "a",
+        kind: "enum",
+        sqlType: "VARCHAR(32)",
+        note: "到达 / 前方起飞；空串=已取消；NULL=该侧无航班",
+    },
+    {
+        column: "a_time",
+        label: "进港时间",
+        side: "a",
+        kind: "time",
+        sqlType: "VARCHAR(16)",
+        note: "预计或实际到达时间，无跨天后缀",
+    },
+    {
+        column: "a_abnormal_state",
+        label: "进港不正常状态",
+        side: "a",
+        kind: "enum",
+        sqlType: "VARCHAR(16)",
+        note: "CAN 取消 / DLY 延误；正常为 NULL",
+    },
+
+    {
+        column: "k_h",
+        label: "客/货标识",
+        side: "k",
+        kind: "enum",
+        sqlType: "VARCHAR(8)",
+        note: "原始注释另注「尾流等级」；已见 H、K、F",
+    },
+];
+

@@ -17,6 +17,20 @@
 import { query } from '../db/pool.js';
 import { airportName } from '../utils/airports.js';
 
+/** 标准 UUID 形状 —— fips 的主键就是随机 uuid */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * 列表默认排序键
+ * ------------------------------------------------------------
+ * ⚠️ 原来是 `ORDER BY id`（= Excel 导入顺序）。2026-10-03 主键改成随机 uuid 后
+ * 这个顺序不复存在，且实测**任何列组合都复现不出原顺序**，所以改为按航班时间排：
+ *   先 SOBT（计划起飞，列表里的第一个时间列），再 ATOT，最后航班号定序。
+ * 不用 in_out_time 当排序键 —— 它有些行的日期部分是脏的（例如 sobt 是 08-30
+ * 而 in_out_time 写的是 08-01），拿它排会把航班甩到错误的位置。
+ */
+const ORDER_BY_TIME = 'sobt NULLS LAST, atot NULLS LAST, flight_no';
+
 /**
  * 获取 fips 表中最近的日期（MAX(mapped_date)）
  * @returns {Promise<string|null>} 形如 '2026-07-30'；表为空返回 null
@@ -39,13 +53,15 @@ export const ZHEC = 'ZHEC';
  * 时间为本地时间字符串（YYYY-MM-DD HH:mm:ss），直接透传
  * @param {Object} r fips 表行
  */
-function toFlight(r) {
+export function rowToFlight(r) {
   const isArrival = r.landing_station === ZHEC;
   const isDeparture = r.origin_station === ZHEC;
   // 兼容 "YYYY-MM-DD HH:mm:ss" → 前端可解析的 ISO（补 T 分隔符，按本地时间解析）
   const norm = (s) => (s ? s.replace(' ', 'T') : null);
   return {
-    id: `fips-${r.id}`,
+    // id 就是航班身份（随机 uuid）—— 前端拿它当 flightId / 草稿归档键
+    id: r.id,
+    uuid: r.id || null,
     flightNo: r.flight_no,
     origin: airportName(r.origin_station),
     destination: airportName(r.landing_station),
@@ -99,7 +115,7 @@ export async function listFlights(filter = {}) {
   let usedDate = date || null;
 
   const queryByDate = async (d) => {
-    const r = await query('SELECT * FROM fips WHERE mapped_date = $1 ORDER BY id', [d]);
+    const r = await query(`SELECT * FROM fips WHERE mapped_date = $1 ORDER BY ${ORDER_BY_TIME}`, [d]);
     return r.rows;
   };
 
@@ -124,7 +140,7 @@ export async function listFlights(filter = {}) {
       params.push(to);
       sql += ` AND mapped_date <= $${params.length}`;
     }
-    sql += ' ORDER BY mapped_date, id LIMIT 1000';
+    sql += ` ORDER BY mapped_date, ${ORDER_BY_TIME} LIMIT 1000`;
     const r = await query(sql, params);
     rows = r.rows;
     usedDate = rows.length ? null : await getLatestDate();
@@ -137,30 +153,30 @@ export async function listFlights(filter = {}) {
     }
   }
 
-  return { date: usedDate, items: rows.map(toFlight) };
+  return { date: usedDate, items: rows.map(rowToFlight) };
 }
 
 /**
  * 按 fips 主键查询完整一行（用于详情 Dialog，原始字段）
- * @param {number|string} id fips 主键
+ * @param {string} id fips 主键 uuid（可带历史 'fips-' 前缀）
  * @returns {Promise<Object|null>} 数据库行；不存在返回 null
  */
 export async function getById(id) {
-  const num = Number(id);
-  if (!Number.isFinite(num)) return null;
-  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [num]);
+  const key = String(id ?? '').trim().replace(/^fips-/, '');
+  if (!UUID_RE.test(key)) return null;
+  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [key]);
   return rows.length ? rows[0] : null;
 }
 
 /**
  * 按 fips 主键查询单个航班
- * @param {string} id 形如 'fips-123'
+ * @param {string} id fips 主键 uuid（可带历史 'fips-' 前缀）
  * @returns {Promise<Object|null>} 航班对象；不存在返回 null
  */
 export async function getFlightById(id) {
-  const num = Number(String(id).replace(/^fips-/, ''));
-  if (Number.isNaN(num)) return null;
-  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [num]);
+  const key = String(id ?? '').trim().replace(/^fips-/, '');
+  if (!UUID_RE.test(key)) return null;
+  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [key]);
   if (!rows.length) return null;
-  return toFlight(rows[0]);
+  return rowToFlight(rows[0]);
 }

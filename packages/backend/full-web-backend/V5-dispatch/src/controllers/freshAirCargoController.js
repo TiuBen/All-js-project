@@ -3,17 +3,19 @@
  * fresh-air-cargo Controller —— HTTP 语义层（不含 SQL）
  * ------------------------------------------------------------
  * GET    /api/fresh-air-cargo          生鲜标记列表（带航班信息）
- * POST   /api/fresh-air-cargo/mark     标记某条航班为生鲜
- *                                      body: { sourceId, sourceTable?, content? }
+ * POST   /api/fresh-air-cargo/mark     标记某航班为生鲜
+ *                                      body: { sourceId, content? }
  * DELETE /api/fresh-air-cargo/mark/:sourceId  取消生鲜标记
- *                                      query: ?sourceTable=manual_fips
  *
- * ★ sourceId 是**来源表里的行 UUID**（如 manual_fips.uuid），不是自增整型 id；
- *   sourceTable 省略时按 manual_fips 处理。
+ * ★ sourceId 是**航班 uuid**（= fips / manual_fips / ecyilang 三张表的 id，
+ *   随机 uuid v4 跨表碰撞概率可忽略 → 天然唯一），不是自增 id。
+ *   以前还需要 sourceTable 说"去哪张表找"，现在 uuid 本身就唯一，已不需要 ——
+ *   老调用方仍可传 sourceTable，只是会被忽略（向后兼容）。
+ * ★ 落地表已由 fresh_air_cargo 改为 special_records（生鲜航班保障节点台账），
+ *   见 services/freshAirCargoService.js。
  * ============================================================
  */
 import * as freshAirCargoService from '../services/freshAirCargoService.js';
-import { DEFAULT_SOURCE_TABLE } from '../services/freshAirCargoService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 /** UUID 正则（含变体：允许大小写与无连字符的 32 位写法） */
@@ -31,38 +33,33 @@ export const listFresh = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/fresh-air-cargo/mark
- * @desc 标记某条航班为生鲜（upsert，同一来源的同一行最多一个标记）
+ * @desc 标记某航班为生鲜（同一航班重复标记 = 覆盖，不会写出重复行）
  * @body  { sourceId, sourceTable?, content? }
  * @access 公开
  */
 export const markFresh = asyncHandler(async (req, res) => {
-  const { sourceId, sourceTable, content } = req.body || {};
+  const { sourceId, content } = req.body || {};
   if (sourceId == null || String(sourceId).trim() === '') {
-    return res.status(400).json({ error: 'sourceId 不能为空（来源表里的行 UUID）' });
+    return res.status(400).json({ error: 'sourceId 不能为空（航班 uuid）' });
   }
   if (!UUID_RE.test(String(sourceId).trim())) {
     return res.status(400).json({ error: `sourceId 必须是 UUID 格式，收到「${sourceId}」` });
   }
-  const item = await freshAirCargoService.markFresh(
-    String(sourceId).trim(),
-    content,
-    sourceTable || DEFAULT_SOURCE_TABLE,
-  );
+  const item = await freshAirCargoService.markFresh(String(sourceId).trim(), content);
   res.status(201).json(item);
 });
 
 /**
  * DELETE /api/fresh-air-cargo/mark/:sourceId
- * @desc 取消某条航班的生鲜标记（?sourceTable= 指定来源表，默认 manual_fips）
+ * @desc 取消某航班的生鲜标记
  * @access 公开
  */
 export const unmarkFresh = asyncHandler(async (req, res) => {
   const { sourceId } = req.params;
-  const sourceTable = req.query.sourceTable || DEFAULT_SOURCE_TABLE;
   if (!UUID_RE.test(String(sourceId).trim())) {
     return res.status(400).json({ error: `sourceId 必须是 UUID 格式，收到「${sourceId}」` });
   }
-  const ok = await freshAirCargoService.unmarkFresh(String(sourceId).trim(), sourceTable);
+  const ok = await freshAirCargoService.unmarkFresh(String(sourceId).trim());
   if (!ok) return res.status(404).json({ error: '该航班未标记为生鲜' });
   res.json({ ok: true });
 });

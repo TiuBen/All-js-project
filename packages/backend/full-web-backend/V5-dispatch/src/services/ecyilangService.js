@@ -8,21 +8,37 @@
  *      把一组拆成离港 + 进港两条航班行，字段对齐前端 /fips 航班列表页
  *      （列名沿用 fips 表的 sobt/eobt/atot/sibt/eldt/aldt + *_station）
  *
+ * ★ 航班键 = `<行id>-d` / `<行id>-a`（行 id 是随机 uuid v4，跨表唯一）。
+ *   投影里 id 与 uuid 给**同一个值**：前端把 uuid 当航班键用
+ *   （checklist_records.flight_uuid / special_records.flight_uuid 存的就是它），
+ *   而 id 用于 /api/ecyilang/flights/:id 路由参数 —— 两者语义一致就没必要分叉。
+ *   后缀区分"这条计划行的哪一侧"：一行同时含离港与进港两条航班。
+ *   SQL 侧 base_flight_uuid() 会剥掉后缀再比对
+ *   （函数定义见 prisma/migrations/0_init/migration.sql）。
+ *
  * 时间换算（★ 唯一需要业务确认的假设，改这里即可全局生效）：
  *   接口只给 HH:mm，且计划时间带跨天后缀 (+1)/(-1)。
  *   本模块以该侧批次日期（d_flight_date / a_flight_date）为基准日，
  *   叠加后缀天数后拼成完整本地时间串 YYYY-MM-DDTHH:mm:00 —— 不做时区转换。
  *   原始字符串始终保留在 raw 里，必要时可回查。
  *
- * 空串与 NULL 的区别见 db/ecyilangSchema.js 的说明，本模块原样透传不合并。
+ * 空串与 NULL 的区别见 db/tableMeta.js 的 ECYILANG_FIELDS（取值说明那一列），
+ * 本模块原样透传不合并。
  * ============================================================
  */
 import { query } from '../db/pool.js';
-import { ECYILANG_COLUMNS, TABLE } from '../db/ecyilangSchema.js';
+// TABLE 就是本模块唯一操作的那张表（'ecyilang'）；列清单从 prisma/schema.prisma 解析而来
+import { ECYILANG_COLUMNS, ECYILANG_TABLE as TABLE } from '../db/tableMeta.js';
 import { localDateStr } from '../utils/time.js';
 
 /** 本场四字码（鄂州花湖 ZHEC）—— 与 fipsService.ZHEC / 前端 BASE_AIRPORT 一致 */
 export const BASE_STATION = 'ZHEC';
+
+/** 标准 UUID 形状 —— 行主键就是它，拿它先挡掉非 uuid 的路径参数（否则 PG 会抛类型错） */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** 投影航班键形状：'<行id>-d'（离港）/ '<行id>-a'（进港） */
+const PLAN_KEY_RE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-([da])$/i;
 
 /* ============================================================
  * 一、时间解析工具
@@ -75,6 +91,18 @@ export function combineDateTime(baseDate, rawTime) {
 const SQL_BATCH_DATE = `COALESCE(LEFT(${TABLE}.d_flight_date, 10), LEFT(${TABLE}.a_flight_date, 10))`;
 
 /**
+ * 原始行默认排序（ORDER BY 片段）
+ * 口径 = 批次日期 → 计划时间 → 航班号，即"当天的航班按时间先后排"。
+ * ⚠️ 不能用 id 排：主键已是随机 uuid，排出来是乱的（2026-10-03 主键 UUID 化之前
+ *    还能借自增 id 复现 Excel 导入顺序，现在没有这个隐含顺序了）。
+ * ⚠️ 也不能用 in_out_time：那是 Excel 里的"进出港时间"，日期部分有脏数据
+ *    （sobt 是 2026-08-30 的行，in_out_time 却写着 2026-08-01）。
+ */
+const ORDER_ROWS = `ORDER BY ${SQL_BATCH_DATE},
+      COALESCE(NULLIF(${TABLE}.d_plan_time, ''), NULLIF(${TABLE}.a_plan_time, '')) NULLS LAST,
+      ${TABLE}.d_flight_no_full NULLS LAST, ${TABLE}.a_flight_no_full NULLS LAST`;
+
+/**
  * 查询原始行列表（按批次日期过滤）
  * @param {Object} [filter]
  * @param {string} [filter.date] 精确批次日期 YYYY-MM-DD
@@ -100,31 +128,20 @@ export async function listRows(filter = {}) {
     where.push(`${SQL_BATCH_DATE} <= $${params.length}`);
   }
   if (where.length) sql += ` WHERE ${where.join(' AND ')}`;
-  sql += ` ORDER BY ${SQL_BATCH_DATE}, id`;
+  sql += ` ${ORDER_ROWS}`;
   const { rows } = await query(sql, params);
   return rows;
 }
 
 /**
  * 按主键查原始行
- * @param {number|string} id 主键
+ * @param {string} id 主键（随机 uuid）
  * @returns {Promise<Object|null>}
  */
 export async function getRowById(id) {
-  const num = Number(id);
-  if (!Number.isFinite(num)) return null;
-  const { rows } = await query(`SELECT * FROM ${TABLE} WHERE id = $1`, [num]);
-  return rows[0] || null;
-}
-
-/**
- * 按 uuid 查原始行
- * @param {string} uuid 航班身份标识
- * @returns {Promise<Object|null>}
- */
-export async function getRowByUuid(uuid) {
-  if (!uuid) return null;
-  const { rows } = await query(`SELECT * FROM ${TABLE} WHERE uuid = $1`, [String(uuid)]);
+  const key = String(id ?? '').trim();
+  if (!UUID_RE.test(key)) return null;
+  const { rows } = await query(`SELECT * FROM ${TABLE} WHERE id = $1`, [key]);
   return rows[0] || null;
 }
 
@@ -161,11 +178,13 @@ export async function createRow(data = {}) {
 
 /**
  * 更新一条原始行（只更新传入的列；显式传 null 清空该列，传 '' 存空串）
- * @param {number|string} id 主键
+ * @param {string} id 主键（uuid）
  * @param {Object} data 键为列名（snake_case）
  * @returns {Promise<Object|null>} 更新后的行；不存在返回 null
  */
 export async function updateRow(id, data = {}) {
+  const key = String(id ?? '').trim();
+  if (!UUID_RE.test(key)) return null;
   const sets = [];
   const params = [];
   for (const col of ECYILANG_COLUMNS) {
@@ -173,8 +192,8 @@ export async function updateRow(id, data = {}) {
     params.push(data[col] === null ? null : String(data[col]));
     sets.push(`${col} = $${params.length}`);
   }
-  if (sets.length === 0) return getRowById(id);
-  params.push(id);
+  if (sets.length === 0) return getRowById(key);
+  params.push(key);
   const { rows } = await query(
     `UPDATE ${TABLE} SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
     params,
@@ -184,11 +203,13 @@ export async function updateRow(id, data = {}) {
 
 /**
  * 删除一条原始行
- * @param {number|string} id 主键
+ * @param {string} id 主键（uuid）
  * @returns {Promise<boolean>} 是否删除成功
  */
 export async function deleteRow(id) {
-  const { rowCount } = await query(`DELETE FROM ${TABLE} WHERE id = $1`, [id]);
+  const key = String(id ?? '').trim();
+  if (!UUID_RE.test(key)) return false;
+  const { rowCount } = await query(`DELETE FROM ${TABLE} WHERE id = $1`, [key]);
   return rowCount > 0;
 }
 
@@ -206,8 +227,8 @@ function toDeparturePlan(row) {
   const atot = combineDateTime(row.d_flight_date, row.d_time);
   const batchDate = datePartOf(row.d_flight_date) || datePartOf(row.a_flight_date);
   return {
-    id: `ecy-${row.id}-d`,
-    uuid: `${row.uuid}-d`,
+    id: `${row.id}-d`,
+    uuid: `${row.id}-d`,
     direction: '离港',
     // ---- 列名对齐 /fips 页的表格列 ----
     task: row.d_flight_type_code,
@@ -248,8 +269,8 @@ function toArrivalPlan(row) {
   const aldt = combineDateTime(row.a_flight_date, row.a_time);
   const batchDate = datePartOf(row.a_flight_date) || datePartOf(row.d_flight_date);
   return {
-    id: `ecy-${row.id}-a`,
-    uuid: `${row.uuid}-a`,
+    id: `${row.id}-a`,
+    uuid: `${row.id}-a`,
     direction: '进港',
     task: row.a_flight_type_code,
     flight_no: row.a_flight_no_full,
@@ -304,31 +325,26 @@ export async function listFlightPlans(filter = {}) {
 }
 
 /**
- * 按投影 id（ecy-<行id>-d / ecy-<行id>-a）查询单条航班计划
- * @param {string} planId 形如 'ecy-12-d'
+ * 按投影键（`<行id>-d` 离港 / `<行id>-a` 进港）查询单条航班计划
+ * @param {string} planId 形如 '<uuid>-d'
  * @returns {Promise<Object|null>}
  */
 export async function getFlightPlan(planId) {
-  const m = String(planId ?? '').match(/^ecy-(\d+)-([da])$/);
+  const m = String(planId ?? '').trim().match(PLAN_KEY_RE);
   if (!m) return null;
   const row = await getRowById(m[1]);
   if (!row) return null;
-  const plan = m[2] === 'd' ? toDeparturePlan(row) : toArrivalPlan(row);
+  const plan = m[2].toLowerCase() === 'd' ? toDeparturePlan(row) : toArrivalPlan(row);
   return plan.flight_no ? plan : null;
 }
 
 /**
- * 按 uuid（<行uuid>-d / <行uuid>-a）查询单条航班计划
- * 前端创建检查单后按草稿键回查航班时用
+ * 按航班键（`<行id>-d` / `<行id>-a`）查询单条航班计划
+ * 与 getFlightPlan 是同一个口径（投影里 id 与 uuid 同值），保留两个名字只为
+ * 调用方语义自明：路由参数叫 id，前端拿的是 uuid。
  * @param {string} uuid 形如 '<uuid>-d'
  * @returns {Promise<Object|null>}
  */
 export async function getFlightPlanByUuid(uuid) {
-  const s = String(uuid ?? '');
-  const side = s.endsWith('-d') ? 'd' : s.endsWith('-a') ? 'a' : null;
-  if (!side) return null;
-  const row = await getRowByUuid(s.slice(0, -2));
-  if (!row) return null;
-  const plan = side === 'd' ? toDeparturePlan(row) : toArrivalPlan(row);
-  return plan.flight_no ? plan : null;
+  return getFlightPlan(uuid);
 }

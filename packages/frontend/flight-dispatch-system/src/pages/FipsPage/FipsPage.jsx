@@ -3,13 +3,11 @@ import { Card, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import AddFlightDialog from "./components/AddFlightDialog";
 import Sidebar from "./components/Sidebar";
+import { ColumnFilterBar, ColumnToggle } from "./components/ColumnFilter";
 import { freshAirCargoApi } from "../../api";
-import {
-    useFlightStore,
-    FLIGHT_SOURCE_LABEL,
-    IS_READONLY_SOURCE,
-    READONLY_HINT,
-} from "../../store/flightSource";
+import { useFipsStore, pickRenderColumns, TIME_KEYS } from "../../store/fips.store";
+import { shortCutTooltip } from "../../utils/shortCutFullNameTooltip";
+import { useFlightStore, FLIGHT_SOURCE_LABEL, IS_READONLY_SOURCE, READONLY_HINT } from "../../store/flightSource";
 import { useChecklistStore } from "../../store/checklistStore";
 import { useDateFilterParams } from "../../store/appStore";
 import {
@@ -27,30 +25,11 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import ContentLayout from "../../Layout/ContentLayout";
 
-// 单表（全部航班）列定义
-const SINGLE_COLUMNS = [
-    { key: "task", label: "任务性质" },
-    { key: "flight_no", label: "航班号" },
-    { key: "origin_station", label: "起飞机场" },
-    { key: "dest_station", label: "目的地机场" },
-    { key: "landing_station", label: "落地机场" },
-    { key: "sobt", label: "SOBT" },
-    { key: "eobt", label: "EOBT" },
-    { key: "atot", label: "ATOT" },
-    { key: "sibt", label: "SIBT" },
-    { key: "eldt", label: "ELDT" },
-    { key: "aldt", label: "ALDT" },
-    { key: "runway", label: "跑道" },
-    { key: "stand", label: "停机位" },
-    { key: "aircraft_type", label: "机型" },
-];
-
-// 时间列（展示取 HH:mm / 排序按时间戳）
-const TIME_KEYS = ["sobt", "eobt", "atot", "sibt", "eldt", "aldt"];
-
-// 双表列：进港（落地机场=ZHEC）不显示落地机场；离港（起飞机场=ZHEC）不显示起飞机场
-const ARR_COLUMNS = SINGLE_COLUMNS.filter((c) => c.key !== "landing_station");
-const DEP_COLUMNS = SINGLE_COLUMNS.filter((c) => c.key !== "origin_station");
+// 列定义（中文名 / 默认顺序 / 是否隐藏）统一收在 store/fips.store.js：
+//   BASE_COLUMNS        —— 全部航班的列，也是默认 colOrder 的唯一来源
+//   BASE_COLUMNS_BY_VIEW—— all / in / out 三种表各自的列（进港去落地机场、离港去起飞机场）
+//   tableHeaders[view]  —— 用户在「表头筛选」里确认过的配置（落 localStorage）
+// 本页只负责「按配置渲染」，不再自带一份列清单；TIME_KEYS 也从 store 引入。
 
 // 本场机场（进/离港判断依据）
 const BASE_AIRPORT = "ZHEC";
@@ -63,6 +42,18 @@ const STATION_LABEL = { ZHEC: "鄂州" };
 // 进/离港归类：进港 = 落地机场（landing_station，缺省用目的地 dest_station）是 ZHEC；离港 = 起飞机场是 ZHEC
 const isDep = (f) => String(f.origin_station || "").toUpperCase() === BASE_AIRPORT;
 const isArr = (f) => String(f.landing_station || f.dest_station || "").toUpperCase() === BASE_AIRPORT;
+
+// 视图三态：全部（单表）→ 进港左离港右 → 离港左进港右 → 全部，按钮按此环循环。
+// VIEW_CYCLE 描述「当前态 → 下一态」，切换按钮展示的是**下一态**（按下之后会进入什么），
+// 而不是当前处在哪一态 —— 按钮是动作，不是状态标签。
+const VIEW_CYCLE = { all: "in-left", "in-left": "out-left", "out-left": "all" };
+
+// 三态元信息（名称 + 图标），键与 VIEW_CYCLE 一致
+const VIEW_META = {
+    all: { label: "全部航班", icon: LayoutList },
+    "in-left": { label: "进港左 / 离港右", icon: ArrowLeftRight },
+    "out-left": { label: "离港左 / 进港右", icon: ArrowRightLeft },
+};
 
 /**
  * 航班列表页 —— 航班计划 / 手动添加航班
@@ -88,6 +79,18 @@ export default function FipsPage() {
     // 视图三态循环：'all' 单表 / 'in-left' 进港左、离港右 / 'out-left' 离港左、进港右
     const [viewMode, setViewMode] = useState("all");
 
+    // ---- 表头配置（列的显示 / 顺序）----
+    // tableHeaders = 生效配置（已落 localStorage）；draftHeaders = 编辑草稿（只在编辑态有）
+    const tableHeaders = useFipsStore((s) => s.tableHeaders);
+    const editingView = useFipsStore((s) => s.editingView);
+    const draftHeaders = useFipsStore((s) => s.draftHeaders);
+    // 取某张表当前要渲染的列：编辑态 → 草稿全套（含已隐藏的列，供勾选回来）；
+    // 非编辑态 → 按 colOrder 排序并过滤掉 isHide 的列。
+    const columnsOf = useMemo(
+        () => (view) => pickRenderColumns({ tableHeaders, editingView, draftHeaders }, view),
+        [tableHeaders, editingView, draftHeaders],
+    );
+
     useEffect(() => {
         // 后端未启动时请求失败 → store 已写 error 态（页面展示提示），这里只兜住未处理 rejection
         fetchFlights().catch(() => {});
@@ -97,6 +100,12 @@ export default function FipsPage() {
     useEffect(() => {
         setSelectedId(null);
     }, [dateParams.date, dateParams.from, dateParams.to]);
+
+    // 切换视图时退出表头编辑态：否则正在编辑的那张表可能被切走（勾选框与「确认」都跟着消失），
+    // 草稿会一直挂着。编辑中切视图 = 放弃本次修改。
+    useEffect(() => {
+        useFipsStore.getState().cancelEdit();
+    }, [viewMode]);
 
     // 按航班日期过滤（store 提供；无日期的航班始终展示）
     const byDate = useMemo(() => {
@@ -173,18 +182,22 @@ export default function FipsPage() {
         return m ? m[1] : String(t);
     };
 
-    // 视图三态元信息（循环切换）
-    const viewModeMeta = {
-        all: { label: "全部航班", icon: LayoutList, tip: "切换为：进港左 / 离港右" },
-        "in-left": { label: "进港左/离港右", icon: ArrowLeftRight, tip: "切换为：离港左 / 进港右" },
-        "out-left": { label: "离港左/进港右", icon: ArrowRightLeft, tip: "切换为：全部航班（单表）" },
-    };
-    const ViewIcon = viewModeMeta[viewMode].icon;
-    const cycleView = () => setViewMode((m) => (m === "all" ? "in-left" : m === "in-left" ? "out-left" : "all"));
+    // 视图切换按钮：显示的都是「下一态」——图标与文字都取 VIEW_CYCLE[viewMode]
+    const nextView = VIEW_CYCLE[viewMode];
+    const NextViewIcon = VIEW_META[nextView].icon;
+    const cycleView = () => setViewMode(nextView);
 
     // 双表数据（视图切换时计算一次）
     const depList = useMemo(() => sorted.filter(isDep), [sorted]);
     const arrList = useMemo(() => sorted.filter(isArr), [sorted]);
+
+    // 三张表实际渲染的列（一次算好，表头与数据行共用同一份，避免两侧不一致）
+    const colsByView = { all: columnsOf("all"), in: columnsOf("in"), out: columnsOf("out") };
+    // 双表模式下左 / 右两张表分别是哪个视图（'in-left' 时 左=进港、右=离港）
+    const leftView = viewMode === "in-left" ? "in" : "out";
+    const rightView = viewMode === "in-left" ? "out" : "in";
+    // 视图 → 数据行
+    const listByView = { in: arrList, out: depList };
 
     // 删除选中的航班（只读数据源不可用）
     const handleDelete = async () => {
@@ -283,7 +296,9 @@ export default function FipsPage() {
     };
 
     // 行渲染（列配置驱动：单表/双表通用）
-    const renderRow = (f, cols, accent) => {
+    //   editing = 该表正处于表头编辑态：此时被取消勾选的列仍占位渲染，
+    //   但整列压暗（opacity-25）以表达「确认后将被隐藏」，便于再次勾选回来。
+    const renderRow = (f, cols, accent, editing) => {
         const isSelected = selectedId === f.id;
         return (
             <tr
@@ -299,7 +314,13 @@ export default function FipsPage() {
                 )}
             >
                 {cols.map((col) => (
-                    <td key={col.key} className="whitespace-nowrap px-3 py-1.5 align-middle">
+                    <td
+                        key={col.key}
+                        className={cn(
+                            "whitespace-nowrap px-3 py-1.5 align-middle",
+                            editing && col.isHide && "opacity-25"
+                        )}
+                    >
                         {renderCell(f, col)}
                     </td>
                 ))}
@@ -320,43 +341,63 @@ export default function FipsPage() {
     };
 
     // 列头（列配置驱动：单表/双表通用；accent 控制主题色）
-    const renderHeader = (cols, accent) => (
-        <thead className="sticky top-0 z-10 bg-slate-50">
-            <tr
-                className={cn(
-                    "border-b text-left text-xs",
-                    accent === "sky"
-                        ? "border-sky-100 text-sky-700"
-                        : accent === "amber"
-                        ? "border-amber-100 text-amber-700"
-                        : "border-slate-200 text-slate-500"
-                )}
-            >
-                {cols.map((col) => (
-                    <th
-                        key={col.key}
-                        className={cn(
-                            "cursor-pointer select-none whitespace-nowrap px-2 py-1.5 font-medium transition-colors hover:text-primary-600",
-                            sortKey === col.key && "text-primary-600"
-                        )}
-                        onClick={() => handleSort(col.key)}
-                        title="点击切换排序"
-                    >
-                        <span className="inline-flex items-center gap-1">
-                            {col.label}
-                            <SortIcon colKey={col.key} />
-                        </span>
-                    </th>
-                ))}
-                <th className="whitespace-nowrap px-2 py-1.5 font-medium">操作</th>
-            </tr>
-        </thead>
-    );
+    //   非编辑态：按生效配置渲染 + 缩写 tooltip（SOBT/EOBT/ATOT…）+ 点击排序
+    //   编辑态  ：按草稿渲染「全部列」（含已隐藏的），每列表头带勾选框与前后移箭头；
+    //             此时点击表头不再触发排序，避免与勾选/调序冲突。
+    const renderHeader = (view, cols, accent) => {
+        const editing = editingView === view;
+        return (
+            <thead className="sticky top-0 z-10 bg-slate-50">
+                <tr
+                    className={cn(
+                        "border-b text-left text-xs",
+                        accent === "sky"
+                            ? "border-sky-100 text-sky-700"
+                            : accent === "amber"
+                            ? "border-amber-100 text-amber-700"
+                            : "border-slate-200 text-slate-500"
+                    )}
+                >
+                    {cols.map((col) => {
+                        const tip = shortCutTooltip(col.key);
+                        return (
+                            <th
+                                key={col.key}
+                                className={cn(
+                                    "whitespace-nowrap px-2 py-1.5 font-medium transition-colors",
+                                    !editing && "cursor-pointer select-none hover:text-primary-600",
+                                    !editing && sortKey === col.key && "text-primary-600"
+                                )}
+                                onClick={editing ? undefined : () => handleSort(col.key)}
+                                title={
+                                    editing
+                                        ? "勾选 = 显示该列；取消勾选 = 隐藏该列；箭头可调整列顺序"
+                                        : tip
+                                        ? `${tip}（点击切换排序）`
+                                        : "点击切换排序"
+                                }
+                            >
+                                {editing ? (
+                                    <ColumnToggle col={col} />
+                                ) : (
+                                    <span className="inline-flex items-center gap-1">
+                                        {col.label}
+                                        <SortIcon colKey={col.key} />
+                                    </span>
+                                )}
+                            </th>
+                        );
+                    })}
+                    <th className="whitespace-nowrap px-2 py-1.5 font-medium">操作</th>
+                </tr>
+            </thead>
+        );
+    };
 
-    // 空状态
-    const renderEmpty = (msg) => (
+    // 空状态（colCount 跟着当前列数走：隐藏列后 colSpan 不能还是老值，否则表格塌陷）
+    const renderEmpty = (colCount, msg) => (
         <tr>
-            <td colSpan={SINGLE_COLUMNS.length + 1} className="px-4 py-8 text-center text-sm text-slate-400">
+            <td colSpan={colCount + 1} className="px-4 py-8 text-center text-sm text-slate-400">
                 {msg}
             </td>
         </tr>
@@ -406,13 +447,19 @@ export default function FipsPage() {
                             </span>
                         )}
                         {/* 视图三态切换：全部 / 进港左离港右 / 离港左进港右 */}
-                        <button
-                            onClick={cycleView}
-                            className="ml-auto flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
-                            title={viewModeMeta[viewMode].tip}
-                        >
-                            <ViewIcon size={13} /> {viewModeMeta[viewMode].label}
-                        </button>
+                        <div className="ml-auto flex items-center gap-2">
+                            {/* 单表模式下，表头筛选按钮放在标题栏（双表模式则挂在各自表头条里） */}
+                            {viewMode === "all" && (
+                                <ColumnFilterBar view="all" className="border-slate-200 text-slate-600" />
+                            )}
+                            <button
+                                onClick={cycleView}
+                                className="flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                                title={`当前：${VIEW_META[viewMode].label} ｜ 点击切换为：${VIEW_META[nextView].label}`}
+                            >
+                                <NextViewIcon size={13} /> {VIEW_META[nextView].label}
+                            </button>
+                        </div>
                     </div>
                     {loading && <Loader2 className="animate-spin text-slate-400" size={16} />}
                 </CardHeader>
@@ -427,8 +474,12 @@ export default function FipsPage() {
                     /* ===== 全部航班（单表） ===== */
                     <div className="min-h-0 flex-1 overflow-auto">
                         <table className="w-full text-sm">
-                            {renderHeader(SINGLE_COLUMNS)}
-                            <tbody>{sorted.map((f) => renderRow(f, SINGLE_COLUMNS))}</tbody>
+                            {renderHeader("all", colsByView.all)}
+                            <tbody>
+                                {sorted.map((f) =>
+                                    renderRow(f, colsByView.all, undefined, editingView === "all")
+                                )}
+                            </tbody>
                         </table>
                         {sorted.length === 0 && !loading && (
                             <div className="py-10 text-center text-sm text-slate-400">
@@ -441,66 +492,76 @@ export default function FipsPage() {
                 ) : (
                     /* ===== 进/离港双表 ===== */
                     <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-hidden p-2 lg:grid-cols-2">
-                        {/* 左表 */}
+                        {/* 左表：视图由 leftView 决定（'in-left' 时是进港） */}
                         <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-200">
                             <div
                                 className={cn(
-                                    "shrink-0 border-b px-3 py-1.5 text-xs font-semibold",
-                                    viewMode === "in-left" ? "bg-sky-50 text-sky-700" : "bg-amber-50 text-amber-700"
+                                    "flex shrink-0 items-center justify-between gap-2 border-b px-3 py-1.5 text-xs font-semibold",
+                                    leftView === "in" ? "bg-sky-50 text-sky-700" : "bg-amber-50 text-amber-700"
                                 )}
                             >
-                                {viewMode === "in-left" ? "进港航班" : "离港航班"}（
-                                {viewMode === "in-left" ? arrList.length : depList.length}）
+                                <span>
+                                    {leftView === "in" ? "进港航班" : "离港航班"}（{listByView[leftView].length}）
+                                </span>
+                                {/* 表头筛选操作 */}
+                                <ColumnFilterBar view={leftView} />
                             </div>
                             <div className="min-h-0 flex-1 overflow-auto">
                                 <table className="w-full text-sm">
                                     {renderHeader(
-                                        viewMode === "in-left" ? ARR_COLUMNS : DEP_COLUMNS,
-                                        viewMode === "in-left" ? "sky" : "amber"
+                                        leftView,
+                                        colsByView[leftView],
+                                        leftView === "in" ? "sky" : "amber"
                                     )}
                                     <tbody>
-                                        {(viewMode === "in-left" ? arrList : depList).map((f) =>
+                                        {listByView[leftView].map((f) =>
                                             renderRow(
                                                 f,
-                                                viewMode === "in-left" ? ARR_COLUMNS : DEP_COLUMNS,
-                                                viewMode === "in-left" ? "sky" : "amber"
+                                                colsByView[leftView],
+                                                leftView === "in" ? "sky" : "amber",
+                                                editingView === leftView
                                             )
                                         )}
-                                        {(viewMode === "in-left" ? arrList : depList).length === 0 &&
+                                        {listByView[leftView].length === 0 &&
                                             !loading &&
-                                            renderEmpty("无航班")}
+                                            renderEmpty(colsByView[leftView].length, "无航班")}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        {/* 右表 */}
+                        {/* 右表：视图由 rightView 决定 */}
                         <div className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-slate-200">
                             <div
                                 className={cn(
-                                    "shrink-0 border-b px-3 py-1.5 text-xs font-semibold",
-                                    viewMode === "in-left" ? "bg-amber-50 text-amber-700" : "bg-sky-50 text-sky-700"
+                                    "flex shrink-0 items-center justify-between gap-2 border-b px-3 py-1.5 text-xs font-semibold",
+                                    rightView === "in" ? "bg-sky-50 text-sky-700" : "bg-amber-50 text-amber-700"
                                 )}
                             >
-                                {viewMode === "in-left" ? "离港航班" : "进港航班"}（
-                                {viewMode === "in-left" ? depList.length : arrList.length}）
+                                <span>
+                                    {rightView === "in" ? "进港航班" : "离港航班"}（{listByView[rightView].length}）
+                                </span>
+                                {/* 表头筛选操作 */}
+                                <ColumnFilterBar view={rightView} />
                             </div>
                             <div className="min-h-0 flex-1 overflow-auto">
                                 <table className="w-full text-sm">
                                     {renderHeader(
-                                        viewMode === "in-left" ? DEP_COLUMNS : ARR_COLUMNS,
-                                        viewMode === "in-left" ? "amber" : "sky"
+                                        rightView,
+                                        colsByView[rightView],
+                                        rightView === "in" ? "sky" : "amber"
                                     )}
                                     <tbody>
-                                        {(viewMode === "in-left" ? depList : arrList).map((f) =>
+                                        {listByView[rightView].map((f) =>
                                             renderRow(
                                                 f,
-                                                viewMode === "in-left" ? DEP_COLUMNS : ARR_COLUMNS,
-                                                viewMode === "in-left" ? "amber" : "sky"
+                                                colsByView[rightView],
+                                                rightView === "in" ? "sky" : "amber",
+                                                editingView === rightView
                                             )
                                         )}
-                                        {(viewMode === "in-left" ? depList : arrList).length === 0 &&
+                                        {listByView[rightView].length === 0 &&
                                             !loading &&
-                                            renderEmpty("无航班")}
+                                            renderEmpty(colsByView[rightView].length, "无航班")}
                                     </tbody>
                                 </table>
                             </div>

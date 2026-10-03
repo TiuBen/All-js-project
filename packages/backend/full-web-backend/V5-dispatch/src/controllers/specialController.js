@@ -19,7 +19,7 @@
  * ============================================================
  */
 import * as specialService from '../services/specialService.js';
-import { SPECIAL_FIELDS } from '../db/specialSchema.js';
+import { SPECIAL_FIELDS } from '../db/tableMeta.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 /** 从 query 提取过滤条件（三者可任意组合，callsign 模糊匹配） */

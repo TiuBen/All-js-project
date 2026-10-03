@@ -4,13 +4,14 @@
  * ------------------------------------------------------------
  * 分层架构：
  *   config/        全局配置（端口 / 数据库 / 路径）
- *   db/            数据库连接池 + 建表
+ *   db/            数据库连接池 + 表结构元信息（列清单从 prisma/schema.prisma 解析）
  *   utils/         工具（异步包装 / 字段映射 / 时间）
  *   services/      业务逻辑（SQL 访问）
  *   controllers/   HTTP 请求处理
  *   routes/        URL 路由定义
  *
- * 启动流程：加载配置 → 初始化数据库 → 挂载中间件/路由 → 监听端口
+ * 启动流程：加载配置 → 挂载中间件/路由 → 监听端口
+ *           （建表不在这里，见 prisma/schema.prisma + `pnpm db:push`）
  * ============================================================
  */
 import express from "express";
@@ -18,7 +19,6 @@ import cors from "cors";
 import morgan from "morgan";
 
 import { config } from "./src/config/index.js";
-import { initDb } from "./src/db/schema.js";
 import { apiRouter } from "./src/routes/index.js";
 
 const app = express();
@@ -72,7 +72,11 @@ app.use((err, req, res, next) => {
 
 /* ---------- 启动 ---------- */
 async function main() {
-    await initDb(); // 自动建库建表
+    // ⚠️ 启动时**不再建表 / 迁移**：表结构由 prisma/schema.prisma 描述，
+    //    改完跑 `pnpm db:push` 同步到库（想留迁移历史就 `pnpm prisma migrate dev`）。
+    //    库里那 4 个自定义函数（base_flight_uuid / flight_no_variants / try_date /
+    //    resolve_flight_uuid）不在 Prisma 视野内，统一放在
+    //    prisma/migrations/0_init/migration.sql 里，用 `pnpm prisma migrate deploy` 建立。
     console.log("PG_HOST =", process.env.PG_HOST);
     console.log("PG_PORT =", process.env.PG_PORT);
     console.log("PG_USER =", process.env.PG_USER);

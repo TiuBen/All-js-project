@@ -1,86 +1,106 @@
 /**
  * ============================================================
- * fresh-air-cargo Service —— 生鲜货物航班标记
+ * fresh-air-cargo Service —— 生鲜航班标记
  * ------------------------------------------------------------
- * 关联表 fresh_air_cargo 已泛化为「跨来源生鲜标记表」：
- *   业务自然键 = (source_table, source_id)
- *     source_table —— 来源表名，默认 'manual_fips'
- *     source_id    —— 该来源表里的**行 UUID**（不再用自增整型 id）
+ * ★「生鲜标记」已并入 **special_records**（生鲜航班保障节点台账）。
+ *   原来那张独立的 fresh_air_cargo 表已废弃删除 ——
+ *   它存在的意义本来就是"这条航班要保障生鲜"，而这正是 special_records
+ *   记录的事情，再单开一张表属于重复建模。
  *
- *   - mark   ：标记（同一来源的同一行最多一个标记，upsert）
- *   - unmark ：取消标记
- *   - list   ：生鲜标记列表（LEFT JOIN manual_fips 带出航班信息）
+ * 于是「标记生鲜」= 给这个航班建一条 special_records 台账；
+ *     「取消标记」= 删掉该航班对应的台账。
+ *   接口路径与请求体形状**保持不变**（/api/fresh-air-cargo/*），前端零改动。
  *
- * 注意：manual_fips 列表查询的 is_fresh 由 manualFipsService 通过
- *       LEFT JOIN 一并返回，前端无需额外请求即可知道哪些是生鲜。
+ * 入参 sourceId 是**航班 uuid**（= fips / manual_fips / ecyilang 三张表的 id，
+ * 随机 uuid v4 跨表碰撞概率可忽略 → 天然唯一），所以不需要再区分来源表 ——
+ * 入参 sourceTable 仅为兼容老调用方保留，实际不参与判断。
+ *
+ * 标记内容（content）存在台账 nodesTime 的 **freshMark** 子键下，
+ * 与台账本身的保障节点（steps 等）互不干扰 —— 结构说明见 db/tableMeta.js 里
+ * SPECIAL_FIELDS 的 nodesTime 条目（sheet / boardCount / programStarted /
+ * totalMinutes / steps 等子键）。
  * ============================================================
  */
 import { query } from '../db/pool.js';
-
-/** 默认来源表（手动添加航班） */
-export const DEFAULT_SOURCE_TABLE = 'manual_fips';
+import { SPECIAL_TABLE, SPECIAL_SELECT } from '../db/tableMeta.js';
+import * as flightService from './flightService.js';
 
 /**
- * 标记某个来源的某一行航班为生鲜货物（存在则更新 content）
- * @param {string} sourceId 来源表里的行 UUID（如 manual_fips.uuid）
- * @param {Object} [content] 预留的生鲜航班附加内容（JSON）
- * @param {string} [sourceTable] 来源表名，默认 manual_fips
- * @returns {Promise<Object>} fresh_air_cargo 行
+ * 标记某航班为生鲜货物航班（同一航班重复标记 = 覆盖 freshMark）
+ * @param {string} sourceId 航班 uuid
+ * @param {Object} [content] 生鲜标记附加内容（JSON），存进 nodesTime.freshMark
+ * @param {string} [_sourceTable] 兼容老接口保留，已不参与判断
+ * @returns {Promise<Object>} 该航班对应的 special_records 行
  */
-export async function markFresh(
-  sourceId,
-  content = {},
-  sourceTable = DEFAULT_SOURCE_TABLE,
-) {
+export async function markFresh(sourceId, content = {}, _sourceTable) {
+  const uuid = String(sourceId || '').trim();
+  if (!uuid) {
+    const err = new Error('sourceId（航班 uuid）不能为空');
+    err.status = 400;
+    throw err;
+  }
+
+  const flight = await flightService.getFlightByUuid(uuid);
+  if (!flight) {
+    const err = new Error(
+      `找不到 uuid = ${uuid} 对应的航班（fips / manual_fips / ecyilang 都没有）`,
+    );
+    err.status = 404;
+    throw err;
+  }
+  if (!flight.flight_no || !flight.flight_date) {
+    const err = new Error(`航班 ${flight.flight_no || uuid} 缺航班号或日期，无法建立生鲜台账`);
+    err.status = 400;
+    throw err;
+  }
+
+  // 业务键 = (callsign, belongTime)：同一天同一航班只有一条台账，
+  // 重复标记只覆盖 freshMark 子键，不动已有的保障节点。
   const { rows } = await query(
-    `INSERT INTO fresh_air_cargo (source_table, source_id, content)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (source_table, source_id)
-     DO UPDATE SET content = EXCLUDED.content
-     RETURNING *`,
-    [sourceTable, sourceId, JSON.stringify(content ?? {})],
+    `INSERT INTO ${SPECIAL_TABLE} (callsign, "belongTime", "nodesTime", flight_uuid)
+     VALUES ($1, $2, jsonb_build_object('freshMark', $3::jsonb), $4)
+     ON CONFLICT (callsign, "belongTime")
+     DO UPDATE SET flight_uuid   = EXCLUDED.flight_uuid,
+                   "nodesTime"   = ${SPECIAL_TABLE}."nodesTime" || EXCLUDED."nodesTime",
+                   "updateTime"  = now()
+     RETURNING ${SPECIAL_SELECT}`,
+    [flight.flight_no, flight.flight_date, JSON.stringify(content ?? {}), uuid],
   );
   return rows[0];
 }
 
 /**
- * 取消某个来源某一行的生鲜标记
- * @param {string} sourceId 来源表里的行 UUID
- * @param {string} [sourceTable] 来源表名，默认 manual_fips
- * @returns {Promise<boolean>} 是否取消成功
+ * 取消某航班的生鲜标记（删掉该航班对应的台账）
+ * @param {string} sourceId 航班 uuid
+ * @param {string} [_sourceTable] 兼容老接口保留
+ * @returns {Promise<boolean>} 是否确实删掉了
  */
-export async function unmarkFresh(sourceId, sourceTable = DEFAULT_SOURCE_TABLE) {
-  const { rows } = await query(
-    `DELETE FROM fresh_air_cargo
-      WHERE source_table = $1 AND source_id = $2
-      RETURNING id`,
-    [sourceTable, sourceId],
+export async function unmarkFresh(sourceId, _sourceTable) {
+  const uuid = String(sourceId || '').trim();
+  if (!uuid) return false;
+  const { rowCount } = await query(
+    `DELETE FROM ${SPECIAL_TABLE} WHERE flight_uuid = $1`,
+    [uuid],
   );
-  return rows.length > 0;
+  return rowCount > 0;
 }
 
 /**
- * 生鲜标记列表（带出航班号/机型/停机位/落地时间）
- *
- * 用 LEFT JOIN 而不是 INNER JOIN：source_table 不是 manual_fips 的行
- * （以后可能挂 ecyilang / fips 等其他来源）也要能列出来，只是航班字段为 null。
- * manual_fips.uuid 是 VARCHAR，source_id 是 UUID，比较时统一按文本比，
- * 避免脏数据在 ::uuid 转换时炸掉整个列表查询。
- *
+ * 生鲜标记列表（= 已建台账的航班）
+ * 返回结构保持老接口的键名，前端无需改动。
  * @returns {Promise<Array>}
  */
 export async function listFresh() {
-  const { rows } = await query(
-    `
-    SELECT f.id, f.source_table, f.source_id, f.content, f.created_at,
-           m.flight_no, m.aircraft_type, m.stand, m.aldt
-    FROM fresh_air_cargo f
-    LEFT JOIN manual_fips m
-           ON f.source_table = $1
-          AND m.uuid = f.source_id::text
-    ORDER BY f.id DESC
-    `,
-    [DEFAULT_SOURCE_TABLE],
-  );
+  const { rows } = await query(`
+    SELECT s.id,
+           s.callsign                   AS flight_no,
+           s."belongTime"::text         AS belong_time,
+           s.flight_uuid                AS source_id,
+           s."nodesTime" -> 'freshMark' AS content,
+           s."createTime"::text         AS created_at
+      FROM ${SPECIAL_TABLE} s
+     WHERE s.flight_uuid IS NOT NULL
+     ORDER BY s."belongTime" DESC, s.callsign
+  `);
   return rows;
 }

@@ -2,9 +2,14 @@
 # ecyilang 航班计划接口测试（/api/ecyilang*）
 # 使用 VS Code REST Client 插件
 # 数据来源：src/db/ecyilang.json（抓包快照 69 组，启动时自动灌种子）
+#
+# ★ 主键 id 是随机 uuid v4；投影航班键 = `<id>-d`（离港）/ `<id>-a`（进港），
+#   id 字段与 uuid 字段给同一个值。拿法：GET /api/ecyilang/flights 看返回里的 id。
 # ============================================================
 
 @base = http://localhost:5183/api
+# 把这里换成 GET /api/ecyilang 里某一行的 id
+@id = 00000000-0000-4000-8000-000000000000
 
 ### 1. 航班计划列表（★ 前端 pnpm testWW 用的就是它）
 # 一行原始数据会拆成「离港 + 进港」两条，69 组 → 最多 138 条
@@ -19,12 +24,12 @@ Accept: application/json
 GET {{base}}/ecyilang/flights?from=2026-09-01&to=2026-09-30
 Accept: application/json
 
-### 4. 单条航班计划（离港侧：ecy-<行id>-d）
-GET {{base}}/ecyilang/flights/ecy-1-d
+### 4. 单条航班计划（离港侧：'<id>-d'）
+GET {{base}}/ecyilang/flights/{{id}}-d
 Accept: application/json
 
-### 5. 单条航班计划（进港侧：ecy-<行id>-a）
-GET {{base}}/ecyilang/flights/ecy-1-a
+### 5. 单条航班计划（进港侧：'<id>-a'）
+GET {{base}}/ecyilang/flights/{{id}}-a
 Accept: application/json
 
 ### 6. 字段字典（列名 → 中文含义 / 取值说明）
@@ -35,8 +40,8 @@ Accept: application/json
 GET {{base}}/ecyilang
 Accept: application/json
 
-### 8. 原始行详情
-GET {{base}}/ecyilang/1
+### 8. 原始行详情（@id 换成 GET /api/ecyilang 里某一行的 id）
+GET {{base}}/ecyilang/{{id}}
 Accept: application/json
 
 ### 9. 新增原始行（至少给一个航班号；空串 '' 表示"已取消"，传 null 表示无该侧）
@@ -67,7 +72,7 @@ Content-Type: application/json
 }
 
 ### 10. 更新原始行（只更新传入的列）
-PUT {{base}}/ecyilang/1
+PUT {{base}}/ecyilang/{{id}}
 Content-Type: application/json
 
 {
@@ -76,5 +81,5 @@ Content-Type: application/json
 }
 
 ### 11. 删除原始行（把 id 换成上一步 POST 返回的 id）
-DELETE {{base}}/ecyilang/1
+DELETE {{base}}/ecyilang/{{id}}
 Accept: application/json

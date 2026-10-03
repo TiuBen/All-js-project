@@ -2,9 +2,19 @@
 # 检查单填写记录接口测试（/api/checklists/records*）
 # 使用 VS Code REST Client 插件
 # 注意：POST 创建的记录请记录返回的 id，用于后续 GET/PUT
+#
+# ★ 主键都是**随机 uuid v4**（五张业务表统一）：
+#   - 记录 id：POST 返回的 id
+#   - flightId：航班键 = 三张航班表那行的 id。拿法：GET /api/manual-fips 的 uuid 字段，
+#     或 GET /api/ecyilang/flights 的 uuid（该源带 '-d' / '-a' 航段后缀，照传即可）
 # ============================================================
 
 @base = http://localhost:5183/api
+
+# 把这里换成 GET /api/manual-fips 里某一行的 uuid
+@flightKey = 00000000-0000-4000-8000-000000000000
+# 把这里换成 POST 返回的记录 id
+@recordId = 00000000-0000-4000-8000-000000000000
 
 ### 1. 查询填写记录列表（全部，按检查时间倒序）
 GET {{base}}/checklists/records
@@ -14,8 +24,8 @@ Accept: application/json
 GET {{base}}/checklists/records?date=2026-07-31
 Accept: application/json
 
-### 3. 按航班 ID 查询
-GET {{base}}/checklists/records?flightId=FL-CARGO-001
+### 3. 按航班键（uuid）查询
+GET {{base}}/checklists/records?flightId={{flightKey}}
 Accept: application/json
 
 ### 4. 创建填写记录（draft 草稿）
@@ -23,7 +33,7 @@ POST {{base}}/checklists/records
 Content-Type: application/json
 
 {
-  "flightId": "FL-CARGO-001",
+  "flightId": "{{flightKey}}",
   "flightNo": "Y81111",
   "aircraftType": "B757",
   "flightType": "常规航班",
@@ -42,12 +52,12 @@ Content-Type: application/json
   "checkedAt": "2026-07-31T01:30:00Z"
 }
 
-### 5. 查询单个填写记录（将上面返回的 id 填入）
-GET {{base}}/checklists/records/1
+### 5. 查询单个填写记录（把 @recordId 换成 POST 返回的 id）
+GET {{base}}/checklists/records/{{recordId}}
 Accept: application/json
 
 ### 6. 更新填写记录（提交：status → submitted）
-PUT {{base}}/checklists/records/1
+PUT {{base}}/checklists/records/{{recordId}}
 Content-Type: application/json
 
 {

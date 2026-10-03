@@ -141,14 +141,17 @@ const datePartOf = (v) => String(v || '').match(/^\d{4}-\d{2}-\d{2}/)?.[0] || ''
 
 /**
  * 由记录反查来源航班行（当前生效的数据源）
- * flight_id 历史上有两种写法（'manual-5' / '5'）→ 一律取尾部数字匹配。
+ * flight_uuid 就是航班键（uuid 跨表唯一）—— 拿它跟航班行的 uuid 对；
+ * 两边都先剥掉 ecyilang 的 '-d' / '-a' 航段后缀再比，避免同一行对不上。
  * 优先用内存里已缓存的航班列表（从航班列表点进来时零请求），没有再发一次查询；
  * 后端不可用也返回 null —— 查看页用记录自带字段兜底，绝不因反查失败打不开。
  */
 async function findSourceFlight(record) {
-  const numId = Number(String(record?.flight_id ?? '').match(/(\d+)$/)?.[1])
-  if (!numId) return null
-  const pick = (list) => (list || []).find((f) => Number(f.id) === numId) || null
+  const key = String(record?.flight_uuid ?? '').trim()
+  if (!key) return null
+  const base = key.replace(/-[da]$/, '')
+  const pick = (list) =>
+    (list || []).find((f) => String(f.uuid || '').replace(/-[da]$/, '') === base) || null
   const cached = pick(useFlightStore.getState().flights)
   if (cached) return cached
   try {
@@ -165,9 +168,9 @@ async function findSourceFlight(record) {
 function flightOfRecord(record, row) {
   return {
     ...(row || {}), // 来源航班整行（含 uuid 与 16 个字段）；反查失败时退化为记录自带字段
-    id: row?.id ?? record.flight_id,
-    uuid: row?.uuid || null, // 草稿键：与"从航班列表进入"保持一致
-    queryId: record.flight_id, // 记录侧原始 flight_id，供回跳编辑路由使用
+    id: row?.id ?? record.flight_uuid,
+    uuid: row?.uuid || record.flight_uuid || null, // 草稿键：与"从航班列表进入"保持一致
+    queryId: record.flight_uuid, // 记录侧原始 flight_uuid，供回跳编辑路由使用
     flightNo: record.flight_no || row?.flight_no || '',
     aircraftType: record.aircraft_type || row?.aircraft_type || '',
     flightDate:
@@ -288,9 +291,14 @@ export const useChecklistStore = create((set, get) => {
    * 组装提交载荷（新建 / 更新共用）
    * header 注入模板元信息（记录自描述：这份单子用的是哪个模板/版本）；
    * 其余字段口径与后端 service 一致（更新时后端对未传字段 COALESCE 保持原值）。
+   *
+   * ★ flightId 传的是**航班 uuid**（不是数字主键 id）。
+   *   后端把它写进 checklist_records.flight_uuid，而该列每次启动都会做孤儿清理
+   *   （挂不上任何航班的行直接删）—— 传数字 id 的话记录会在下次重启时被静默删掉。
+   *   ecyilang 源的 uuid 带 '-d' / '-a' 航段后缀，后端 base_flight_uuid() 会剥掉，照传即可。
    */
   const buildPayload = (s, d, status) => ({
-    flightId: s.flight.id,
+    flightId: s.flight.uuid || s.flight.id,
     flightNo: s.flight.flightNo,
     aircraftType: s.flight.aircraftType,
     checklistCategory: s.template.category, // 与下拉菜单对齐的模板名（如 货运始发航班）
@@ -581,7 +589,7 @@ export const useChecklistStore = create((set, get) => {
         })
         hydrateFromRecord(record)
         setDraftContext({
-          flightId: flight.uuid || record.flight_id,
+          flightId: flight.uuid || record.flight_uuid,
           flightNo: flight.flightNo,
           templateId: tpl.id,
         })
@@ -594,7 +602,7 @@ export const useChecklistStore = create((set, get) => {
 
     // ---- 三个写动作：新建 / 更新 / 删除（一一对应 POST / PUT / DELETE）----
     // 为什么必须分开：POST 与 PUT 的语义完全不同 —— 以前只有一个 submit() 靠 recordId
-    // 隐式分流，而后端 POST 又按 flight_id upsert，于是"点创建检查表"实际改掉了旧记录。
+    // 隐式分流，而后端 POST 又按 flight_uuid upsert，于是"点创建检查表"实际改掉了旧记录。
     // 现在按语义显式调用，且后端 POST 只 INSERT：
     //   新建态（recordId 为空）→ createRecord()   POST   新增一条
     //   修改态（有 recordId）  → updateRecord()   PUT    只改 id 那一条

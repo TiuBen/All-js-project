@@ -1,9 +1,15 @@
 # ============================================================
 # 航班接口测试（GET /api/flights*）
 # 使用 VS Code REST Client 插件
+#
+# ★ 航班主键 = 随机 uuid v4（fips / manual_fips / ecyilang 三表的 id）。
+#   拿法：GET /api/flights 或 /api/manual-fips，看返回行里的 uuid 字段。
+#   'fips-' / 'manual-' 前缀与裸数字的旧写法已随整数主键一并作废。
 # ============================================================
 
 @base = http://localhost:5183/api
+# 把这里换成 GET /api/flights 里某一行的 uuid
+@uuid = 00000000-0000-4000-8000-000000000000
 
 ### 1. 查询航班列表（不传日期 → 取 fips 最近一天）
 GET {{base}}/flights
@@ -17,8 +23,12 @@ Accept: application/json
 GET {{base}}/flights?from=2026-07-01&to=2026-07-31
 Accept: application/json
 
-### 4. 查询单个航班详情（flights 表）
-GET {{base}}/flights/FL-CARGO-001
+### 4. 查询单个航班详情（原 flights 表已删除，现在走 fips 表）
+GET {{base}}/flights/{{uuid}}
+Accept: application/json
+
+### 4b. 非 uuid 的 id → 404（不会变成 500）
+GET {{base}}/flights/1
 Accept: application/json
 
 ### 5. 新增航班
@@ -38,8 +48,8 @@ Content-Type: application/json
   "category": "货运航班"
 }
 
-### 6. 更新航班（局部更新）
-PUT {{base}}/flights/TEST-001
+### 6. 更新航班（局部更新；id 换成上一步 POST 返回的 uuid）
+PUT {{base}}/flights/{{uuid}}
 Content-Type: application/json
 
 {
@@ -47,5 +57,5 @@ Content-Type: application/json
 }
 
 ### 7. 删除航班
-DELETE {{base}}/flights/TEST-001
+DELETE {{base}}/flights/{{uuid}}
 Accept: application/json

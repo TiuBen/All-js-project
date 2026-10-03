@@ -92,7 +92,7 @@ export default function RecordsPage() {
         const kw = keyword.trim().toLowerCase();
         if (!kw) return enriched;
         return enriched.filter((r) =>
-            [r.flight_no, r.aircraft_type, r.checklist_category, r.inspector, r.flight_id].some((v) =>
+            [r.flight_no, r.aircraft_type, r.checklist_category, r.inspector, r.flight_uuid].some((v) =>
                 String(v || "").toLowerCase().includes(kw)
             )
         );
@@ -158,12 +158,12 @@ export default function RecordsPage() {
      * 修改这条记录 → 编辑器 **修改模式**（URL 带 ?record=<id>）
      * 编辑器据此走 openRecordForEdit（拉原内容灌填写层），提交调 updateRecord（PUT）——
      * 只改这一条，不会像"新建"那样多出一条记录。
-     * 航班键优先用记录的 flight_id（可能是 'manual-5' / '5' 两种历史写法，
+     * 航班键优先用记录的 flight_uuid（跨表唯一的真实键；
      * openFlight/findFlightByKey 都认）；只作路由占位，真正身份是 ?record=。
      */
     const handleEdit = (r) => {
         if (!r?.id) return;
-        navigate(`/checklists/flight/${r.flight_id || r.id}?record=${r.id}`);
+        navigate(`/checklists/flight/${r.flight_uuid || r.id}?record=${r.id}`);
     };
 
     // 删除选中记录（后端会同步解除 manual_fips.checklist_uuid 关联）

@@ -2,13 +2,14 @@
 # fresh-air-cargo 生鲜货物标记接口测试（/api/fresh-air-cargo*）
 # 使用 VS Code REST Client 插件
 #
-# ★ 业务自然键 = (source_table, source_id)
-#     source_table —— 来源表名，默认 'manual_fips'
-#     source_id    —— **来源表里的行 UUID**（manual_fips.uuid），不是自增整型 id！
-#   老结构（manual_fips_id INTEGER + 外键）由 db/schema.js 的 ensureFreshAirCargo()
-#   在启动时自动迁移：整数 id → manual_fips.uuid。
+# ★ 落地表 = special_records（生鲜台账），原独立表 fresh_air_cargo 已删除。
+#   标记存在 special_records."nodesTime" -> 'freshMark' 里，键名沿用老接口。
 #
-# 拿 sourceId 的办法：GET /api/manual-fips 看返回行里的 uuid 字段。
+# ★ sourceId = **航班 uuid**（= fips / manual_fips / ecyilang 三张表的 id；
+#   随机 uuid v4 跨表碰撞概率可忽略 → 天然唯一），不是自增整型 id，
+#   也不再需要说清来自哪张表。请求体里的 sourceTable 仅为向后兼容保留，服务端会忽略它。
+#
+# 拿 sourceId 的办法：GET /api/manual-fips 看返回行里的 uuid 字段（= 该行的 id）。
 # ============================================================
 
 @base = http://localhost:5183/api
@@ -24,7 +25,7 @@ Accept: application/json
 GET {{base}}/manual-fips
 Accept: application/json
 
-### 3. 标记为生鲜（upsert：同一来源同一行只一条，重复标记只更新 content）
+### 3. 标记为生鲜（upsert：同一航班只一条，重复标记只更新 content）
 POST {{base}}/fresh-air-cargo/mark
 Content-Type: application/json
 
@@ -34,8 +35,8 @@ Content-Type: application/json
   "content": { "note": "由 REST Client 标记" }
 }
 
-### 4. 取消生鲜标记（?sourceTable= 可省略，默认 manual_fips）
-DELETE {{base}}/fresh-air-cargo/mark/{{sourceId}}?sourceTable=manual_fips
+### 4. 取消生鲜标记（?sourceTable= 已无意义，可省略）
+DELETE {{base}}/fresh-air-cargo/mark/{{sourceId}}
 
 ### 5. 取消不存在的标记 → 404
 DELETE {{base}}/fresh-air-cargo/mark/{{sourceId}}
@@ -46,8 +47,14 @@ Content-Type: application/json
 
 { "content": {} }
 
-### 7. 非 UUID 的 sourceId → 400（source_id 是 PG uuid 列，只收标准 UUID）
+### 7. 查无对应航班的 sourceId → 404（合法 uuid 但库里没有这个航班）
 POST {{base}}/fresh-air-cargo/mark
 Content-Type: application/json
 
-{ "sourceId": "ecy-12-d" }
+{ "sourceId": "00000000-0000-4000-8000-000000000000" }
+
+### 8. 形状不像 uuid 的 sourceId → 404（连查询都不会发出）
+POST {{base}}/fresh-air-cargo/mark
+Content-Type: application/json
+
+{ "sourceId": "12" }

@@ -1,0 +1,203 @@
+// ============================================================
+// Prisma Schema —— flight_dispatch 数据库（PostgreSQL）
+// ------------------------------------------------------------
+// 为什么要它：表结构原先散在 4 个地方（src/db/schema.js、specialSchema.js、
+//   ecyilangSchema.js、data/schema.sql），改一个字段要动好几处。
+//   现在以本文件为**表结构唯一入口**，改完跑：
+//       pnpm prisma db push      # 同步到库（无迁移历史，适合开发期）
+//       pnpm prisma migrate dev  # 生成带历史的迁移 SQL（要长期可追溯时用）
+//   Prisma 会自动算出「库 vs schema」的差异并执行，不用再手写重建表的脚本。
+//
+// 本文件是**按线上库实际结构逐列写出**的（2026-10-03），与
+//   information_schema.columns / pg_indexes / pg_constraint 一一对齐：
+//     · 7 张表、2 个序列（两张码表）、无视图、无枚举
+//     · 模型名 = 表名、字段名 = 列名（含 special_records 的驼峰列），
+//       一律不加 @@map / @map —— 这样 db push 绝不会重命名任何表或列，
+//       既能和现有 raw SQL 共存，也不会和业务代码里的列名写法脱节。
+//
+// ⚠️ 业务代码目前不走 Prisma Client，直接用 pg 连接池写 SQL
+//    （src/db/pool.js + src/services/*）。库里还有 4 个自定义函数：
+//        base_flight_uuid() / flight_no_variants() / try_date() / resolve_flight_uuid()
+//    Prisma 不认识它们，但 db push 只管 schema 里声明过的对象，不会去删它们。
+//    ⚠️ 反过来说：这 4 个函数的定义**不在 Prisma 视野内**，改它们仍需直接写 SQL。
+//
+// ⚠️ generator 块：Prisma 7 起客户端不再生成到 node_modules，output 必填。
+//    要执行 prisma generate 得先装 @prisma/client（本项目暂未装）；
+//    只用 db pull / db push / migrate 的话用不到它。
+// ============================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  // ⚠️ 连接串不写在这里 —— Prisma 7 起改由 prisma.config.mjs 的 datasource.url 提供，
+  //    在 datasource 块内再写该字段会被 CLI 直接拒绝（错误码 P1012）。
+}
+
+// ============================================================
+// 一、航班主数据（三张表互为「不同来源的航班」，id 都是随机 uuid v4）
+// ============================================================
+
+/// fips —— Excel 导入的航班（主数据源）
+/// 列顺序约定：id 之后紧跟各业务列；checklist_uuid 存 checklist_records.id 的文本
+model fips {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task               String? @db.VarChar(8)
+  flight_no          String? @db.VarChar(32)
+  origin_station     String? @db.VarChar(8)
+  dest_station       String? @db.VarChar(8)
+  landing_station    String? @db.VarChar(8)
+  in_out_time        String? @db.VarChar(19)
+  sobt               String? @db.VarChar(19)
+  eobt               String? @db.VarChar(19)
+  atot               String? @db.VarChar(19)
+  sibt               String? @db.VarChar(19)
+  eldt               String? @db.VarChar(19)
+  aldt               String? @db.VarChar(19)
+  corridor           String? @db.VarChar(16)
+  runway             String? @db.VarChar(16)
+  stand              String? @db.VarChar(16)
+  aircraft_type      String? @db.VarChar(16)
+  source_file        String? @db.VarChar(32)
+  source_date        String? @db.VarChar(16)
+  mapped_date        String? @db.VarChar(16)
+  checklist_category String? @db.VarChar(32)
+  /// 冗余标记：该航班最新一份检查单的 id（文本）；无检查单则 NULL
+  checklist_uuid     String? @db.VarChar(64)
+}
+
+/// manual_fips —— 用户在航班列表页手动添加的航班
+/// 字段对齐 fips，另加 landing_time / created_at
+model manual_fips {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task               String?   @db.VarChar(16)
+  flight_no          String    @db.VarChar(32)
+  origin_station     String?   @db.VarChar(16)
+  dest_station       String?   @db.VarChar(16)
+  landing_station    String?   @db.VarChar(16)
+  in_out_time        String?   @db.VarChar(32)
+  sobt               String?   @db.VarChar(32)
+  eobt               String?   @db.VarChar(32)
+  atot               String?   @db.VarChar(32)
+  sibt               String?   @db.VarChar(32)
+  eldt               String?   @db.VarChar(32)
+  aldt               String?   @db.VarChar(32)
+  corridor           String?   @db.VarChar(16)
+  runway             String?   @db.VarChar(16)
+  stand              String?   @db.VarChar(16)
+  aircraft_type      String?   @db.VarChar(32)
+  landing_time       String?   @db.VarChar(32)
+  checklist_category String?   @db.VarChar(32)
+  /// 同名含义见 fips.checklist_uuid
+  checklist_uuid     String?   @db.VarChar(64)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// ecyilang —— 外部系统同步的航班计划（离港 d_* / 进港 a_* 成对）
+/// 注意：本表**没有** checklist_uuid 列（可挂检查单的只有 fips / manual_fips）
+model ecyilang {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // ---- 离港侧 ----
+  d_flight_type_code String?  @db.VarChar(16)
+  d_plan_time        String?  @db.VarChar(16)
+  d_jx               String?  @db.VarChar(16)
+  d_flight_date      String?  @db.VarChar(32)
+  d_flight_no_full   String?  @db.VarChar(32)
+  d_country_type     String?  @db.VarChar(16)
+  d_name             String?  @db.VarChar(64)
+  d_craft_seat_code  String?  @db.VarChar(16)
+  d_state_name       String?  @db.VarChar(32)
+  d_time             String?  @db.VarChar(16)
+  d_abnormal_state   String?  @db.VarChar(16)
+  // ---- 进港侧 ----
+  a_flight_type_code String?  @db.VarChar(16)
+  a_plan_time        String?  @db.VarChar(16)
+  a_jx               String?  @db.VarChar(16)
+  a_flight_date      String?  @db.VarChar(32)
+  a_flight_no_full   String?  @db.VarChar(32)
+  a_country_type     String?  @db.VarChar(16)
+  a_name             String?  @db.VarChar(64)
+  a_craft_seat_code  String?  @db.VarChar(16)
+  a_state_name       String?  @db.VarChar(32)
+  a_time             String?  @db.VarChar(16)
+  a_abnormal_state   String?  @db.VarChar(16)
+  // ---- 其它 ----
+  k_h                String?   @db.VarChar(8)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  /// 从 *_name 反查出的 IATA / ICAO 码（导入时补全）
+  d_name_iata_code   String?   @db.VarChar(8)
+  d_name_icao_code   String?   @db.VarChar(8)
+  a_name_iata_code   String?   @db.VarChar(8)
+  a_name_icao_code   String?   @db.VarChar(8)
+
+  @@index([d_flight_date], map: "idx_ecyilang_d_flight_date")
+  @@index([a_flight_date], map: "idx_ecyilang_a_flight_date")
+}
+
+// ============================================================
+// 二、检查单与生鲜台账
+// ============================================================
+
+/// checklist_records —— 检查单填写记录（一个航班可有多份）
+/// flight_uuid 指向三张航班表之一的 id；无外键，靠启动时的孤儿清理兜底
+model checklist_records {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  flight_uuid        String    @db.VarChar(64)
+  flight_no          String?   @db.VarChar(32)
+  aircraft_type      String?   @db.VarChar(32)
+  checklist_category String    @db.VarChar(32)
+  flight_date        String?   @db.VarChar(16)
+  header             Json?     @db.JsonB
+  items              Json?     @db.JsonB
+  video_supervision  Json?     @db.JsonB
+  inspector          String?   @db.VarChar(64)
+  status             String?   @default("draft") @db.VarChar(16)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([flight_uuid], map: "idx_records_flight_uuid")
+  @@index([flight_date], map: "idx_records_flight_date")
+}
+
+/// special_records —— 生鲜航班保障节点台账（原表 special）
+/// ⚠️ 列名是驼峰，字段名照抄，别改成 snake_case（改了就得加 @map）
+/// nodesTime 里存各保障节点时间；freshMark 子节点 = 生鲜标记
+model special_records {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// 指向三张航班表之一的 id
+  flight_uuid String?   @db.VarChar(64)
+  callsign    String    @db.VarChar(32)
+  belongTime  DateTime  @db.Date
+  nodesTime   Json?     @default("{}") @db.JsonB
+  createTime  DateTime? @default(now()) @db.Timestamptz(6)
+  updateTime  DateTime? @default(now()) @db.Timestamptz(6)
+
+  /// 同一呼号 + 同一天只有一条 → upsert 的冲突键
+  @@unique([callsign, belongTime], map: "special_records_callsign_belong_key")
+  @@index([belongTime], map: "idx_special_records_belong_time")
+  @@index([flight_uuid], map: "idx_special_records_flight_uuid")
+}
+
+// ============================================================
+// 三、码表（保持整数自增主键，不参与 uuid 化）
+// ============================================================
+
+/// airplane_company_name_code —— 航空公司中文名 ↔ IATA/ICAO 码
+model airplane_company_name_code {
+  id                            Int     @id @default(autoincrement())
+  chinese_airplane_company_name String  @unique(map: "airplane_company_name_code_name_key") @db.VarChar(64)
+  airplane_company_iata_code    String? @unique(map: "airplane_company_name_code_iata_key") @db.VarChar(8)
+  airplane_company_icao_code    String? @unique(map: "airplane_company_name_code_icao_key") @db.VarChar(8)
+}
+
+/// airport_name_code —— 机场中文名/英文名 ↔ IATA/ICAO 码
+model airport_name_code {
+  id                   Int     @id @default(autoincrement())
+  chinese_airport_name String  @unique(map: "airport_name_code_name_key") @db.VarChar(64)
+  english_airport_name String? @db.VarChar(96)
+  airport_iata_code    String? @unique(map: "airport_name_code_iata_key") @db.VarChar(8)
+  airport_icao_code    String? @unique(map: "airport_name_code_icao_key") @db.VarChar(8)
+}

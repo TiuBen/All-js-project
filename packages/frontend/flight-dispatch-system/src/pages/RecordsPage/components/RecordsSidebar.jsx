@@ -52,7 +52,7 @@ export default function RecordsSidebar({
                         {selected ? (
                             <>
                                 <div className="font-semibold text-slate-700">
-                                    {selected.flight_no || selected.flight_id}
+                                    {selected.flight_no || selected.flight_uuid}
                                 </div>
                                 <div className="mt-0.5">
                                     {selected.checklist_category || "—"} · 创建{" "}
