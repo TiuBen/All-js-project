@@ -15,24 +15,19 @@
 //    必须自己 import 'dotenv/config'，否则 env('DATABASE_URL') 会取到 undefined。
 //    dotenv 已是本项目依赖（src/config/index.js 也在用它）。
 // ============================================================
-import 'dotenv/config';
-import { defineConfig, env } from 'prisma/config';
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
-  /** schema 文件位置（相对本文件所在的项目根目录） */
-  schema: 'prisma/schema.prisma',
+    /** schema 文件位置（相对本文件所在的项目根目录） */
+    schema: "prisma/schema.prisma",
 
-  /** 迁移文件目录：prisma migrate dev 生成的 SQL 历史 */
-  migrations: {
-    path: 'prisma/migrations',
-  },
-
-  /**
-   * 数据源连接串 —— Prisma CLI（db pull / db push / migrate）用它连库。
-   * 值来自 .env 的 DATABASE_URL，需与其中的 PG_* 变量保持一致。
-   * 注意：这里要的是**直连**地址（本项目就是本地库，直连即可）。
-   */
-  datasource: {
-    url: env('DATABASE_URL'),
-  },
+    /**
+     * 数据源连接串 —— Prisma CLI（db pull / db push / migrate）用它连库。
+     * 值来自 .env 的 DATABASE_URL，需与其中的 PG_* 变量保持一致。
+     * 注意：这里要的是**直连**地址（本项目就是本地库，直连即可）。
+     */
+    datasource: {
+        url: env("DATABASE_URL"),
+    },
 });

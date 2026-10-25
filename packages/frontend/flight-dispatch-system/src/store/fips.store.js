@@ -1,221 +1,499 @@
 /**
  * ============================================================
- * fips.store —— 航班列表（FipsPage）「表头配置」仓库
+ * fips.store —— 航班列表页 store（列表数据 + 三套表头 + 视图模式）
  * ------------------------------------------------------------
- * 管理三张表的表头（列）配置：
- *   all → 全部航班（单表）
- *   in  → 进港航班（落地机场 = 本场的航班）
- *   out → 离港航班（起飞机场 = 本场的航班）
+ * 就四块，很薄：
+ *   A. 表头（**落 localStorage**）
+ *      allHeader / depHeader / arrHeader，形状见 config/fipsHeaders.js：
+ *        { source: "fips", columns: [{ keyName, title, tooltip, order, isHide }] }
+ *      ★ 设置页「航班表」的改动就是**直接改这三个值**（勾选 = isHide、箭头 = 数组换位、
+ *        点表头 = 改 order），改完立即生效并落盘 —— 没有草稿 / 确认两步。
  *
- * 每列的形状：
- *   { key: 'sobt', label: 'SOBT', isHide: false, colOrder: 5 }
- *     isHide   → 是否在表格中隐藏（true = 不渲染此列）
- *     colOrder → 列顺序（渲染时按它升序排列，可在编辑态用上下箭头调整）
+ *   B. 列表数据（不落盘）
+ *      rows       后端原样返回的行
+ *      flights / depFlights / arrFlights = 三张表**可以直接渲染**的数据
+ *                 （已按关键词 / 只看生鲜过滤，已按各自表头的 order 排序）
+ *      「怎么拆表、怎么筛、怎么排」全在这里的三个纯函数里（splitFlights /
+ *      filterFlights / sortFlights），页面只负责把数组铺到表格上。
  *
- * ★ 默认值 = 全部显示（isHide:false）+ 声明顺序（colOrder = 下标），
- *   即 DEFAULT_TABLE_HEADERS。
+ *   C. 过滤条件（不落盘）：keyword / freshOnly / freshCount
+ *      ★ 日期参数不由页面传 —— fetchFlights 现读 app.store 的
+ *        mode / selectedDate / rangeFrom / rangeTo 拼 ?date= / ?from=&to=，交后端筛。
+ *      ★ 数据源 source 也不在这里：api/http.js 发请求时现读 utils/flightSource.js。
  *
- * ★ 交互模型（编辑 → 确认）：
- *   1. beginEdit(view)   进入编辑态：把当前配置复制成「草稿」，表头出现 checkbox
- *   2. toggleDraft(key)  勾选 / 取消勾选（只改草稿，不动生效配置）
- *   3. confirmEdit()     确认：草稿写回 tableHeaders → persist 落 localStorage
- *      cancelEdit()      取消：丢弃草稿，生效配置不变
+ *   D. 视图三态（viewMode，不落盘）：单个 / 左进港右离港 / 右进港左离港。
  *
- * ★ 持久化只用 localStorage（zustand/middleware persist）。
- *   编辑草稿（draftHeaders）**不落盘**（partialize 只存 tableHeaders），
- *   避免"改了但没确认"的状态被当成已保存配置。
- *
- * ★ 读取顺序（渲染时）：本地缓存有该视图的配置 → 用它；
- *   没有 → 用默认（全部显示 + 默认 colOrder）。
- *   merge() 里还会做一次归一化：以基础列为准，把新增列补上、已删除列丢掉，
- *   因此以后在 BASE_COLUMNS 里加列，老用户缓存不会挡住新列。
+ * ★ 选中航班 / 增删改 / 生鲜标记 / 添加修改对话框 —— 全在 store/sidebar.store.js，
+ *   不在这里（那边要用本文件的 fetchFlights，所以只能单向依赖：sidebar → fips）。
  * ============================================================
  */
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { fipsApi } from "../api";
+import { useAppStore, dateFilterParamsOf } from "./app.store";
+import { ALL_HEADER, DEP_HEADER, ARR_HEADER, ECYILANG_ALL_HEADER } from "../config/fipsHeaders";
 
-/** 时间列（展示取 HH:mm，排序按时间戳） */
-export const TIME_KEYS = ['sobt', 'eobt', 'atot', 'sibt', 'eldt', 'aldt']
+/* ============================================================
+ * 一、表头 —— 纯函数
+ * ============================================================ */
 
-/** 视图键：全部 / 进港 / 离港 */
-export const VIEW_KEYS = ['all', 'in', 'out']
+/** 视图 → store 里的表头字段名（内部用：动作、persist 归位都走它） */
+const HEADER_STATE_KEY = {
+    all: "allHeader",
+    dep: "depHeader",
+    arr: "arrHeader",
+    ecyilang: "ecyilangHeader", // 花湖翼览（原始快照源）的表头设置
+};
 
-/**
- * 基础列定义（全部航班的列；数组顺序 = 默认 colOrder）
- * ★ 这里是「列清单」的唯一事实来源：中文名、顺序都只在这里写一遍。
- */
-export const BASE_COLUMNS = [
-    { key: 'task', label: '任务性质' },
-    { key: 'flight_no', label: '航班号' },
-    { key: 'origin_station', label: '起飞机场' },
-    { key: 'dest_station', label: '目的地机场' },
-    { key: 'landing_station', label: '落地机场' },
-    { key: 'sobt', label: 'SOBT' },
-    { key: 'eobt', label: 'EOBT' },
-    { key: 'atot', label: 'ATOT' },
-    { key: 'sibt', label: 'SIBT' },
-    { key: 'eldt', label: 'ELDT' },
-    { key: 'aldt', label: 'ALDT' },
-    { key: 'runway', label: '跑道' },
-    { key: 'stand', label: '停机位' },
-    { key: 'aircraft_type', label: '机型' },
-]
+/** 各套默认表头（恢复默认 / 读老缓存时用） */
+const DEFAULT_HEADER = { all: ALL_HEADER, dep: DEP_HEADER, arr: ARR_HEADER, ecyilang: ECYILANG_ALL_HEADER };
 
 /**
- * 三种视图各自的基础列
- *   进港：落地机场就是本场，无意义 → 不含 landing_station
- *   离港：起飞机场就是本场，无意义 → 不含 origin_station
- *   （与改动前的 ARR_COLUMNS / DEP_COLUMNS 语义完全一致）
+ * 取「要渲染的列」= columns 里没被隐藏的那些（顺序沿用数组顺序）。
+ * 设置页要展示**全部**列（含隐藏的才能勾回来），所以那边直接遍历 columns。
+ * @param {{source:string, columns:Array}} header
  */
-export const BASE_COLUMNS_BY_VIEW = {
-    all: BASE_COLUMNS,
-    in: BASE_COLUMNS.filter((c) => c.key !== 'landing_station'),
-    out: BASE_COLUMNS.filter((c) => c.key !== 'origin_station'),
-}
-
-/** 某个视图的默认表头：全部显示 + 声明顺序 */
-export function makeDefaultHeaders(view) {
-    const cols = BASE_COLUMNS_BY_VIEW[view] || []
-    return cols.map((c, i) => ({ key: c.key, label: c.label, isHide: false, colOrder: i }))
-}
-
-/** 三套默认表头（本地缓存为空时用它） */
-export const DEFAULT_TABLE_HEADERS = VIEW_KEYS.reduce((acc, v) => {
-    acc[v] = makeDefaultHeaders(v)
-    return acc
-}, {})
-
-/**
- * 归一化：以基础列为准，套用已保存的 isHide / colOrder
- *   - 有明确 colOrder 的列 → 按它排序（并列时按声明顺序）
- *   - 没有 colOrder 的列（新增列 / 老缓存缺项）→ 按声明顺序排在最后
- *   - 已删除的列 → 丢弃
- *   - 最后把 colOrder 重新编号成 0..n-1，避免与回落值碰撞
- * 返回新数组，不修改入参。
- */
-export function normalizeHeaders(view, saved) {
-    const base = BASE_COLUMNS_BY_VIEW[view] || []
-    const savedMap = new Map(
-        (Array.isArray(saved) ? saved : []).filter((h) => h && h.key).map((h) => [h.key, h]),
-    )
-
-    const ordered = []
-    const unordered = []
-    base.forEach((c, i) => {
-        const s = savedMap.get(c.key)
-        if (Number.isFinite(s?.colOrder)) ordered.push({ col: c, saved: s, order: s.colOrder, i })
-        else unordered.push({ col: c, saved: s, i })
-    })
-    ordered.sort((a, b) => a.order - b.order || a.i - b.i)
-
-    return [...ordered, ...unordered].map(({ col, saved: s }, idx) => ({
-        key: col.key,
-        label: col.label,
-        isHide: typeof s?.isHide === 'boolean' ? s.isHide : false,
-        colOrder: idx,
-    }))
+export function visibleColumns(header) {
+    return (header?.columns ?? []).filter((col) => !col.isHide);
 }
 
 /**
- * 取某张表「当前要渲染的列」
- *   编辑态 → 返回**全部列**（含被隐藏的，供勾选回来）
- *   非编辑态 → 过滤掉 isHide，并按 colOrder 排序
+ * config 配了的展示开关（english / icao）取值：
+ *   - config **配了**（布尔）→ 本地存过布尔就用本地的，没存过退回 config 默认
+ *   - config **没配**（undefined）→ 一律返回 undefined（删掉）—— 本地存的旧值不算数，
+ *     「配没配」以 config/fipsHeaders.js 为唯一事实来源，否则删掉字段后 radio 还在
  */
-export function pickRenderColumns(state, view) {
-    const editing = state.editingView === view
-    const list = editing ? state.draftHeaders : state.tableHeaders[view]
-    const arr = [...(list || [])].sort((a, b) => a.colOrder - b.colOrder)
-    return editing ? arr : arr.filter((h) => !h.isHide)
+function pickFlag(configCol, saved, flag) {
+    if (typeof configCol[flag] !== "boolean") return undefined;
+    return typeof saved?.[flag] === "boolean" ? saved[flag] : configCol[flag];
 }
+
+/**
+ * 以 config/fipsHeaders.js 的列为准，套上「已保存的显隐 / 顺序 / 排序」。
+ * ★ 数组顺序即列顺序：先按 saved 的次序排，配置里有、saved 里没有的新列按声明
+ *   顺序补在末尾；saved 里有、配置里已删的列直接丢掉 ——
+ *   加列 / 删列 / 读老缓存都不用额外迁移，走一次本函数就自动对齐。
+ * 返回新对象，不修改入参。
+ * @param {{source:string, columns:Array}} defaultHeader 默认表头（来自 config）
+ * @param {{keyName:string, order?:string, isHide?:boolean}[]} [saved] 已保存的配置
+ */
+export function buildHeaders(defaultHeader, saved) {
+    const columns = defaultHeader?.columns ?? [];
+    const byKey = new Map(columns.map((col) => [col.keyName, col]));
+    const out = [];
+    const seen = new Set();
+
+    for (const hit of Array.isArray(saved) ? saved : []) {
+        const col = byKey.get(hit?.keyName);
+        if (!col || seen.has(col.keyName)) continue; // 已删列 / 重复项丢掉
+        seen.add(col.keyName);
+        out.push({
+            ...col,
+            order: hit.order === "asc" || hit.order === "desc" ? hit.order : "default",
+            isHide: typeof hit.isHide === "boolean" ? hit.isHide : false,
+            // 展示开关（english / icao）：config 没配 → 删掉；配了 → 本地值优先
+            english: pickFlag(col, hit, "english"),
+            icao: pickFlag(col, hit, "icao"),
+        });
+    }
+    for (const col of columns) {
+        if (seen.has(col.keyName)) continue; // 新增列排在最后
+        out.push({ ...col });
+    }
+    return { source: defaultHeader?.source ?? "", columns: out };
+}
+
+/**
+ * 花湖翼览行 → 按设置页的展示形态开关**就地替换**名称 / 航班号（fetchFlights 的 raw 分支用）：
+ *   - dep_station 列的开关管 a_name（到港腿起飞机场），arr_station 列的开关管 d_name（离港腿目的地机场）
+ *   - 口径：ICAO 开 → ICAO 码优先；关但英文开 → 英文名（缺失退中文名）；都关 → 原中文名
+ *   - 航班号列 ICAO 开 → 换航司 ICAO 三字码（后端已算好 *_flight_no_full_icao）
+ * ★ 只替换 store 里这份行副本 —— RawEcyilangTable / RawEcyilangTableDialog 的取数完全不用动。
+ * @param {Array} rows 后端 raw 行（已带 *_english / *_icao_code / *_flight_no_full_icao 变体）
+ * @param {Object} ecyilangHeader 花湖翼览表头设置（columns 里每列带 english / icao 开关）
+ */
+function applyDisplayFlags(rows, ecyilangHeader) {
+    const cols = ecyilangHeader?.columns ?? [];
+    const flagOf = (key) => {
+        const col = cols.find((c) => c.keyName === key);
+        return { english: col?.english === true, icao: col?.icao === true };
+    };
+    const depFlag = flagOf("dep_station"); // 到港腿起飞机场（a_name）
+    const arrFlag = flagOf("arr_station"); // 离港腿目的地机场（d_name）
+    const noFlag = flagOf("flight_no_full"); // 航班号
+
+    // 名称取值：ICAO 开 → ICAO 码；英文开 → 英文名；都关 → 中文（缺失逐级回退中文名）
+    const nameOf = (chinese, english, icaoCode, flag) => {
+        if (flag.icao) return icaoCode || chinese;
+        if (flag.english) return english || chinese;
+        return chinese;
+    };
+
+    return rows.map((r) => ({
+        ...r,
+        a_name: nameOf(r.a_name, r.a_name_english, r.a_name_icao_code, depFlag),
+        d_name: nameOf(r.d_name, r.d_name_english, r.d_name_icao_code, arrFlag),
+        a_flight_no_full: noFlag.icao ? r.a_flight_no_full_icao || r.a_flight_no_full : r.a_flight_no_full,
+        d_flight_no_full: noFlag.icao ? r.d_flight_no_full_icao || r.d_flight_no_full : r.d_flight_no_full,
+    }));
+}
+
+/* ============================================================
+ * 二、拆表 / 筛选 / 排序 —— 纯函数
+ * ============================================================ */
+
+/** 本场四字码（ecyilang 映射、本场机场显示成「鄂州」都用它）⚠️ 与后端同一个值 */
+export const LOCAL_STATION = "ZHEC";
+
+/** 时间列：展示取 HH:mm，排序按时间戳 */
+export const TIME_KEYS = ["sobt", "eobt", "atot", "sibt", "eldt", "aldt"];
+
+/**
+ * 把行拆成离港 / 进港两组。
+ *   ecyilang 映射过来的行自带 leg（'d' / 'a'）；
+ *   fips / manual_fips 没有 leg，按「机场是不是本场」判：本场起飞 = 离港、
+ *   本场落地 = 进港；两边都不是本场的行只出现在「全部」表里。
+ */
+export function splitFlights(rows = []) {
+    const dep = [];
+    const arr = [];
+    for (const row of rows) {
+        const origin = String(row?.origin_station || "").toUpperCase();
+        const landing = String(row?.landing_station || row?.dest_station || "").toUpperCase();
+        if (row?.leg === "d" || origin === LOCAL_STATION) dep.push(row);
+        else if (row?.leg === "a" || landing === LOCAL_STATION) arr.push(row);
+    }
+    return { dep, arr };
+}
+
+/** 关键词（命中航班号 / 机型 / 停机位）+ 只看生鲜 过滤 */
+export function filterFlights(rows = [], { keyword = "", freshOnly = false } = {}) {
+    let list = rows;
+    if (freshOnly) list = list.filter((f) => f.is_fresh);
+    const kw = keyword.trim().toLowerCase();
+    if (!kw) return list;
+    return list.filter(
+        (f) =>
+            f.flight_no?.toLowerCase().includes(kw) ||
+            f.aircraft_type?.toLowerCase().includes(kw) ||
+            f.stand?.toLowerCase().includes(kw)
+    );
+}
+
+/** 按表头里**那唯一一个** order != 'default' 的列排序；都没排过就原样返回 */
+export function sortFlights(rows = [], columns = []) {
+    const col = columns.find((c) => c.order === "asc" || c.order === "desc");
+    if (!col) return rows;
+    const dir = col.order === "asc" ? 1 : -1;
+    const valueOf = (row) => {
+        const raw = row?.[col.keyName];
+        if (TIME_KEYS.includes(col.keyName)) return raw ? new Date(raw).getTime() || 0 : 0;
+        return raw == null ? "" : String(raw);
+    };
+    return [...rows].sort((a, b) => {
+        const va = valueOf(a);
+        const vb = valueOf(b);
+        if (va < vb) return -dir;
+        if (va > vb) return dir;
+        return 0;
+    });
+}
+
+/** 原始行 + 过滤条件 + 三套表头 → 三张表要渲染的数据 */
+function deriveLists({ rows, keyword, freshOnly, allHeader, depHeader, arrHeader }) {
+    const prep = (list, header) => sortFlights(filterFlights(list, { keyword, freshOnly }), header.columns);
+    const { dep, arr } = splitFlights(rows);
+    return {
+        flights: prep(rows, allHeader),
+        depFlights: prep(dep, depHeader),
+        arrFlights: prep(arr, arrHeader),
+    };
+}
+
+/**
+ * 改完某张表的表头之后，一次 set 里做两件事：
+ *   ① 把新表头写回 state（这是持久化的那个值，设置页改的就是它）
+ *   ② 重算三张表（列顺序 / 排序方向变了，数据也得跟着变）
+ */
+function withHeader(state, view, header) {
+    const key = HEADER_STATE_KEY[view];
+    return { [key]: header, ...deriveLists({ ...state, [key]: header }) };
+}
+
+/* ============================================================
+ * 三、视图三态
+ * ============================================================ */
+
+/** 视图三态的键：单个 / 左进港右离港 / 右进港左离港（设置页 radio 按这个顺序列） */
+export const VIEW_MODES = ["all", "in-left", "out-left"];
+
+/**
+ * 双表模式下左 / 右两张表分别是哪张
+ *   'in-left'  左进港右离港 → { left: 'arr', right: 'dep' }
+ *   'out-left' 左离港右进港 → { left: 'dep', right: 'arr' }
+ */
+export function panelViewsOf(viewMode) {
+    return viewMode === "in-left" ? { left: "arr", right: "dep" } : { left: "dep", right: "arr" };
+}
+
+/* ============================================================
+ * 四、store
+ * ============================================================ */
 
 export const useFipsStore = create(
     persist(
         (set, get) => ({
-            /** 生效的表头配置（渲染依据；已持久化） */
-            tableHeaders: DEFAULT_TABLE_HEADERS,
+            /* ================= A. 表头（持久化） ================= */
 
-            /** 当前正在编辑哪张表的表头：null | 'all' | 'in' | 'out' */
-            editingView: null,
-            /** 编辑草稿（未确认前不落盘） */
-            draftHeaders: null,
+            /** 全部航班表的表头（columns 数组顺序 = 列顺序） */
+            allHeader: buildHeaders(ALL_HEADER),
+            /** 离港航班表 */
+            depHeader: buildHeaders(DEP_HEADER),
+            /** 进港航班表的表头 */
+            arrHeader: buildHeaders(ARR_HEADER),
+            /** 花湖翼览（ecyilang 原始快照源）的表头 */
+            ecyilangHeader: buildHeaders(ECYILANG_ALL_HEADER),
 
-            /** 进入编辑态：草稿 = 当前生效配置的副本（含已隐藏列） */
-            beginEdit: (view) => {
-                if (!VIEW_KEYS.includes(view)) return
-                const current = get().tableHeaders[view] || makeDefaultHeaders(view)
-                set({ editingView: view, draftHeaders: current.map((h) => ({ ...h })) })
+            /**
+             * 点表头：default → asc → desc → default（单列排序，其余列复位）
+             * @param {'all'|'dep'|'arr'} view
+             * @param {string} keyName
+             */
+            toggleSort: (view, keyName) =>
+                set((s) => {
+                    const key = HEADER_STATE_KEY[view];
+                    if (!key) return {};
+                    const columns = s[key].columns.map((col) => {
+                        if (col.keyName !== keyName) return { ...col, order: "default" };
+                        const next = col.order === "default" ? "asc" : col.order === "asc" ? "desc" : "default";
+                        return { ...col, order: next };
+                    });
+                    return withHeader(s, view, { ...s[key], columns });
+                }),
+
+            /** 切某列的显示 / 隐藏（隐藏只是表里不渲染，数据仍在） */
+            toggleVisible: (view, keyName) =>
+                set((s) => {
+                    const key = HEADER_STATE_KEY[view];
+                    if (!key) return {};
+                    const columns = s[key].columns.map((col) =>
+                        col.keyName === keyName ? { ...col, isHide: !col.isHide } : col
+                    );
+                    return withHeader(s, view, { ...s[key], columns });
+                }),
+
+            /**
+             * 设置某列的展示形态（radio 单选，设置页用）：
+             *   english = true 英文 / false 中文；icao = true ICAO4字码 / false IATA3字码
+             * ★ 列上**没配**对应字段（undefined）时，设置页不渲染这组 radio ——
+             *   「配没配」由 config/fipsHeaders.js 决定，这里只管存。
+             * @param {'all'|'dep'|'arr'|'ecyilang'} view
+             * @param {string} keyName
+             * @param {'english'|'icao'} flag
+             * @param {boolean} value
+             */
+            setColumnFlag: (view, keyName, flag, value) =>
+                set((s) => {
+                    const key = HEADER_STATE_KEY[view];
+                    if (!key) return {};
+                    const columns = s[key].columns.map((col) =>
+                        col.keyName === keyName ? { ...col, [flag]: value } : col
+                    );
+                    return withHeader(s, view, { ...s[key], columns });
+                }),
+
+            /**
+             * 把某列上移 / 下移一位（数组顺序即列顺序，直接换位置）
+             * @param {'all'|'dep'|'arr'} view
+             * @param {string} keyName
+             * @param {'left'|'right'} dir  left = 上移，right = 下移
+             */
+            moveHeader: (view, keyName, dir) =>
+                set((s) => {
+                    const key = HEADER_STATE_KEY[view];
+                    if (!key) return {};
+                    const columns = [...s[key].columns];
+                    const i = columns.findIndex((col) => col.keyName === keyName);
+                    const j = i + (dir === "left" ? -1 : 1);
+                    if (i < 0 || j < 0 || j >= columns.length) return {};
+                    [columns[i], columns[j]] = [columns[j], columns[i]];
+                    return withHeader(s, view, { ...s[key], columns });
+                }),
+
+            /** 某张表全部列都显示（顺序不动） */
+            showAllHeaders: (view) =>
+                set((s) => {
+                    const key = HEADER_STATE_KEY[view];
+                    if (!key) return {};
+                    const columns = s[key].columns.map((col) => ({ ...col, isHide: false }));
+                    return withHeader(s, view, { ...s[key], columns });
+                }),
+
+            /** 某张表恢复默认（config 里的列清单 + 全部显示 + 不排序） */
+            resetHeaders: (view) =>
+                set((s) => {
+                    if (!HEADER_STATE_KEY[view]) return {};
+                    return withHeader(s, view, buildHeaders(DEFAULT_HEADER[view]));
+                }),
+
+            /* ================= B. 列表数据（不落盘） ================= */
+
+            /** 后端原样返回的行（未过滤未排序） */
+            rows: [],
+
+            /** 三张表要渲染的数据（已过滤 + 已按各自表头排序） */
+            flights: [],
+            depFlights: [],
+            arrFlights: [],
+
+            /** 过滤条件：关键词 / 只看生鲜 */
+            keyword: "",
+            freshOnly: false,
+            /** 生鲜航班总数（不受关键词影响，搜索卡的角标用） */
+            freshCount: 0,
+
+            loading: false,
+            error: null,
+            total: 0,
+            /** 后端实际返回数据的日期（fips / ecyilang 源有，manual_fips 源为 null） */
+            dataDate: null,
+
+            /** 改关键词（过滤 + 排序在这一个 set 里算完） */
+            setKeyword: (keyword) => set((s) => deriveLists({ ...s, keyword })),
+
+            /** 只看生鲜 */
+            setFreshOnly: (freshOnly) => set((s) => deriveLists({ ...s, freshOnly })),
+
+            /**
+             * 拉取航班列表
+             * ★ 日期参数在这里拼：现读 app.store 的 mode / selectedDate / rangeFrom / rangeTo
+             *   → ?date= 或 ?from=&to=，日期由后端筛；调用方不传任何参数。
+             *   数据源 source 由 api/http.js 按当前源拼。
+             * @returns {Promise<Array>} 原始行（失败会抛，页面自行 catch）
+             */
+            fetchFlights: async () => {
+                set({ loading: true, error: null });
+                try {
+                    const params = dateFilterParamsOf(useAppStore.getState());
+                    const d = await fipsApi.list(params);
+                    // raw 模式（ecyilang 原始快照，RawEcyilangTable 用）：行上没有 flight_no，
+                    // 补一个（离港号优先、进港号兜底）—— 侧栏创建检查单的
+                    // templateKeyOf(flight_no) 和草稿显示都靠它
+                    const raw = Boolean(d?.raw);
+                    let rows = (d?.items || []).map((r) =>
+                        raw ? { ...r, flight_no: r.d_flight_no_full || r.a_flight_no_full || null } : r
+                    );
+                    // 花湖翼览源：按设置页的展示形态开关（英文/中文、ICAO/IATA）就地替换
+                    // 名称 / 航班号 —— 必须在 flight_no 派生**之后**（检查单类型推断吃的是
+                    // 原始航司二字码），替换只影响表格显示
+                    if (raw) rows = applyDisplayFlags(rows, get().ecyilangHeader);
+                    set((s) => ({
+                        ...deriveLists({ ...s, rows }),
+                        rows,
+                        total: d?.total ?? rows.length,
+                        dataDate: d?.date ?? null,
+                        freshCount: rows.filter((r) => r.is_fresh).length,
+                        loading: false,
+                        error: null,
+                    }));
+                    return rows;
+                } catch (err) {
+                    set({ loading: false, error: err.message || "加载失败" });
+                    throw err;
+                }
             },
 
-            /** 草稿里切换某列的显示 / 隐藏 */
-            toggleDraft: (key) =>
-                set((s) => {
-                    if (!s.draftHeaders) return {}
-                    return {
-                        draftHeaders: s.draftHeaders.map((h) =>
-                            h.key === key ? { ...h, isHide: !h.isHide } : h,
-                        ),
-                    }
+            /** 切换数据源后清空当前列表（避免旧源的行挂在标题栏下） */
+            clearFlights: () =>
+                set({
+                    rows: [],
+                    flights: [],
+                    depFlights: [],
+                    arrFlights: [],
+                    total: 0,
+                    dataDate: null,
+                    freshCount: 0,
+                    error: null,
                 }),
 
-            /** 草稿里一次显示全部列 */
-            showAllDraft: () =>
-                set((s) => (s.draftHeaders ? { draftHeaders: s.draftHeaders.map((h) => ({ ...h, isHide: false })) } : {})),
+            /* ================= C. 视图三态（不落盘） ================= */
 
-            /** 草稿里把某列上移 / 下移一位（重排 colOrder） */
-            moveDraft: (key, dir) =>
-                set((s) => {
-                    if (!s.draftHeaders) return {}
-                    const arr = [...s.draftHeaders].sort((a, b) => a.colOrder - b.colOrder)
-                    const i = arr.findIndex((h) => h.key === key)
-                    const j = i + (dir === 'up' ? -1 : 1)
-                    if (i < 0 || j < 0 || j >= arr.length) return {}
-                    ;[arr[i], arr[j]] = [arr[j], arr[i]]
-                    return { draftHeaders: arr.map((h, idx) => ({ ...h, colOrder: idx })) }
-                }),
+            viewMode: VIEW_MODES[0],
 
-            /** 草稿恢复该视图默认（全部显示 + 默认顺序）；仍需点「确认」才生效 */
-            resetDraft: (view) =>
-                set((s) => (s.editingView === view ? { draftHeaders: makeDefaultHeaders(view) } : {})),
-
-            /** 取消编辑：丢弃草稿 */
-            cancelEdit: () => set({ editingView: null, draftHeaders: null }),
-
-            /** 确认：草稿写回生效配置并落盘（persist 自动写 localStorage） */
-            confirmEdit: () =>
-                set((s) => {
-                    if (!s.editingView || !s.draftHeaders) return {}
-                    const view = s.editingView
-                    const normalized = s.draftHeaders.map((h, i) => ({ ...h, colOrder: i }))
-                    return {
-                        tableHeaders: { ...s.tableHeaders, [view]: normalized },
-                        editingView: null,
-                        draftHeaders: null,
-                    }
-                }),
-
-            /** 直接把某个视图恢复默认（无需进编辑态） */
-            resetView: (view) =>
-                set((s) =>
-                    VIEW_KEYS.includes(view)
-                        ? { tableHeaders: { ...s.tableHeaders, [view]: makeDefaultHeaders(view) } }
-                        : {},
-                ),
+            /** 切到指定视图（设置页的 radio 调它） */
+            setViewMode: (mode) => {
+                if (VIEW_MODES.includes(mode)) set({ viewMode: mode });
+            },
         }),
         {
-            name: 'flight-dispatch:fips:table-headers',
-            version: 1,
-            // 只持久化生效配置；编辑草稿/编辑态是临时 UI 状态，不落盘
-            partialize: (s) => ({ tableHeaders: s.tableHeaders }),
-            // 读缓存时归一化：补新增列、丢已删列、修非法 colOrder
-            merge: (persisted, current) => {
-                const saved = persisted?.tableHeaders || {}
-                const tableHeaders = VIEW_KEYS.reduce((acc, v) => {
-                    acc[v] = normalizeHeaders(v, saved[v])
-                    return acc
-                }, {})
-                return { ...current, tableHeaders }
+            name: "flight-dispatch:fips",
+            version: 5,
+            // 只持久化四套表头（含顺序 / 显隐 / 排序方向 / english·icao 开关）
+            partialize: (s) => ({
+                allHeader: s.allHeader,
+                depHeader: s.depHeader,
+                arrHeader: s.arrHeader,
+                ecyilangHeader: s.ecyilangHeader,
+            }),
+            // v1: tableHeaders{all,in,out} → v2: 三个同级数组（列键 key）
+            // → v3: 列键改 keyName → v4: 每条表头变成 { source, columns }（列键 keyName + title）
+            // → v5: 新增花湖翼览（ecyilang）表头设置
+            migrate: (persisted, version) => {
+                if (!persisted) return persisted;
+                let saved = persisted;
+                if (version < 2) {
+                    const t = persisted.tableHeaders || {};
+                    saved = { allHeaders: t.all, depHeaders: t.out, arrHeaders: t.in };
+                }
+                if (version < 3) {
+                    const rename = (list) => (list || []).map((h) => ({ ...h, keyName: h.keyName || h.key }));
+                    saved = {
+                        allHeaders: rename(saved.allHeaders),
+                        depHeaders: rename(saved.depHeaders),
+                        arrHeaders: rename(saved.arrHeaders),
+                    };
+                }
+                let out;
+                if (version < 4) {
+                    out = {
+                        allHeader: buildHeaders(ALL_HEADER, saved.allHeaders),
+                        depHeader: buildHeaders(DEP_HEADER, saved.depHeaders),
+                        arrHeader: buildHeaders(ARR_HEADER, saved.arrHeaders),
+                    };
+                } else {
+                    out = persisted;
+                }
+                if (version < 5) {
+                    // v5：花湖翼览表头设置是新增的，本地没有 → 直接用 config 默认
+                    out = { ...out, ecyilangHeader: buildHeaders(ECYILANG_ALL_HEADER) };
+                }
+                return out;
             },
-        },
-    ),
-)
+            // 读缓存时对齐配置：补新增列、丢已删列、修非法 order / isHide
+            // ⚠️ 必须按 HEADER_STATE_KEY 的键遍历（此前误用 VIEW_MODES，dep/arr 的
+            //    持久化值从未被恢复过 —— 顺手修掉这个存量 bug）
+            merge: (persisted, current) => {
+                const out = { ...current, ...persisted };
+                for (const [view, key] of Object.entries(HEADER_STATE_KEY)) {
+                    out[key] = buildHeaders(DEFAULT_HEADER[view], persisted?.[key]?.columns);
+                }
+                return out;
+            },
+        }
+    )
+);
+
+/* ============================================================
+ * 五、给「不在页面里」的调用方（specialStore 的日历数字）
+ * ============================================================ */
+
+/**
+ * 直接拉一次航班列表（**不写 store 状态、不带日期筛选**）
+ * 供「手里只有一个航班键，需要反查航班行 / 算跨天统计」的场景兜底用。
+ * @returns {Promise<Array>} 原始行
+ */
+export async function fetchFlightRows() {
+    const d = await fipsApi.list();
+    return d?.items || [];
+}

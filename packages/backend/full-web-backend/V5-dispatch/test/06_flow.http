@@ -1,0 +1,232 @@
+### ============================================================
+### 06 · 端到端串联 —— 一个手动航班的完整生命周期
+### ------------------------------------------------------------
+### 这条链路一次跑完，能同时验证四件事：
+###   1. 跨资源外键：checklist / special 通过 flightUuid 挂到 manual_fips 上
+###   2. Prisma 关系投影：航班详情里的 checklistCount / specialCount / is_fresh
+###      （靠一次 include 的 _count + specials(take:1) 拿到，没有 N+1）
+###   3. 删除的级联顺序：先清子表再删父表（外键是 ON DELETE SET NULL，
+###      顺序反了就会留下一堆「三个外键全空」的孤儿行）
+###   4. 全程局部更新语义：没传的列一律不动
+###
+### ⚠️ 本文件必须**从上往下按顺序点**，后面每一步都依赖前面返回的 id / uuid。
+###    最后一步会把这条链路建的所有数据删干净。
+### ============================================================
+
+@host = http://localhost:5183
+@flightNo = FLOW0001
+
+
+### ════════════════════════════════════════════════════════════
+### 第 1 步：新建手动航班
+### ════════════════════════════════════════════════════════════
+# @name flight
+POST {{host}}/api/fips?source=manual_fips
+Content-Type: application/json
+
+{
+  "flightNo": "{{flightNo}}",
+  "task": "进港",
+  "originStation": "ZHHH",
+  "destStation": "ZSHC",
+  "sobt": "2026-10-05 14:00:00",
+  "aldt": "2026-10-05 16:30:00",
+  "aircraftType": "B763",
+  "stand": "308"
+}
+
+### 期望 201：checklistCount = 0、specialCount = 0、is_fresh = false
+### 记下返回的 uuid，后面都用 {{flight.response.body.$.uuid}} 引用它
+
+
+### ════════════════════════════════════════════════════════════
+### 第 2 步：给这个航班建两份检查单（不同 category → 允许并存）
+### ════════════════════════════════════════════════════════════
+
+### ------------------------------------------------------------
+### 2.1 飞前检查单
+### ------------------------------------------------------------
+# @name check1
+POST {{host}}/api/checklist
+Content-Type: application/json
+
+{
+  "flightUuid": "{{flight.response.body.$.uuid}}",
+  "callsign": "{{flightNo}}",
+  "aircraftType": "B763",
+  "checklistCategory": "cat1",
+  "inspector": "张三",
+  "status": "submitted",
+  "items": {
+    "01L": { "checked": true },
+    "01R": { "checked": true },
+    "19L": { "checked": true },
+    "19R": { "checked": false, "remark": "反光锥缺失" }
+  }
+}
+
+### 期望 201：source = "manual_fips"、flight_uuid = 第 1 步的 uuid
+
+
+### ------------------------------------------------------------
+### 2.2 第二份检查单（同一航班，另一个 category）
+### ------------------------------------------------------------
+# @name check2
+POST {{host}}/api/checklist
+Content-Type: application/json
+
+{
+  "flightUuid": "{{flight.response.body.$.uuid}}",
+  "callsign": "{{flightNo}}",
+  "checklistCategory": "cat3",
+  "inspector": "李四",
+  "status": "draft"
+}
+
+### 期望 201（POST 永远新增，不是覆盖 2.1）
+
+
+### ------------------------------------------------------------
+### 2.3 按航班 uuid 查检查单 —— 期望 total = 2
+### ------------------------------------------------------------
+GET {{host}}/api/checklist?flightUuid={{flight.response.body.$.uuid}}
+
+
+### ════════════════════════════════════════════════════════════
+### 第 3 步：给这个航班建生鲜台账（nodes.freshMark 非空 → 航班标记为生鲜）
+### ════════════════════════════════════════════════════════════
+# @name spec
+POST {{host}}/api/special
+Content-Type: application/json
+
+{
+  "callsign": "{{flightNo}}",
+  "flightUuid": "{{flight.response.body.$.uuid}}",
+  "nodes": {
+    "freshMark": "生鲜",
+    "unloadStart": "2026-10-05 16:45:00",
+    "unloadEnd": "2026-10-05 17:20:00",
+    "coldStorage": true,
+    "remark": "冷链直提"
+  }
+}
+
+### 期望 201：source = "manual_fips"、flight_uuid = 第 1 步的 uuid
+
+
+### ════════════════════════════════════════════════════════════
+### 第 4 步：回看航班详情 —— 关系投影应该全部反映出来
+### ════════════════════════════════════════════════════════════
+# @name detail
+GET {{host}}/api/fips/{{flight.response.body.$.uuid}}?source=manual_fips
+
+### 期望 200：
+### {
+###   "uuid": "…", "flight_no": "FLOW0001", "stand": "308",
+###   "checklistCount": 2,        ← 一次 include 的 _count.checklists
+###   "specialCount": 1,          ← _count.specials
+###   "is_fresh": true,           ← 最新一条台账的 nodes.freshMark 非空
+###   "fresh_content": "生鲜"      ← 上面那个 freshMark 原文
+### }
+### ★ 注意 stand 仍是 308 —— 中途没传过 stand，局部更新没有把它清掉
+
+
+### ------------------------------------------------------------
+### 4.1 航班列表里也能看到同样的投影（列表与详情同一套 toApi）
+### ------------------------------------------------------------
+GET {{host}}/api/fips?source=manual_fips&date=2026-10-05
+
+
+### ------------------------------------------------------------
+### 4.2 台账侧按航班 uuid 反查 —— 期望 total = 1
+### ------------------------------------------------------------
+GET {{host}}/api/special?flightUuid={{flight.response.body.$.uuid}}
+
+
+### ════════════════════════════════════════════════════════════
+### 第 5 步：改航班（局部更新）—— 只动 stand，其它列原地不动
+### ════════════════════════════════════════════════════════════
+PUT {{host}}/api/fips/{{flight.response.body.$.uuid}}?source=manual_fips
+Content-Type: application/json
+
+{
+  "stand": "312",
+  "runway": "01R"
+}
+
+### 期望 200：stand = 312、runway = 01R，
+###           而 flight_no / sobt / aldt / task 全部保持第 1 步的值
+
+
+### ------------------------------------------------------------
+### 5.1 关系的「另一头」也能改：把 2.2 那份检查单改成挂到别处（先解绑）
+###      flightUuid 传 null → 三个外键列全清空
+### ------------------------------------------------------------
+PUT {{host}}/api/checklist/{{check2.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "flightUuid": null
+}
+
+### 期望 200：source = null、flight_uuid = null
+
+###
+GET {{host}}/api/checklist?flightUuid={{flight.response.body.$.uuid}}
+
+### 期望 total = 1（只剩 2.1 那份还挂着）
+
+
+### ------------------------------------------------------------
+### 5.2 再挂回来
+### ------------------------------------------------------------
+PUT {{host}}/api/checklist/{{check2.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "flightUuid": "{{flight.response.body.$.uuid}}"
+}
+
+
+### ════════════════════════════════════════════════════════════
+### 第 6 步：删除航班 —— 级联清理子表
+### ------------------------------------------------------------
+### 外键是 ON DELETE SET NULL，所以顺序必须是「先子后父」。
+### 服务端在一个 $transaction([删检查单, 删台账, 删航班]) 里按顺序执行，
+### 返回体里带上顺手清掉了几条子记录。
+### ════════════════════════════════════════════════════════════
+# @name removed
+DELETE {{host}}/api/fips/{{flight.response.body.$.uuid}}?source=manual_fips
+
+### 期望 200：
+### { "ok": true, "source": "manual_fips", "id": "…", "checklists": 2, "specials": 1 }
+
+
+### ------------------------------------------------------------
+### 6.1 用**航班号**复查（关键！按 flightUuid 查是验不出孤儿行的：
+###     子行外键被 SET NULL 后，按 flightUuid 过滤本来就查不到）
+### 期望 total = 0
+### ------------------------------------------------------------
+GET {{host}}/api/checklist?callsign={{flightNo}}
+
+
+### ------------------------------------------------------------
+### 6.2 台账侧同样按航班号复查 —— 期望 total = 0
+### ------------------------------------------------------------
+GET {{host}}/api/special?callsign={{flightNo}}
+
+
+### ------------------------------------------------------------
+### 6.3 航班本身也没了 → 404
+### ------------------------------------------------------------
+GET {{host}}/api/fips/{{flight.response.body.$.uuid}}?source=manual_fips
+
+
+### ------------------------------------------------------------
+### 6.4 收尾：三个资源都回到空
+### ------------------------------------------------------------
+GET {{host}}/api/fips?source=manual_fips
+###
+GET {{host}}/api/checklist
+###
+GET {{host}}/api/special

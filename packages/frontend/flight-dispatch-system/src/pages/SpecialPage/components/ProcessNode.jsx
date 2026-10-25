@@ -2,7 +2,7 @@ import { Check, Loader2, RotateCcw, Save, Trash2, TriangleAlert } from "lucide-r
 import { BOARD_UNIT, TOTAL_DURATION_STANDARD_MIN, evaluateProcess } from "../../../config/specialSpec";
 import { normalizeHHmm } from "../../../utils/processTime";
 import { UNLOAD_STANDARD_LABEL, unloadStandardHint, unloadStandardText } from "../../../utils/specialCargoStandards";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../utils/cn";
 
 /**
  * ============================================================
@@ -59,7 +59,6 @@ export default function ProcessNode({
     const aircraftType = flight?.aircraft_type || "";
     const boardCount = value?.boardCount ?? "";
     const programStarted = !!value?.programStarted;
-    const fromLedger = flight?.source === "special";
 
     // 该机型的卸机作业时长标准（表头直接写出来，不用再去翻标准表）
     const unloadText = unloadStandardText(aircraftType);

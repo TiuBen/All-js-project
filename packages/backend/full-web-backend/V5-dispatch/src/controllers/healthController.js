@@ -1,28 +1,18 @@
 /**
  * ============================================================
- * 健康检查 Controller
- * ------------------------------------------------------------
- * GET /api/health —— 服务存活 + PG 连接状态探测
+ * 健康检查
  * ============================================================
  */
-import { config } from '../config/index.js';
-import { query } from '../db/pool.js';
+import { prisma } from '../db/prisma.js';
+import { cnDateTime } from '../utils/date.js';
+import { asyncHandler } from '../utils/http.js';
 
 /**
  * GET /api/health
- * 返回服务状态、当前时间、数据库信息
+ * @desc 服务存活 + 真的连一次库（Prisma 的 driver adapter 是懒连接，
+ *       不探一下就发现不了连不上）
  */
-export async function healthCheck(req, res) {
-  let pgOk = 'ok';
-  try {
-    await query('SELECT 1');
-  } catch {
-    pgOk = 'error';
-  }
-  res.json({
-    status: 'ok',
-    service: 'v5-dispatch',
-    time: new Date().toISOString(),
-    pg: pgOk === 'ok' ? config.pg.database : `${config.pg.database} (连接异常)`,
-  });
-}
+export const healthCheck = asyncHandler(async (req, res) => {
+  await prisma.$queryRaw`SELECT 1`;
+  res.json({ ok: true, service: 'v5-dispatch', time: cnDateTime(new Date()) });
+});

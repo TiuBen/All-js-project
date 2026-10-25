@@ -2,8 +2,9 @@
  * ============================================================
  * 生成查看页（ChecklistViewer）用的「扁平一维视图数据」
  * ------------------------------------------------------------
- * 输入：EditorTemplateJson/（编辑器用的模板 + 视频监管数据，编译期静态）
- * 输出：Template/ViewTemplateJson/ 下 5 类型 × 3 列表 = 15 个模块
+ * 输入：ChecklistEditor/Template/EditorTemplateJson/（编辑器用的模板 + 视频监管数据，编译期静态）
+ * 输出：ChecklistViewer/ViewTemplateJson/ 下 5 类型 × 3 列表 = 15 个模块
+ *   （产物归查看页所有，故与消费方 ChecklistViewer 同目录，不放在编辑器 Template 下）
  *
  *   xxx Flight MainViewJson      → 主监控指标（schema[] 拍平）
  *   xxx Flight AuxiliaryViewJson → 辅助监控指标（各节点 auxiliaries[] 汇总拍平，带父节点信息）
@@ -34,7 +35,7 @@ const { pathToFileURL } = require("url");
 // 前端项目根（本脚本位于 flight-dispatch-system/scripts/）
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "src/pages/ChecklistPage/ChecklistEditor/Template/EditorTemplateJson");
-const OUT = path.join(ROOT, "src/pages/ChecklistPage/ChecklistEditor/Template/ViewTemplateJson");
+const OUT = path.join(ROOT, "src/pages/ChecklistPage/ChecklistViewer/ViewTemplateJson");
 
 /**
  * 5 个检查单类型（category = 模板 id = 落库 checklist_category）

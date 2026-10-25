@@ -1,0 +1,60 @@
+http://ffqs.hublairport.com/fqs-api/OffsiteFlight/selectMontageFlight?t=td
+
+登录
+检查单填写的UI优化
+检查单类别的判断
+IATA / ICAO  中英文切换 
+国旗标志-地图
+生成邮件
+监听微信聊天群
+
+
+// ecyilang -- 从花湖翼览上获取的数据
+model ecyilang {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // ---- 离港侧 ----
+  d_flight_type_code String?   @db.VarChar(16)
+  d_flight_date      DateTime? @db.Date
+  d_plan_time        DateTime? @db.Timestamp(0)
+  d_time             DateTime? @db.Timestamp(0)
+  d_jx               String?   @db.VarChar(16)
+  d_name             String?   @db.VarChar(64)
+  d_flight_no_full   String?   @db.VarChar(32)
+  d_country_type     String?   @db.VarChar(16)
+  d_craft_seat_code  String?   @db.VarChar(16)
+  d_state_name       String?   @db.VarChar(32)
+  d_abnormal_state   String?   @db.VarChar(16)
+  // ---- 进港侧 ----
+  a_flight_type_code String?   @db.VarChar(16)
+  a_flight_date      DateTime? @db.Date
+  a_plan_time        DateTime? @db.Timestamp(0)
+  a_time             DateTime? @db.Timestamp(0)
+  a_jx               String?   @db.VarChar(16)
+  a_flight_no_full   String?   @db.VarChar(32)
+  a_country_type     String?   @db.VarChar(16)
+  a_name             String?   @db.VarChar(64)
+  a_craft_seat_code  String?   @db.VarChar(16)
+  a_state_name       String?   @db.VarChar(32)
+  a_abnormal_state   String?   @db.VarChar(16)
+  // ---- 其它 ----
+  k_h                String?   @db.VarChar(8)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  /// 从 *_name 反查出的 IATA / ICAO 码（导入时补全）
+  d_name_iata_code   String?   @db.VarChar(8)
+  d_name_icao_code   String?   @db.VarChar(8)
+  a_name_iata_code   String?   @db.VarChar(8)
+  a_name_icao_code   String?   @db.VarChar(8)
+
+changelog = []
+
+
+
+  checklists records_checklist[] @relation("ecyilang_checklists")
+  specials   records_special[]   @relation("ecyilang_specials")
+
+  @@index([d_flight_date], map: "idx_ecyilang_d_flight_date")
+  @@index([a_flight_date], map: "idx_ecyilang_a_flight_date")
+}
+
+
+// main |auxiliary | video

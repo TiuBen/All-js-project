@@ -21,7 +21,9 @@
  * ============================================================
  */
 
-/** 货物保障标准表（PNG 下半张表；rows 顺序 = 展示顺序） */
+/** 货物保障标准表（PNG 下半张表；rows 顺序 = 展示顺序）
+ * @usedBy config/specialSpec.js（读 rows 里的 minutes 判卸货环节是否达标）
+ */
 export const CARGO_STANDARDS = {
     title: "货物保障",
     indicator: "卸机作业（适用于进出港均满载的情况）",
@@ -35,12 +37,16 @@ export const CARGO_STANDARDS = {
     ],
 };
 
-/** 卸机作业这个指标的展示名（表头文案用，避免各处硬编码字符串） */
+/** 卸机作业这个指标的展示名（表头文案用，避免各处硬编码字符串）
+ * @usedBy pages/SpecialPage/components/ProcessNode.jsx（卡片表头「卸机时长标准」）
+ */
 export const UNLOAD_STANDARD_LABEL = "卸机时长标准";
 
 /**
  * 机型 → 命中的标准行。
  * 机型先规整（大写、去掉非字母数字），再按 prefixes 前缀匹配。
+ * @usedBy config/specialSpec.js（再经 unloadStandardMinutes 取分钟数）
+ *         本文件内的 unloadStandardMinutes / unloadStandardHint
  * @param {string} aircraftType 机型代码，如 'B77L' / 'b77l' / 'B777-200F'
  * @returns {Object|null} CARGO_STANDARDS.rows 的一项；不在标准表内返回 null
  */
@@ -54,6 +60,7 @@ export function cargoStandardRowOf(aircraftType) {
 
 /**
  * 机型 → 卸机作业标准时长（分钟）。
+ * @usedBy config/specialSpec.js（卸货结束环节的间隔达标判定）
  * @param {string} aircraftType
  * @returns {number|null} 标准分钟数；机型不在标准表内返回 null
  */
@@ -64,6 +71,7 @@ export function unloadStandardMinutes(aircraftType) {
 
 /**
  * 机型 → 卸机作业标准时长的展示文案（卡片表头直接用）。
+ * @usedBy pages/SpecialPage/components/ProcessNode.jsx（卡片表头「卸机时长标准 80 分钟」）
  * @param {string} aircraftType
  * @returns {string} 命中返回 '80 分钟'；未命中返回 ''（由调用方决定怎么显示）
  */
@@ -74,6 +82,7 @@ export function unloadStandardText(aircraftType) {
 
 /**
  * 机型 → 悬停说明（讲清标准出处与适用条件）。
+ * @usedBy pages/SpecialPage/components/ProcessNode.jsx（表头 title）
  * @param {string} aircraftType
  * @returns {string}
  */
@@ -84,5 +93,3 @@ export function unloadStandardHint(aircraftType) {
         row.aircraft
     } 系列，适用于进出港均满载的情况；责任单位：${CARGO_STANDARDS.unit}）`;
 }
-
-export default CARGO_STANDARDS;

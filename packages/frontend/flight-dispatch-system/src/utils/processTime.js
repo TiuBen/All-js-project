@@ -11,24 +11,29 @@
  *
  * ★ 约定：写成 "HH:mm" 字符串存进 store，不存分钟数 ——
  *   分钟数无法表达"没填"和"填了 00:00"的区别。
+ * ★ 本文件只导出 3 个函数；fmtHHmm / parseHHmm / DAY_MINUTES 是它们的内
+ *   部零件（原来一直 export 但全仓库零引用，已收回为模块内私有）。
  * ============================================================
  */
 
-/** 一天的分钟数 */
-export const DAY_MINUTES = 24 * 60
+/** 一天的分钟数（内部用） */
+const DAY_MINUTES = 24 * 60;
 
-/** 分钟数 → "HH:mm" */
-export function fmtHHmm(minutes) {
-    const m = ((Math.round(minutes) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES
-    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`
+/** 间隔超过这个分钟数就认为填错了（12 小时）——避免跨零点计算被误用（内部用） */
+const MAX_SANE_GAP = 12 * 60;
+
+/** 分钟数 → "HH:mm"（内部用） */
+function fmtHHmm(minutes) {
+    const m = ((Math.round(minutes) % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 }
 
 /**
- * 时间字符串 → 当日分钟数
+ * 时间字符串 → 当日分钟数（内部用）。
  * @param {string} value "HH:mm" / "H:mm" / "1741" / "741"
  * @returns {number|null} 0~1439；空值或非法值返回 null
  */
-export function parseHHmm(value) {
+function parseHHmm(value) {
     const s = String(value ?? "").trim();
     if (!s) return null;
     const m = s.match(/^(\d{1,2}):?(\d{2})$/);
@@ -40,8 +45,10 @@ export function parseHHmm(value) {
 }
 
 /**
- * 宽松输入 → 规范 "HH:mm"（输入框失焦时调用）
+ * 宽松输入 → 规范 "HH:mm"（输入框失焦时调用）。
  *   "1741" → "17:41"    "741" → "07:41"    "7:5" → 保持原样（无法判断）
+ * @usedBy store/specialStore.js（改某个环节时间后归一）
+ *         pages/SpecialPage/components/ProcessNode.jsx（输入框失焦）
  * @param {string} value
  * @returns {string} 规范化结果；无法解析时原样返回（交给用户改）
  */
@@ -59,11 +66,10 @@ export function normalizeHHmm(value) {
     return parsed == null ? s : fmtHHmm(parsed);
 }
 
-/** 间隔超过这个分钟数就认为填错了（12 小时）——避免跨零点计算被误用 */
-const MAX_SANE_GAP = 12 * 60;
-
 /**
- * 与上一环节的间隔时长（分钟）
+ * 与上一环节的间隔时长（分钟），跨零点按 +24h。
+ * @usedBy store/specialStore.js（算某环节的间隔展示）
+ *         config/specialSpec.js（判断间隔是否达标）
  * @param {string} prevValue 上一环节时间节点
  * @param {string} value     本环节时间节点
  * @returns {number|null} 分钟数；任一端没填/非法，或结果不合常理（>12h）时返回 null
@@ -79,7 +85,9 @@ export function gapMinutes(prevValue, value) {
 }
 
 /**
- * 总时长（分钟）：末环节 - 首环节，同样支持跨零点
+ * 总时长（分钟）：末环节 - 首环节，同样支持跨零点。
+ * @usedBy store/specialStore.js（整单总时长）
+ *         config/specialSpec.js（总时长达标判定）
  * @param {string} startValue
  * @param {string} endValue
  */

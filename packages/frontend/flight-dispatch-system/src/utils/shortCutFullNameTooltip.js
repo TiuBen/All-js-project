@@ -2,19 +2,21 @@
  * ============================================================
  * shortCutFullNameTooltip —— 航空「缩写 → 全称 + 中文解释」词典
  * ------------------------------------------------------------
- * 用途：航班列表（FipsPage）表头鼠标悬停时的提示文字。
- *   key   = 列 key（小写，与 fips.store 的 BASE_COLUMNS 一致）或
+ * 用途：航班列表表头的鼠标悬停提示文字。
+ *   key   = 列 keyName（小写，与 config/fipsHeaders.js 一致）或
  *           IATA/ICAO 常用的时间缩写（大写）
  *   value = { full: 英文全称, cn: 中文名称, desc: 中文说明 }
  *
  * 谁在用：
- *   pages/FipsPage/FipsPage.jsx  ← shortCutTooltip(key)（表头 title）
- *   改文案只改这里，页面不用动。
+ *   config/fipsHeaders.js  ← shortCutTooltip(key)（六个时刻列的 tooltip 字段）
+ *   改文案只改这里；表头那里的 tooltip 会跟着变，页面不用动。
  *
- * ★ 只做「解释」，不参与任何时间计算；计算逻辑在 utils/timeFormula.js。
+ * ★ 只做「解释」，不参与任何时间计算。
+ * ★ 本次清理删掉的死代码：shortCutTooltipCn（只要中文名的短提示，零引用）。
  * ============================================================
  */
 
+/** 缩写词典（唯一数据源；目前只被本文件的 shortCutTooltip 读，无外部 import） */
 export const SHORT_CUT_FULL_NAME_TOOLTIP = {
     // ---------- 本场航班列表里实际用到的 6 个时刻 ----------
     SOBT: {
@@ -112,6 +114,7 @@ export const SHORT_CUT_FULL_NAME_TOOLTIP = {
  * 取某列的表头提示文本（供 <th title="..."> 使用）
  *   命中 → "英文全称（中文名）—— 说明"
  *   未命中 → ''（调用方回落到默认提示）
+ * @usedBy pages/FipsPage/FipsPage.jsx（表头 title）
  * @param {string} key 列 key（大小写不敏感）
  * @returns {string}
  */
@@ -119,9 +122,4 @@ export function shortCutTooltip(key) {
     const item = SHORT_CUT_FULL_NAME_TOOLTIP[String(key || '').toUpperCase()]
     if (!item) return ''
     return `${item.full}（${item.cn}）—— ${item.desc}`
-}
-
-/** 取某列的「短提示」（只要中文名，用于空间紧张处） */
-export function shortCutTooltipCn(key) {
-    return SHORT_CUT_FULL_NAME_TOOLTIP[String(key || '').toUpperCase()]?.cn || ''
 }

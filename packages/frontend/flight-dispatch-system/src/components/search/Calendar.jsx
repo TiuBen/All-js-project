@@ -2,9 +2,9 @@ import { DayPicker, DayButton } from "react-day-picker";
 import "react-day-picker/style.css";
 import { zhCN } from "react-day-picker/locale";
 import dayjs from "dayjs";
-import { useAppStore } from "../../store/appStore";
+import { useAppStore } from "../../store/app.store";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { cn } from "../../lib/utils";
+import { cn } from "../../utils/cn";
 
 /**
  * ============================================================
@@ -15,7 +15,7 @@ import { cn } from "../../lib/utils";
  *   - 航班列表页 / 填写记录页 / 生鲜保障页 共用同一份日期状态
  *     （appStore.mode / selectedDate / rangeFrom / rangeTo）
  *   - 侧边栏只负责排版，日期卡片本身不再关心页面
- *   - 读日期筛选参数请用 store/appStore.js 的 useDateFilterParams()
+ *   - 读日期筛选参数请用 store/app.store.js 的 useDateFilterParams()
  *     （放本文件会让 react-refresh 报「组件与函数混在一个文件」）
  *
  * @param {string}  [title]      卡片标题，默认「日期选择」

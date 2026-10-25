@@ -1,0 +1,293 @@
+### ============================================================
+### 05 · 码表维护 /api/setting/:kind（两张表各一套实现）
+### ------------------------------------------------------------
+###   :kind = airlines  → airplane_company_name_code  航司码
+###            { id, chinese_airplane_company_name,
+###              airplane_company_iata_code, airplane_company_icao_code }
+###   :kind = airports  → airport_name_code           机场码
+###            { id, chinese_airport_name, english_airport_name,
+###              airport_iata_code, airport_icao_code }
+###
+### ★ 请求体 / 响应的键 = **数据库原始列名**，没有驼峰别名。
+###   没传的键不出现 → 天然是局部更新语义。
+###
+### 唯一约束：两张表的中文名 / IATA / ICAO 三列各自 UNIQUE，
+### 撞了就是 409（Prisma P2002 → conflict）。
+###
+### 顺序：A 查询 → B 机场码 CRUD → C 航司码 CRUD
+###      B / C 段自建自删（用 Z 打头的假码，不会撞真数据）
+### ============================================================
+
+@host = http://localhost:5183
+
+
+### ════════════════════════════════════════════════════════════
+### A. 查询（库中：航司码 15 条 / 机场码 67 条）
+### ════════════════════════════════════════════════════════════
+
+### ------------------------------------------------------------
+### 5.1 机场码全量列表
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports
+
+### 期望 200：{ "total": 67, "items": [ { "id": 1,
+###             "chinese_airport_name": "阿布扎比", "english_airport_name": "Abu Dhabi",
+###             "airport_iata_code": "AUH", "airport_icao_code": "OMAA" }, … ] }
+
+
+### ------------------------------------------------------------
+### 5.2 模糊搜索 —— q 同时匹配 中文名 / 英文名 / IATA / ICAO，大小写不敏感
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports?q=阿布扎比
+### 期望 total = 1
+
+###
+GET {{host}}/api/setting/airports?q=abu
+### 期望 total = 1（英文名不区分大小写命中 Abu Dhabi）
+
+###
+GET {{host}}/api/setting/airports?q=OMAA
+### 期望 total = 1（ICAO 精确值命中）
+
+### 无匹配
+GET {{host}}/api/setting/airports?q=不存在的机场名
+
+### 期望 total = 0
+
+
+### ------------------------------------------------------------
+### 5.3 按 id 取单条（:id 是整数自增主键）
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports/1
+
+### 期望 200：{ "id": 1, "chinese_airport_name": "阿布扎比",
+###             "english_airport_name": "Abu Dhabi",
+###             "airport_iata_code": "AUH", "airport_icao_code": "OMAA" }
+
+
+### ------------------------------------------------------------
+### 5.4 非整数 id → 404（不是 500）
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports/abc
+
+### 期望 404：{ "error": "机场码里没有 id=abc 的记录" }
+
+
+### ------------------------------------------------------------
+### 5.5 未知 :kind → 404
+### ------------------------------------------------------------
+GET {{host}}/api/setting/not-a-kind
+
+### 期望 404：{ "error": "未知的码表「not-a-kind」（可选：airlines / airports）" }
+
+
+### ------------------------------------------------------------
+### 5.6 航司码列表 + 搜索
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airlines
+
+### 期望 total = 15
+
+###
+GET {{host}}/api/setting/airlines?q=顺丰
+
+### 期望 200：{ … "items": [ { "id": 1, "chinese_airplane_company_name": "顺丰航空",
+###             "airplane_company_iata_code": "O3", "airplane_company_icao_code": "CSS" } ] }
+
+
+### ════════════════════════════════════════════════════════════
+### B. 机场码 CRUD（假数据，末尾自删）
+### ════════════════════════════════════════════════════════════
+
+### ------------------------------------------------------------
+### 5.7 新增 —— 必填 chinese_airport_name（是 NOT NULL + UNIQUE 列）
+### ------------------------------------------------------------
+# @name newAirport
+POST {{host}}/api/setting/airports
+Content-Type: application/json
+
+{
+  "chinese_airport_name": "测试机场ZZ",
+  "english_airport_name": "Test Airport ZZ",
+  "airport_iata_code": "QZZ",
+  "airport_icao_code": "ZQZZ"
+}
+
+### 期望 201：{ "id": 68, "chinese_airport_name": "测试机场ZZ",
+###             "english_airport_name": "Test Airport ZZ",
+###             "airport_iata_code": "QZZ", "airport_icao_code": "ZQZZ" }
+
+
+### ------------------------------------------------------------
+### 5.8 拿新建的 id 查详情
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+
+
+### ------------------------------------------------------------
+### 5.9 唯一冲突：同名再来一条 → 409
+### ------------------------------------------------------------
+POST {{host}}/api/setting/airports
+Content-Type: application/json
+
+{
+  "chinese_airport_name": "测试机场ZZ",
+  "english_airport_name": "Dup",
+  "airport_iata_code": "QZY",
+  "airport_icao_code": "ZQZY"
+}
+
+### 期望 409：{ "error": "该记录已存在（唯一约束冲突）" }
+
+
+### ------------------------------------------------------------
+### 5.10 唯一冲突：换个名字但 IATA 撞车 → 也是 409
+### ------------------------------------------------------------
+POST {{host}}/api/setting/airports
+Content-Type: application/json
+
+{
+  "chinese_airport_name": "测试机场ZY",
+  "airport_iata_code": "QZZ"
+}
+
+### 期望 409（airport_iata_code 是 UNIQUE 列）
+
+
+### ------------------------------------------------------------
+### 5.11 校验：缺 chinese_airport_name → 400
+### ------------------------------------------------------------
+POST {{host}}/api/setting/airports
+Content-Type: application/json
+
+{
+  "english_airport_name": "No Name"
+}
+
+### 期望 400：{ "error": "chinese_airport_name（中文机场名）不能为空" }
+
+
+### ------------------------------------------------------------
+### 5.12 局部更新 —— 只改英文名，其余列保持原值
+### ------------------------------------------------------------
+PUT {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "english_airport_name": "ZZ Test Airport (renamed)"
+}
+
+
+### ------------------------------------------------------------
+### 5.13 校验：显式把 chinese_airport_name 清空 → 400（NOT NULL 列不许清）
+### ------------------------------------------------------------
+PUT {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "chinese_airport_name": ""
+}
+
+### 期望 400：{ "error": "chinese_airport_name（中文机场名）不能清空" }
+
+
+### ------------------------------------------------------------
+### 5.14 清空可选列 —— 传 null 表示清空该列（允许）
+### ------------------------------------------------------------
+PUT {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "airport_icao_code": null
+}
+
+### 期望 200，airport_icao_code 变成 null
+
+
+### ------------------------------------------------------------
+### 5.15 更新不存在的 id → 404
+### ------------------------------------------------------------
+PUT {{host}}/api/setting/airports/999999
+Content-Type: application/json
+
+{
+  "english_airport_name": "x"
+}
+
+### 期望 404：{ "error": "机场码里没有 id=999999 的记录" }
+
+
+### ------------------------------------------------------------
+### 5.16 删除（自建自删，恢复原状）
+### ------------------------------------------------------------
+DELETE {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+
+### 期望 200：{ "ok": true, "id": 68 }
+
+
+### ------------------------------------------------------------
+### 5.17 删除后再查 → 404
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports/{{newAirport.response.body.$.id}}
+
+
+### ------------------------------------------------------------
+### 5.18 收尾：总数回到 67
+### ------------------------------------------------------------
+GET {{host}}/api/setting/airports
+
+
+### ════════════════════════════════════════════════════════════
+### C. 航司码 CRUD（另一张表，同一套逻辑各自实现）
+### ════════════════════════════════════════════════════════════
+
+### ------------------------------------------------------------
+### 5.19 新增
+### ------------------------------------------------------------
+# @name newAirline
+POST {{host}}/api/setting/airlines
+Content-Type: application/json
+
+{
+  "chinese_airplane_company_name": "测试航空ZZ",
+  "airplane_company_iata_code": "QZ",
+  "airplane_company_icao_code": "QZZZ"
+}
+
+### 期望 201：{ "id": 16, "chinese_airplane_company_name": "测试航空ZZ",
+###             "airplane_company_iata_code": "QZ", "airplane_company_icao_code": "QZZZ" }
+
+
+### ------------------------------------------------------------
+### 5.20 唯一冲突 → 409
+### ------------------------------------------------------------
+POST {{host}}/api/setting/airlines
+Content-Type: application/json
+
+{
+  "chinese_airplane_company_name": "测试航空ZZ"
+}
+
+### 期望 409：{ "error": "该记录已存在（唯一约束冲突）" }
+
+
+### ------------------------------------------------------------
+### 5.21 更新
+### ------------------------------------------------------------
+PUT {{host}}/api/setting/airlines/{{newAirline.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "airplane_company_icao_code": "QZYY"
+}
+
+### 期望 200，airplane_company_icao_code 变成 QZYY
+
+
+### ------------------------------------------------------------
+### 5.22 删除 + 收尾
+### ------------------------------------------------------------
+DELETE {{host}}/api/setting/airlines/{{newAirline.response.body.$.id}}
+
+###
+GET {{host}}/api/setting/airlines

@@ -74,8 +74,9 @@ pages/
       Components/ToolBar/Components/  # InfoDisplay（★ 类型配色表 TYPE_META 在此）· DraftDropdown · PanelSwitcher
       Template/XxxFlight.jsx × 5      # 穷举法面板组（一类型一组件）
       Template/EditorTemplateJson/    # ★ 静态模板 + 视频监管数据（编译期确定，零网络，编辑器用）
-      Template/ViewTemplateJson/      # ★ 查看页用的扁平一维视图数据（5 类型 × 主/辅/视频，生成物）
     ChecklistViewer/                  # 只读查看（三个一维 CheckList：主监控/辅助监控/视频监管）
+      Components/                     # Main/Auxiliary/VideoCheckList · ViewListShell · statusView
+      ViewTemplateJson/               # ★ 查看页用的扁平一维视图数据（5 类型 × 主/辅/视频，生成物）
   ChecklistSelectPage/           # 检查单工作台（草稿箱）
   RecordsPage/                   # 填写记录（日历 dayMarkers 按创建日期统计）
   FreshGuaranteePage/            # 生鲜保障（占位，路由 /fresh）

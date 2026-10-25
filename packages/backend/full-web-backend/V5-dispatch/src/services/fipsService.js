@@ -1,182 +1,308 @@
 /**
  * ============================================================
- * fips Service —— 历史航班数据源
+ * fips —— 三张航班表共用一个 service
  * ------------------------------------------------------------
- * fips 表保存 Excel 原样导入的航班流量明细。时间字段已按用户规则
- * 在导入时解析为本地时间（UTC+8）字符串 "YYYY-MM-DD HH:mm:ss"：
- *   - 文件名 = 年月日基准
- *   - 字段 "02 23:50" 前两位为日号，day > 文件日 → 往前算（上月）
- *   - 时间映射：2024年X月 → 2026年(X+3)月
+ * 读（GET）用 ?source= 指定表，取值就是表名（= Prisma delegate 名）：
+ *   fips          历史流量明细
+ *   ecyilang      航班计划快照
+ *   manual_fips   手动添加的航班
+ * ★ source 必填 —— 缺失或非法一律 400，没有默认值。
  *
- * 列表查询规则：
- *   - 传 date：查该天；该天无数据自动回退最近一天
- *   - 传 from/to：范围查询
- *   - 不传：取最近一天
+ * 写（POST / PUT / DELETE）**只有 manual_fips 一张表**，接口不接受 source。
+ *
+ * 三张表都被 records_checklist / records_special 的外键指过来
+ * （fips_uuid / ecyilang_uuid / manual_fips_uuid，均 ON DELETE SET NULL），
+ * 所以读的时候顺手把「检查单数 / 台账数 / 是否生鲜」一起带出来。
  * ============================================================
  */
-import { query } from '../db/pool.js';
-import { airportName } from '../utils/airports.js';
+import { prisma } from '../db/prisma.js';
+import { wallDayWhere } from '../utils/date.js';
+import { badRequest, notFound } from '../utils/http.js';
+import { cleanText, isUuid, pickColumns } from '../utils/values.js';
 
-/** 标准 UUID 形状 —— fips 的主键就是随机 uuid */
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** 三张航班表（表名 = delegate 名）；只有读接口用得上 */
+const TABLES = {
+  fips: {
+    orderBy: [{ sobt: 'asc' }, { flight_no: 'asc' }],
+    // ?date= 要比的日期列：date = 真 date 列，text = 'YYYY-MM-DD HH:mm:ss' 字符串列
+    days: [['mapped_date', 'text'], ['source_date', 'text']],
+  },
+  ecyilang: {
+    orderBy: [{ d_flight_date: 'asc' }, { d_plan_time: 'asc' }],
+    days: [['d_flight_date', 'date'], ['a_flight_date', 'date']],
+  },
+  manual_fips: {
+    orderBy: [{ sobt: 'asc' }, { flight_no: 'asc' }],
+    days: [['sobt', 'text'], ['aldt', 'text']],
+  },
+};
 
-/**
- * 列表默认排序键
- * ------------------------------------------------------------
- * ⚠️ 原来是 `ORDER BY id`（= Excel 导入顺序）。2026-10-03 主键改成随机 uuid 后
- * 这个顺序不复存在，且实测**任何列组合都复现不出原顺序**，所以改为按航班时间排：
- *   先 SOBT（计划起飞，列表里的第一个时间列），再 ATOT，最后航班号定序。
- * 不用 in_out_time 当排序键 —— 它有些行的日期部分是脏的（例如 sobt 是 08-30
- * 而 in_out_time 写的是 08-01），拿它排会把航班甩到错误的位置。
- */
-const ORDER_BY_TIME = 'sobt NULLS LAST, atot NULLS LAST, flight_no';
+/** 三张航班表的名字 —— ① 校验 ?source= ② 反查 flightUuid 属于哪张表 */
+const MODELS = Object.keys(TABLES);
 
-/**
- * 获取 fips 表中最近的日期（MAX(mapped_date)）
- * @returns {Promise<string|null>} 形如 '2026-07-30'；表为空返回 null
- */
-export async function getLatestDate() {
-  const { rows } = await query('SELECT MAX(mapped_date) AS d FROM fips');
-  return rows[0]?.d || null;
+/** 唯一可写的表 */
+const MANUAL = 'manual_fips';
+
+/* ==================== 字典变体（花湖翼览展示形态，howto.md 方案 C：查询时补齐） ====================
+ * raw 源的每个名称字段在返回时带上 英文名 / IATA / ICAO，前端 fetchFlights 再按
+ * 设置页的展示形态开关（英文/中文、ICAO/IATA）挑值 —— 字典改了立即生效，不用重灌快照。
+ * ★ 英文名缺失回退中文名（COALESCE 口径）；IATA / ICAO 缺失保留原值，不拿中文名顶。
+ * ★ 字典很小（几十条），每次现查现建 Map，不做缓存。
+ * ============================================================ */
+
+/** 机场字典：中文名 → { english, iata, icao } */
+async function airportVariants() {
+  const rows = await prisma.airport_name_code.findMany();
+  return new Map(
+    rows.map((r) => [
+      String(r.chinese_airport_name ?? '').trim(),
+      {
+        english: (r.english_airport_name ?? '').trim() || null,
+        iata: r.airport_iata_code ?? null,
+        icao: r.airport_icao_code ?? null,
+      },
+    ])
+  );
 }
 
-/**
- * 鄂州机场四字码（ZHEC）—— 进港/离港判断基准
- */
-export const ZHEC = 'ZHEC';
+/** 航司字典：IATA 二字码 → ICAO 三字码（航班号 ICAO 形态用，CZ3101 → CSN3101） */
+async function airlineIcaoMap() {
+  const rows = await prisma.airplane_company_name_code.findMany();
+  return new Map(
+    rows
+      .filter((r) => r.airplane_company_iata_code && r.airplane_company_icao_code)
+      .map((r) => [r.airplane_company_iata_code, r.airplane_company_icao_code])
+  );
+}
 
-/**
- * fips 行 → 前端兼容航班对象
- * direction 语义（以鄂州 ZHEC 为基地）：
- *   - 进港：目的地机场是 ZHEC（landing_station === ZHEC）
- *   - 离港：起飞机场是 ZHEC（origin_station === ZHEC）
- * 时间为本地时间字符串（YYYY-MM-DD HH:mm:ss），直接透传
- * @param {Object} r fips 表行
- */
-export function rowToFlight(r) {
-  const isArrival = r.landing_station === ZHEC;
-  const isDeparture = r.origin_station === ZHEC;
-  // 兼容 "YYYY-MM-DD HH:mm:ss" → 前端可解析的 ISO（补 T 分隔符，按本地时间解析）
-  const norm = (s) => (s ? s.replace(' ', 'T') : null);
+/** 航班号换航司 ICAO 三字码：取前两位查航司字典（IATA 二字码可能是字母+数字，如 O3），
+ *  字典里查得到才替换，查不到原样返回 */
+function flightNoIcao(no, airlines) {
+  const s = String(no ?? '');
+  const icao = airlines.get(s.slice(0, 2));
+  return icao ? `${icao}${s.slice(2)}` : (no || null);
+}
+
+/** 一行快照补字典变体：名称字段带英文名，IATA / ICAO 用字典现值（查不到退回已存的码） */
+function withVariants(row, airports, airlines) {
+  const a = airports.get(String(row.a_name ?? '').trim()) ?? null;
+  const d = airports.get(String(row.d_name ?? '').trim()) ?? null;
   return {
-    // id 就是航班身份（随机 uuid）—— 前端拿它当 flightId / 草稿归档键
-    id: r.id,
-    uuid: r.id || null,
-    flightNo: r.flight_no,
-    origin: airportName(r.origin_station),
-    destination: airportName(r.landing_station),
-    departureTimeUtc: norm(r.atot),   // 实际起飞时间（本地）
-    landingTimeUtc: norm(r.aldt),     // 实际落地时间（本地）
-    flightDate: r.mapped_date,
-    status: '到达', // 历史航班均为已完成
-    aircraftType: r.aircraft_type,
-    flightType: '常规航班',
-    category: '货运航班',
-    // 已关联检查单：checklist_uuid 存 checklist_records.id（无则 false）
-    hasChecklist: !!r.checklist_uuid,
-    checklistId: r.checklist_uuid || null,
-    /** 进港 / 离港（以鄂州 ZHEC 为基准） */
-    direction: isArrival ? '进港' : isDeparture ? '离港' : '中转',
-    // 完整时间字段透传（SOBT/EOBT/ATOT/SIBT/ELDT/ALDT，本地时间）
-    times: {
-      inOut: norm(r.in_out_time),
-      sobt: norm(r.sobt),
-      eobt: norm(r.eobt),
-      atot: norm(r.atot),
-      sibt: norm(r.sibt),
-      eldt: norm(r.eldt),
-      aldt: norm(r.aldt),
-    },
-    // 原始字段透传（便于前端扩展展示）
-    raw: {
-      task: r.task,
-      originStation: r.origin_station,
-      destStation: r.dest_station,
-      landingStation: r.landing_station,
-      corridor: r.corridor,
-      runway: r.runway,
-      stand: r.stand,
-      sourceFile: r.source_file,
-    },
+    ...row,
+    a_name_english: a?.english ?? row.a_name ?? null,
+    d_name_english: d?.english ?? row.d_name ?? null,
+    a_name_iata_code: a?.iata ?? row.a_name_iata_code ?? null,
+    a_name_icao_code: a?.icao ?? row.a_name_icao_code ?? null,
+    d_name_iata_code: d?.iata ?? row.d_name_iata_code ?? null,
+    d_name_icao_code: d?.icao ?? row.d_name_icao_code ?? null,
+    a_flight_no_full_icao: flightNoIcao(row.a_flight_no_full, airlines),
+    d_flight_no_full_icao: flightNoIcao(row.d_flight_no_full, airlines),
   };
 }
 
-/**
- * 查询 fips 航班列表（按日期过滤，无数据自动回退最近天）
- * @param {Object} filter 过滤条件
- * @param {string} [filter.date] 精确日期 YYYY-MM-DD
- * @param {string} [filter.from] 范围起始
- * @param {string} [filter.to]   范围结束
- * @returns {Promise<{date: string|null, items: Array}>} date=实际数据日期
- */
-export async function listFlights(filter = {}) {
-  const { date, from, to } = filter;
-  let rows = [];
-  let usedDate = date || null;
+/** manual_fips 允许写入的列（= schema 里的标量字段，主键除外） */
+const MANUAL_COLUMNS = [
+  'task',
+  'flight_no',
+  'origin_station',
+  'dest_station',
+  'landing_station',
+  'in_out_time',
+  'sobt',
+  'eobt',
+  'atot',
+  'sibt',
+  'eldt',
+  'aldt',
+  'corridor',
+  'runway',
+  'stand',
+  'aircraft_type',
+  'landing_time',
+];
 
-  const queryByDate = async (d) => {
-    const r = await query(`SELECT * FROM fips WHERE mapped_date = $1 ORDER BY ${ORDER_BY_TIME}`, [d]);
-    return r.rows;
+/** 子表指向三张航班表的外键列（写入时先全部清空、再设其中一个） */
+const FK_COLUMNS = MODELS.map((model) => `${model}_uuid`);
+
+/* ==================== 读 ==================== */
+
+/** 读操作统一带的关联投影：检查单数 / 台账数 / 最新一条台账（取生鲜标记） */
+const LINK_INCLUDE = {
+  _count: { select: { checklists: true, specials: true } },
+  specials: { select: { nodes: true }, orderBy: { createTime: 'desc' }, take: 1 },
+};
+
+/** 行 → API 对象：拍平 _count，把最新台账的生鲜标记提到顶层 */
+function toApi(source, row) {
+  const { _count, specials, ...rest } = row;
+  const fresh = specials?.[0]?.nodes?.freshMark ?? null;
+  return {
+    ...rest,
+    source,
+    uuid: rest.id,
+    checklistCount: _count?.checklists ?? 0,
+    specialCount: _count?.specials ?? 0,
+    is_fresh: Boolean(fresh),
+    fresh_content: fresh,
   };
+}
 
-  if (date) {
-    rows = await queryByDate(date);
-    // 该天无数据 → 自动回退最近一天
-    if (rows.length === 0) {
-      const latest = await getLatestDate();
-      if (latest) {
-        usedDate = latest;
-        rows = await queryByDate(latest);
-      }
+/** ?source= → 表名（必填，缺失 / 非法 → 400） */
+function sourceOf(source) {
+  const name = cleanText(source);
+  if (!name) throw badRequest(`缺少 source，可选：${MODELS.join(' / ')}`);
+  if (!TABLES[name]) throw badRequest(`未知的 source「${name}」，可选：${MODELS.join(' / ')}`);
+  return name;
+}
+
+/**
+ * 航班列表
+ * @param {string} source fips / ecyilang / manual_fips（必填）
+ * @param {Object} [query] { date, from, to }
+ * @param {Object} [opts] { raw } raw=true → **不做 fips 形状映射、不带关联计数**，
+ *   原样返回快照行（含 changelog / flight_readable_id）—— 给 RawEcyilangTable 直接铺原始数据
+ */
+export async function list(source, query = {}, opts = {}) {
+  const name = sourceOf(source);
+  const cfg = TABLES[name];
+  const where = wallDayWhere(cfg.days, query);
+
+  if (opts.raw) {
+    let rows = await prisma[name].findMany({ where: where ?? undefined, orderBy: cfg.orderBy });
+    // 花湖翼览源：查询时补字典变体（英文名 / IATA / ICAO / 航班号 ICAO 形态）——
+    // 前端 fetchFlights 再按设置页的展示形态开关挑值，RawEcyilangTable / Dialog 不用感知
+    if (name === 'ecyilang') {
+      const [airports, airlines] = await Promise.all([airportVariants(), airlineIcaoMap()]);
+      rows = rows.map((r) => withVariants(r, airports, airlines));
     }
-  } else if (from || to) {
-    let sql = 'SELECT * FROM fips WHERE 1=1';
-    const params = [];
-    if (from) {
-      params.push(from);
-      sql += ` AND mapped_date >= $${params.length}`;
-    }
-    if (to) {
-      params.push(to);
-      sql += ` AND mapped_date <= $${params.length}`;
-    }
-    sql += ` ORDER BY mapped_date, ${ORDER_BY_TIME} LIMIT 1000`;
-    const r = await query(sql, params);
-    rows = r.rows;
-    usedDate = rows.length ? null : await getLatestDate();
-  } else {
-    // 无任何条件 → 最近一天
-    const latest = await getLatestDate();
-    if (latest) {
-      usedDate = latest;
-      rows = await queryByDate(latest);
-    }
+    // uuid = id 的别名：toApi 出来的行都有 uuid（Sidebar 建草稿 / URL flightUuid 都用它），
+    // raw 行也对齐，前端两条路径的选中行为一致
+    const items = rows.map((r) => ({ ...r, uuid: r.id }));
+    return { source: name, raw: true, total: items.length, items };
   }
 
-  return { date: usedDate, items: rows.map(rowToFlight) };
+  const rows = await prisma[name].findMany({
+    where: where ?? undefined,
+    orderBy: cfg.orderBy,
+    include: LINK_INCLUDE,
+  });
+
+  return {
+    source: name,
+    total: rows.length,
+    items: rows.map((row) => toApi(name, row)),
+  };
 }
 
 /**
- * 按 fips 主键查询完整一行（用于详情 Dialog，原始字段）
- * @param {string} id fips 主键 uuid（可带历史 'fips-' 前缀）
- * @returns {Promise<Object|null>} 数据库行；不存在返回 null
+ * 航班详情
+ * @param {string} source fips / ecyilang / manual_fips（必填）
+ * @param {string} id 航班 uuid
  */
-export async function getById(id) {
-  const key = String(id ?? '').trim().replace(/^fips-/, '');
-  if (!UUID_RE.test(key)) return null;
-  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [key]);
-  return rows.length ? rows[0] : null;
+export async function get(source, id) {
+  const name = sourceOf(source);
+  const key = cleanText(id);
+  if (!key || !isUuid(key)) throw notFound(`${name} 里没有这个航班：${id}`);
+  const row = await prisma[name].findUnique({ where: { id: key }, include: LINK_INCLUDE });
+  if (!row) throw notFound(`${name} 里没有这个航班：${id}`);
+  return toApi(name, row);
+}
+
+/* ==================== 写（固定 manual_fips） ==================== */
+
+/** 新增航班 */
+export async function create(body = {}) {
+  const data = pickColumns(body, MANUAL_COLUMNS);
+  // flight_no 是 NOT NULL 列
+  if (!cleanText(data.flight_no)) throw badRequest('flightNo（航班号）不能为空');
+
+  const { id } = await prisma[MANUAL].create({ data, select: { id: true } });
+  return get(MANUAL, id);
+}
+
+/** 更新航班（局部更新，没传的列不动） */
+export async function update(id, body = {}) {
+  const key = cleanText(id);
+  if (!key || !isUuid(key)) throw notFound(`${MANUAL} 里没有这个航班：${id}`);
+
+  const data = pickColumns(body, MANUAL_COLUMNS);
+  // flight_no 是 NOT NULL：显式传空表示「不改」，而不是清空
+  if ('flight_no' in data && !cleanText(data.flight_no)) delete data.flight_no;
+  if (Object.keys(data).length === 0) return get(MANUAL, key);
+
+  const { count } = await prisma[MANUAL].updateMany({ where: { id: key }, data });
+  if (!count) throw notFound(`${MANUAL} 里没有这个航班：${id}`);
+  return get(MANUAL, key);
 }
 
 /**
- * 按 fips 主键查询单个航班
- * @param {string} id fips 主键 uuid（可带历史 'fips-' 前缀）
- * @returns {Promise<Object|null>} 航班对象；不存在返回 null
+ * 删除航班
+ * ------------------------------------------------------------
+ * ★ 子表外键是 ON DELETE SET NULL：**必须先删子行，再删航班**。
+ *   反过来的话，父行一删子行的外键立刻变 NULL，后面的 deleteMany 一条都匹配不到，
+ *   留下一堆「三个外键全空」的孤儿行。
  */
-export async function getFlightById(id) {
-  const key = String(id ?? '').trim().replace(/^fips-/, '');
-  if (!UUID_RE.test(key)) return null;
-  const { rows } = await query('SELECT * FROM fips WHERE id = $1', [key]);
-  if (!rows.length) return null;
-  return rowToFlight(rows[0]);
+export async function remove(id) {
+  const key = cleanText(id);
+  if (!key || !isUuid(key)) throw notFound(`${MANUAL} 里没有这个航班：${id}`);
+  const found = await prisma[MANUAL].findUnique({ where: { id: key }, select: { id: true } });
+  if (!found) throw notFound(`${MANUAL} 里没有这个航班：${id}`);
+
+  const [checklists, specials] = await prisma.$transaction([
+    prisma.records_checklist.deleteMany({ where: { manual_fips_uuid: key } }),
+    prisma.records_special.deleteMany({ where: { manual_fips_uuid: key } }),
+    prisma[MANUAL].delete({ where: { id: key }, select: { id: true } }),
+  ]);
+  return {
+    ok: true,
+    source: MANUAL,
+    id: key,
+    checklists: checklists.count,
+    specials: specials.count,
+  };
+}
+
+/* ==================== 给 checklist / special 复用 ==================== */
+
+/**
+ * 解析子表传来的 flightUuid（航班 uuid）到底属于哪张航班表
+ * @param {string} flightUuid
+ * @returns {Promise<{source:string, fk:string, id:string}>}
+ */
+export async function resolveFlight(flightUuid) {
+  const id = cleanText(flightUuid);
+  if (!id || !isUuid(id)) throw badRequest(`flightUuid 必须是航班 uuid：${flightUuid}`);
+
+  for (const model of MODELS) {
+    const hit = await prisma[model].findUnique({ where: { id }, select: { id: true } });
+    if (hit) return { source: model, fk: `${model}_uuid`, id };
+  }
+  throw notFound(`找不到航班 ${id}`);
+}
+
+/**
+ * 外键列补丁：三个外键列全部清空，再把选中的那个设为 id
+ * → 一条记录永远只关联一个航班，不会出现「两个外键同时有值」的脏数据
+ * @param {string|null} source
+ * @param {string|null} id
+ */
+export function fkPatch(source, id) {
+  const patch = {};
+  for (const fk of FK_COLUMNS) patch[fk] = null;
+  if (source && TABLES[source]) patch[`${source}_uuid`] = id;
+  return patch;
+}
+
+/** 从一行记录反推它挂在哪个航班上（直接读三个外键列，零额外查询） */
+export function linkOf(row) {
+  const fk = FK_COLUMNS.find((column) => row?.[column]);
+  return { source: fk ? fk.replace(/_uuid$/, '') : null, flight_uuid: fk ? row[fk] : null };
+}
+
+/** 按航班 uuid 生成「只看这个航班」的 where 片段 */
+export function flightWhere(flightUuid) {
+  const id = cleanText(flightUuid);
+  if (!id) return null;
+  // 非法 uuid → 查无（而不是退化成「不过滤」）
+  return isUuid(id) ? { OR: FK_COLUMNS.map((fk) => ({ [fk]: id })) } : { id: -1 };
 }

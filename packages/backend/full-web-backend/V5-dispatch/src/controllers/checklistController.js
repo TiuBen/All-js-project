@@ -1,126 +1,57 @@
 /**
  * ============================================================
- * 检查单 Controller —— HTTP 请求处理层
- * ------------------------------------------------------------
- * 解析请求 → 调用 templateService / checklistService → 组装响应。
- * 包括两个子资源：
- *   /api/checklists/templates   模板（JSON 文件）
- *   /api/checklists/records     填写记录（PG）
+ * checklist 控制器 —— 检查单填写记录（records_checklist）
  * ============================================================
  */
-import * as templateService from '../services/templateService.js';
 import * as checklistService from '../services/checklistService.js';
 import * as uploadService from '../services/uploadService.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-
-/* ==================== 模板相关 ==================== */
+import { asyncHandler } from '../utils/http.js';
 
 /**
- * GET /api/checklists/templates
- * 检查单模板列表（元信息）
- */
-export const listTemplates = asyncHandler(async (req, res) => {
-  const items = templateService.listTemplateMeta();
-  res.json({ total: items.length, items });
-});
-
-/**
- * GET /api/checklists/templates/:id
- * 单个模板完整详情
- */
-export const getTemplate = asyncHandler(async (req, res) => {
-  const tpl = templateService.getTemplateById(req.params.id);
-  if (!tpl) {
-    return res.status(404).json({ error: 'template not found' });
-  }
-  res.json(tpl);
-});
-
-/* ==================== 填写记录相关 ==================== */
-
-/**
- * GET /api/checklists/records?flightId=&category=&date=&from=&to=
- * 查询填写记录列表
+ * GET /api/checklist?flightUuid=&callsign=&category=&date=&from=&to=
+ * @desc 填写记录列表
  */
 export const listRecords = asyncHandler(async (req, res) => {
-  const { flightId, category, date, from, to } = req.query;
-  const items = await checklistService.listRecords({
-    flightId,
-    category,
-    date,
-    from,
-    to,
-  });
-  res.json({ total: items.length, items });
+  res.json(await checklistService.list(req.query));
 });
 
 /**
- * GET /api/checklists/records/:id
- * 查询单个填写记录
+ * GET /api/checklist/:id
+ * @desc 单条填写记录（:id = 整数自增主键）
  */
 export const getRecord = asyncHandler(async (req, res) => {
-  const record = await checklistService.getRecord(req.params.id);
-  if (!record) {
-    return res.status(404).json({ error: 'record not found' });
-  }
-  res.json(record);
+  res.json(await checklistService.get(req.params.id));
 });
 
 /**
- * POST /api/checklists/records
- * **新建**填写记录（必填：flightId + checklistCategory）→ 永远 INSERT 一条新记录
- * 一个航班允许多份检查单；要改已有记录必须走 PUT /records/:id（不存在隐式 upsert）
+ * POST /api/checklist
+ * @desc 新建填写记录（永远 INSERT 一条；必填 checklistCategory）
  */
 export const createRecord = asyncHandler(async (req, res) => {
-  const { flightId, checklistCategory } = req.body;
-  if (!flightId || !checklistCategory) {
-    return res
-      .status(400)
-      .json({ error: 'flightId and checklistCategory are required' });
-  }
-  const record = await checklistService.createRecord(req.body);
-  res.status(201).json(record);
+  res.status(201).json(await checklistService.create(req.body));
 });
 
 /**
- * PUT /api/checklists/records/:id
- * **更新**填写记录（只改 id 指定的这一条；局部更新，未传字段保持原值）
+ * PUT / PATCH /api/checklist/:id
+ * @desc 更新填写记录（局部更新；已提交超 24 小时回 409）
  */
 export const updateRecord = asyncHandler(async (req, res) => {
-  const record = await checklistService.updateRecord(req.params.id, req.body);
-  if (!record) {
-    return res.status(404).json({ error: 'record not found' });
-  }
-  res.json(record);
+  res.json(await checklistService.update(req.params.id, req.body));
 });
 
 /**
- * DELETE /api/checklists/records/:id
- * **删除**填写记录（只删 id 指定的这一条）
+ * DELETE /api/checklist/:id
+ * @desc 删除填写记录
  */
 export const deleteRecord = asyncHandler(async (req, res) => {
-  const deleted = await checklistService.deleteRecord(req.params.id);
-  if (!deleted) {
-    return res.status(404).json({ error: 'record not found' });
-  }
-  res.json({ success: true });
+  res.json(await checklistService.remove(req.params.id));
 });
 
-/* ==================== 截图上传 ==================== */
-
 /**
- * POST /api/checklists/uploads?name=截图.png
- * 接收**原始二进制**（Content-Type: image/png 之类，express.raw 已解析为 Buffer），
- * 落盘到 data/uploads，返回 { url, name, type, size }。
- *
- * 前端用法：粘贴/选中的截图先在浏览器里作为 Blob 存在本地草稿（IndexedDB），
- * 提交检查单前才调本接口上传，把返回的 url 写进 checklist_records.video_supervision。
+ * POST /api/checklist/uploads?name=x.png
+ * @desc 上传检查项截图（请求体 = 图片原始二进制，见 routes 里的 express.raw）
  */
 export const uploadImage = asyncHandler(async (req, res) => {
-  const result = await uploadService.saveImage({
-    buffer: req.body,
-    type: req.headers['content-type'],
-    name: req.query.name,
-  });
+  const result = await uploadService.saveImage(req.body, req.headers['content-type'], req.query.name);
   res.status(201).json(result);
 });

@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { CHECKLIST_GROUPS } from "../../../config/specialSpec";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../../utils/cn";
 
 /**
  * ============================================================

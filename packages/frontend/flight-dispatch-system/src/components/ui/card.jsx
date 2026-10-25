@@ -1,4 +1,4 @@
-import { cn } from "../../lib/utils";
+import { cn } from "../../utils/cn";
 
 export function Card({ className, ...props }) {
     return <div className={cn("card", className)} {...props} />;

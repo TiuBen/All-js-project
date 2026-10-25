@@ -1,0 +1,190 @@
+================================================================================
+V5-dispatch 后端 —— 全部 HTTP 路由一览（按请求方法归类）
+--------------------------------------------------------------------------------
+基址      ： http://localhost:5183          （端口取 .env 的 PORT，默认 5183）
+挂载点    ： 业务路由统一在 /api 前缀下（server.js：app.use("/api", apiRouter)）
+错误体    ： 统一 JSON { "error": "说明文字" }
+?source=  ： 取值就是表名 —— fips / ecyilang / manual_fips（GET 必填，缺失 / 非法回 400）
+只读规则  ： fips、ecyilang 只提供 GET；写接口固定落到 manual_fips，不接受 source
+兜底      ： 未匹配的路径 —— 任何方法 —— 一律回 404（{ error: "route not found: ..." }）
+--------------------------------------------------------------------------------
+说明：一个资源 = 一张表；:kind = airlines | airports；:id 为整数自增主键或航班 uuid
+================================================================================
+
+
+================================================================================
+heath check
+================================================================================
+
+GET   /api/health
+      健康检查：服务存活 + PG 连接探测
+
+GET   /api/uploads/*
+      检查项截图静态托管（直接读 data/uploads 下的图片文件，不列目录、可长缓存）
+
+
+================================================================================
+fips GET的时候不能缺少source 
+================================================================================
+GET   /api/fips?source=&date=&from=&to=
+      航班列表（三个 source 共用；date 按该源航班日期过滤，支持 from/to 区间）
+
+GET   /api/fips/:id?source=
+      航班详情（:id = 航班 uuid；返回含 checklistCount / specialCount / is_fresh 的投影）
+
+POST  /api/fips
+      新增手动航班（ 只能填写到manual_fips 表）
+
+PUT   /api/fips/:id
+      更新手动航班（局部更新，只能写到manual_fips 表）
+
+DELETE /api/fips/:id
+       删除手动航班（只能在manual_fips 表操作,同一事务里先清子表检查单 / 生鲜台账，再删航班）
+
+================================================================================
+checklist
+================================================================================
+GET   /api/checklist?id=&source=&callsign=&category=&date=&from=&to=
+      检查单填写记录列表（records_checklist）
+
+GET   /api/checklist/:id
+      单条填写记录
+
+POST  /api/checklist
+      新建填写记录（必填 checklistCategory；可选 flightUuid / callsign / items…）
+
+POST  /api/checklist/uploads?name=x.png
+      上传检查项截图（请求体 = 图片原始二进制，Content-Type: image/*，上限 10mb）
+
+PUT   /api/checklist/:id
+      更新填写记录（局部更新；已提交且超过 24 小时 → 409）
+
+PATCH /api/checklist/:id
+      更新填写记录（与 PUT /api/checklist/:id 同一个 handler，语义完全相同）
+
+DELETE /api/checklist/:id
+       删除单条填写记录
+
+================================================================================
+special
+================================================================================
+
+GET   /api/special?id=&uuid=&source=&date=&from=&to=
+      生鲜保障节点台账列表（records_special；date 口径 = createTime 的北京日）
+
+GET   /api/special/:id
+      单条生鲜保障台账
+
+POST  /api/special
+      新增生鲜保障台账（必填 callsign；可选 nodes / flightUuid）
+
+PUT   /api/special/:id
+      更新生鲜保障台账（局部更新；nodes 传 null 表示清空该列）
+
+DELETE /api/special/:id
+       删除单条生鲜保障台账
+
+================================================================================
+setting
+================================================================================
+GET   /api/setting/:kind?q=
+      码表列表（kind = airlines | airports；q 模糊匹配中文名 / 英文名 / IATA / ICAO）
+
+GET   /api/setting/:kind/:id
+      单条码表记录（:id 是整数自增主键）
+
+POST  /api/setting/:kind
+      新增码表记录（必填中文名列；中文名 / IATA / ICAO 重复 → 409）
+
+PUT   /api/setting/:kind/:id
+      更新码表记录（局部更新；中文名列不允许清空）
+
+DELETE /api/setting/:kind/:id
+       删除单条码表记录
+
+★ 字段名 = 数据库原始列名（不做驼峰转换）：
+  airlines  id / chinese_airplane_company_name / airplane_company_iata_code / airplane_company_icao_code
+  airports  id / chinese_airport_name / english_airport_name / airport_iata_code / airport_icao_code
+
+★ 唯一性由数据库 UNIQUE 约束把关（每张表 3 个唯一列）：撞了 → 409
+  { "error": "该记录已存在（唯一约束冲突）" }
+  翻译发生在 server.js 的全局错误中间件（Prisma P2002 / PG 23505），service 里没有查重逻辑。
+================================================================================
+monitor —— 航班监控（每日 00:01 灌当日计划进 ecyilang → 定时增量比对 → SSE 通知）
+================================================================================
+★ 监控没有自己的表：基线 = ecyilang 里当天的数据，
+  变更流水写在 ecyilang.changelog，比对基准（hash→行）在内存，重启从库重建。
+
+GET   /api/monitor/status
+      运行态：比对间隔 / 基线时刻 / 基线条数 / 上次统计 / SSE 订阅数
+
+GET   /api/monitor/stream
+      SSE 实时订阅（前端 EventSource 直连）。
+      推送 {type:/diff/, day, totals:{now,base,diff}, added[], removed[], changed[]}
+      changed[].changes = [{ field, fieldLabel, oldValue, newValue, updateTime }]
+      另有 {type:/baseline/}（00:01 重灌当天时）与 {type:/hello/}（刚连上时）
+
+GET   /api/monitor/events?limit=
+      最近通知（内存最近 200 条；前端重连后先拉齐再订阅 SSE）
+
+POST  /api/monitor/trigger
+      手动跑一轮比对。不传 body = 拉远程；
+      传 { "rows": [ ... ] } = 离线喂样本（拿 db_seed/ecyilang/*.json 试，不碰远程）
+
+POST  /api/monitor/plan
+      手动建基线（= 重灌当天：删 ecyilang 当天旧行 → 按本轮数据重插 → 重建内存 map）
+      00:01 自动跑；这里用于补建 / 调试
+
+★ flightReadableId（用户核过，实测 18 份快照 / 1074 行单份内部 100% 唯一、0 空键）：
+    a_flight_date | a_flight_no_full | a_name | d_flight_date | d_flight_no_full | d_name
+    （日期只取 YYYY-MM-DD；**任务性质代码刻意不进键** —— 实测它会从空补成 H/Z 导致换键，
+     不进键时补全会以「变更通知」的形式报出来，语义正好）
+★ 三种事件：
+    added    本轮有、map 没有 → 插 ecyilang → 通知「新的航班计划」
+    removed  map 有、本轮没有 → 从 ecyilang 删行 → 通知「航班减少」（点名哪班）
+    changed  两边都有、属性变了 → 新值写进对应列 + changelog 追加 → 通知「航班变更」
+★ 两道防误报：本轮没有当天的航班（0 条）→ 跳过；比上一轮少超 MONITOR_DROP_RATIO_LIMIT(0.5) → 跳过。
+  不设防的话接口挂一次会把当天所有航班一次性报成「减少」并从库里删掉。
+★ 节奏（改 .env 后重启生效）：
+    MONITOR_PLAN_HOUR / MONITOR_PLAN_MINUTE   每天 00:01 重灌当日计划
+    MONITOR_INTERVAL_MINUTES                 比对间隔分钟，默认 15
+
+
+================================================================================
+user-log —— 用户登录日志（谁在什么时间登录 / 登出）
+================================================================================
+GET   /api/user-log?username=&date=&from=&to=
+      日志列表（date 口径 = login_time 的北京日；按 id 倒序，最近的在前）
+
+GET   /api/user-log/:id
+      单条日志
+
+POST  /api/user-log
+      登录（必填 username；login_time 由数据库 now() 盖，客户端不传时间）
+
+POST  /api/user-log/:id/logout
+      登出（给这一场盖 logout_time，**取服务端时间**）；已登出过 → 409
+
+DELETE /api/user-log/:id
+      删除单条日志
+
+★ 一行 = 一场登录；logout_time 为空 = 这一场还开着（人还在用）。
+★ 没有 PUT / PATCH：这张表的时间列不让改 —— 两个入口都能改就说不清「谁在岗」了。
+★ 时间列是 timestamptz（绝对时刻），返回里另补 loginDate / logoutDate（北京日）。
+
+================================================================================
+user —— 值班员花名册（检查单 / 生鲜台账的检查人、登录日志都引用它）
+================================================================================
+GET    /api/user?name=        列表（name 模糊筛；按 id 升序，id 0..39 与前端 mock 花名册同序）
+GET    /api/user/:id          单个
+POST   /api/user              新增 { "name": "张三", "telephone": "180..." }；重名 → 409
+PUT    /api/user/:id          更新（局部更新）
+DELETE /api/user/:id          删除；被检查单 / 台账 / 登录日志引用 → 409
+
+★ 检查人怎么写：
+  POST /api/checklist 与 POST /api/special 的 body 里带 "inspectorId": <user.id>
+  （显式传 null = 清空；user 里不存在 → 400）。读记录时行上带 inspector 对象
+  { id, name, telephone }，前端显示用 inspector.name。
+★ user_login_log：create 时按 username 在 user 表现解析 user_id（对不上留空不拦登录）；
+  行上同样带 user 对象。
+

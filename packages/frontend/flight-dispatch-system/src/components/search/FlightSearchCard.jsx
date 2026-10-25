@@ -10,7 +10,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import { Search, RefreshCw, X, Leaf } from 'lucide-react'
-import { cn } from '../../lib/utils'
+import { cn } from '../../utils/cn'
 
 /**
  * @param {Object} props

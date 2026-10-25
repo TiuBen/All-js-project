@@ -1,65 +1,28 @@
 /**
  * ============================================================
- * special 路由 —— URL → Controller 映射
+ * special 路由 —— 生鲜航班保障节点台账（URL → Controller 映射）
  * ------------------------------------------------------------
- * @route  /api/special
- * 生鲜航班保障节点台账（一天一个航班一份，业务自然键 = 航班号 + 归属日期）
+ * 挂载路径：/api/special，落地表 records_special（主键是整数自增）
  *
- * ⚠️ 顺序敏感：静态段（/fields、/dates、/upsert）必须写在 /:id 之前，
- *    否则 /api/special/dates 会被 /:id 当成 id='dates' 抢先匹配。
+ * 标准的 5 个 CRUD 端点，没有额外的业务子路由：
+ *   列表 / 详情 / 新增 / 更新 / 删除
  * ============================================================
  */
-import { Router } from 'express';
+import express from 'express';
 import * as specialController from '../controllers/specialController.js';
 
-const router = Router();
-
-/* ---------- 元信息（必须放在 /:id 之前） ---------- */
+const router = express.Router();
 
 /**
- * @route   GET /api/special/fields
- * @desc    字段字典（列名 → 中文含义 / 类型 / 取值说明）
- * @access  公开
- */
-router.get('/fields', specialController.getFields);
-
-/**
- * @route   GET /api/special/dates
- * @desc    每日条数（侧边栏日历徽标用）
- * @access  公开
- */
-router.get('/dates', specialController.listDateCounts);
-
-/* ---------- 按业务键（航班号 + 归属日期） ---------- */
-
-/**
- * @route   POST /api/special/upsert
- * @desc    按 (callsign, belongTime) 新增或覆盖 nodesTime —— 前端保存到台账走这里
- * @body    { callsign, belongTime, nodesTime }
- * @access  公开
- */
-router.post('/upsert', specialController.upsertRow);
-
-/**
- * @route   GET /api/special/key/:callsign/:belongTime
- * @desc    按业务键取一条（如 /api/special/key/O3182/2026-09-01）
- * @access  公开
- */
-router.get('/key/:callsign/:belongTime', specialController.getByKey);
-
-/* ---------- 通用 CRUD ---------- */
-
-/**
- * @route   GET /api/special
- * @desc    台账列表
- * @query   date / from / to / callsign
+ * @route   GET /api/special?callsign=&flightUuid=&date=&from=&to=
+ * @desc    台账列表（date 口径 = createTime 的北京日）
  * @access  公开
  */
 router.get('/', specialController.listRows);
 
 /**
  * @route   POST /api/special
- * @desc    新增（同 key 已存在返回 409，覆盖请走 /upsert）
+ * @desc    新增（永远 INSERT 一条；必填 callsign；可选 nodes / flightUuid）
  * @access  公开
  */
 router.post('/', specialController.createRow);
@@ -73,7 +36,7 @@ router.get('/:id', specialController.getRow);
 
 /**
  * @route   PUT /api/special/:id
- * @desc    更新（只更新传入字段）
+ * @desc    更新（局部更新，没传的列不动；nodes 传 null 表示清空）
  * @access  公开
  */
 router.put('/:id', specialController.updateRow);

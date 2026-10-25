@@ -384,7 +384,7 @@ import {
 import {
     useVideoCheckItem,
     useVideoCheckSetter
-} from "../../../../../store/checklistDraft";
+} from "../../../../../store/checklist.store";
 
 import useRegister from "../../hooks/useRegister";
 

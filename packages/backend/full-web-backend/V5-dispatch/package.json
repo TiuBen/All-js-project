@@ -4,27 +4,29 @@
   "type": "module",
   "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": "^20.19 || ^22.12 || >=24.0"
   },
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "db:validate": "prisma validate",
-    "db:pull": "prisma db pull",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "generate": "prisma generate"
+    "postinstall": "prisma generate",
+    "dev": "tsx watch server.js",
+    "start": "tsx server.js",
+    "relay": "node relayToServer.mjs",
+    "generate": "prisma generate",
+    "db:reset": "prisma db push --force-reset && prisma generate",
+    "db:seed": "tsx db_seed/db_seed.js",
+    "db:replay": "tsx db_seed/replayEcyilangSnapshots.js"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.3.0",
+    "@prisma/client": "7.3.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
     "morgan": "^1.10.0",
-    "pg": "^8.13.1"
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7",
-    "prisma": "catalog:prisma"
+    "prisma": "7.3.0"
   }
 }

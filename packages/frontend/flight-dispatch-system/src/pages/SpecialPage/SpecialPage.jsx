@@ -4,8 +4,8 @@ import ContentLayout from "../../Layout/ContentLayout";
 import Sidebar from "../../components/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { useDateFilterParams } from "../../store/appStore";
-import { IS_READONLY_SOURCE, FLIGHT_SOURCE_LABEL } from "../../store/flightSource";
+import { useAppStore, useDateFilterParams } from "../../store/app.store";
+import { isReadonlySource, sourceLabelOf } from "../../config/dataSource";
 import {
     useSpecialStore,
     flightKeyOf,
@@ -17,7 +17,7 @@ import { CHECKLIST_TOTAL, evaluateProcess } from "../../config/specialSpec";
 import ProcessNode from "./components/ProcessNode";
 import SpecialChecklist from "./components/SpecialChecklist";
 import SpecialDrawer from "./components/SpecialDrawer";
-import { cn } from "../../lib/utils";
+import { cn } from "../../utils/cn";
 
 /**
  * ============================================================
@@ -37,7 +37,7 @@ import { cn } from "../../lib/utils";
  *   - 展示值    = 本地填写（localStorage）优先，其次台账记录 —— 见 resolveProcessOf
  *   - 存/删台账 = ProcessNode 表头的两个小按钮（按 航班号+日期 upsert / 按主键删）
  *
- * ★ 日期口径与 /fips 一致：取 createdDate（台账行取 belongTime），
+ * ★ 日期口径与 /fips 一致：取 createdDate（台账行取后端补的 createdDate），
  *   无日期的行始终展示。
  * ★ 台账是**显式保存**的：改完时间节点不会自动回写服务端，避免误覆盖。
  * ============================================================
@@ -70,16 +70,19 @@ export default function SpecialPage() {
 
     // 日期筛选参数（与 /fips、/records 共用同一份 appStore 状态）
     const dateParams = useDateFilterParams();
+    // 当前航班数据源（appStore）—— 换源后生鲜航班跟着重拉
+    const source = useAppStore((s) => s.source);
+    const readOnly = isReadonlySource(source);
     const [keyword, setKeyword] = useState("");
     const [selectedKey, setSelectedKey] = useState(""); // 抽屉里当前查看的航班
     const [notice, setNotice] = useState(null); // 台账操作的常驻提示（手动关闭）
 
-    // 首次进入：航班源 + 台账 一起拉
+    // 首次进入 / 切换数据源：航班源 + 台账 一起拉
     useEffect(() => {
         refreshAll().catch(() => {});
-    }, [refreshAll]);
+    }, [refreshAll, source]);
 
-    // 按日期过滤（航班源生鲜 ∪ 台账）；全量取回后本地筛，与 /fips 页同套路
+    // 按日期过滤（航班源生鲜 ∪ 台账）；全量取回后**本地筛** —— 日历徽标要跨天数，不能交给后端
     const byDate = useMemo(() => {
         try {
             return rowsForDate(dateParams || {});
@@ -149,7 +152,7 @@ export default function SpecialPage() {
     const handleSaveToLedger = async (flight, proc) => {
         try {
             const row = await saveToLedger(flight, proc);
-            setNotice({ type: "ok", text: `${row.callsign}（${row.belongTime}）已存入台账` });
+            setNotice({ type: "ok", text: `${row.callsign}（${row.createdDate}）已存入台账` });
         } catch (err) {
             setNotice({ type: "err", text: `存台账失败：${err.message}` });
         }
@@ -157,10 +160,10 @@ export default function SpecialPage() {
 
     /** 删台账：按主键删除该航班这一天的记录 */
     const handleDeleteLedger = async (flight, record) => {
-        if (!window.confirm(`从台账删除 ${flight.flight_no}（${record.belongTime}）这条记录？`)) return;
+        if (!window.confirm(`从台账删除 ${flight.flight_no}（${record.createdDate}）这条记录？`)) return;
         try {
             await removeLedgerRecord(record.id);
-            setNotice({ type: "ok", text: `${flight.flight_no}（${record.belongTime}）的台账记录已删除` });
+            setNotice({ type: "ok", text: `${flight.flight_no}（${record.createdDate}）的台账记录已删除` });
         } catch (err) {
             setNotice({ type: "err", text: `删除台账失败：${err.message}` });
         }
@@ -171,10 +174,10 @@ export default function SpecialPage() {
         const noSourceFresh = freshFlights.length === 0;
         const noLedger = Object.keys(specialRecords || {}).length === 0;
         if (noSourceFresh && noLedger) {
-            return IS_READONLY_SOURCE
+            return readOnly
                 ? {
                       title: "当前数据源不含生鲜标记",
-                      desc: "航班计划快照（ecyilang）没有生鲜字段，台账（special 表）也还没有记录。用 pnpm dev（手动添加航班）给航班打上生鲜标记，或先导入台账数据。",
+                      desc: "这个数据源（fips / ecyilang）没有生鲜字段，台账（special 表）也还没有记录。到设置页把数据源切到「手动」，给航班打上生鲜标记，或先导入台账数据。",
                   }
                 : {
                       title: "还没有生鲜航班",
@@ -185,7 +188,7 @@ export default function SpecialPage() {
             title: "所选日期没有生鲜航班",
             desc: "在左侧日历换一天；日历上每天的小数字就是当天生鲜航班数（含台账记录）。",
         };
-    }, [freshFlights.length, specialRecords]);
+    }, [freshFlights.length, specialRecords, readOnly]);
 
     return (
         <ContentLayout
@@ -196,7 +199,7 @@ export default function SpecialPage() {
                     matchCount={sorted.length}
                     onRefresh={refresh}
                     searchPlaceholder="航班号 / 机型 / 停机位..."
-                    dataSource={`生鲜航班 · ${FLIGHT_SOURCE_LABEL.replace("数据源：", "")}`}
+                    dataSource={`生鲜航班 · ${sourceLabelOf(source).replace("数据源：", "")}`}
                     dayMarkers={dayMarkers}
                     stats={
                         <Card>

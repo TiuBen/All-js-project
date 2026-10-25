@@ -1,0 +1,2 @@
+a_abnormal_state,a_country_type,a_craft_seat_code,a_flight_date,a_flight_no_full,a_flight_type_code,a_jx,a_name,a_plan_time,a_state_name,a_time,d_abnormal_state,d_country_type,d_craft_seat_code,d_flight_date,d_flight_no_full,d_flight_type_code,d_jx,d_name,d_plan_time,d_state_name,d_time,k_h
+进港不正常状态,进港国内外地区,进港停机位,进港计划日期,进港航班号,进港航班任务性质,进港机型,进港起飞机场,进港航班实际/预计起飞时间,进港航班状态,进港航班实际/预计到达时间,离港不正常状态,离港国内外地区,离港停机位,离港计划日期,离港航班号,离港航班任务性质,离港机型,离港目的地机场,离港航班实际/预计起飞时间,离港航班状态,离港航班实际/预计起飞时间,客运/货运

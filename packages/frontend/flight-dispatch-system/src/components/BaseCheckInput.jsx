@@ -24,7 +24,7 @@
  *   交给 React 受控更直白。文字与图片因此统一走 props。
  *
  * ★ 二进制的归宿（与 utils/checkImage.js 的约定一致）
- *   image.blob 原样交给上层 → checklistDraft 直接 put 进 IndexedDB
+ *   image.blob 原样交给上层 → checklist.store 直接 put 进 IndexedDB
  *   （结构化克隆天然支持 Blob），**不转 Base64**；
  *   预览用的 objectURL 只活在浏览器内存里，绝不落库。
  * ============================================================
@@ -40,7 +40,7 @@
  */
 import { useRef, useState } from "react";
 import { ClipboardPaste, ImagePlus, TriangleAlert } from "lucide-react";
-import { cn } from "../lib/utils";
+import { cn } from "../utils/cn";
 import {
     filesFromClipboard,
     filesFromDataTransfer,

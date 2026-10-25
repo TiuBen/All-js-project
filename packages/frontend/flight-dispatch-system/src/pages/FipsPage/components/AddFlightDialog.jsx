@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import FlightNoInput from "../../../components/ui/FlightNoInput";
 import { Loader2, X, Plane } from "lucide-react";
+import { fipsApi } from "../../../api";
 
 /**
- * 添加 / 修改航班对话框 —— 字段对齐 fips 表数据项
+ * 添加 / 修改航班对话框 —— 落地 manual_fips 表（字段与它一一对应）
  * 时间字段为本地时间输入，标题标注（LOC 时间）
  * 布局：基础信息 + 时间信息（LOC）两个分区，两列紧凑排列
  *
@@ -149,11 +150,12 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
     setSaving(true);
     setError(null);
     try {
-      const { manualFipsApi } = await import("../../../api");
+      // 本对话框只维护 manual_fips（用户手动添加的航班）——表单字段与它一一对应。
+      // ★ 写接口不必也不能指定 source：/api/fips 的新增 / 更新固定落 manual_fips。
       if (initial?.id != null) {
-        await manualFipsApi.update(initial.id, form); // 编辑
+        await fipsApi.update(initial.id, form); // 编辑
       } else {
-        await manualFipsApi.create(form); // 新增
+        await fipsApi.create(form); // 新增
       }
       reset();
       onSaved();
@@ -234,7 +236,7 @@ export default function AddFlightDialog({ open, onClose, onSaved, initial = null
           <div className="flex items-center gap-2 text-base font-bold text-slate-800">
             <Plane size={16} className="text-primary-600" />
             {initial?.id != null ? "修改航班" : "添加航班"}
-            <span className="text-xs font-normal text-slate-400">（字段对齐 fips 表）</span>
+            <span className="text-xs font-normal text-slate-400">（字段对齐 manual_fips 表）</span>
           </div>
           <button
             onClick={handleClose}
