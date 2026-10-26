@@ -12,9 +12,7 @@
     "start": "tsx server.js",
     "relay": "node relayToServer.mjs",
     "generate": "prisma generate",
-    "db:reset": "prisma db push --force-reset && prisma generate",
-    "db:seed": "tsx db_seed/db_seed.js",
-    "db:replay": "tsx db_seed/replayEcyilangSnapshots.js"
+    "db:reset": "prisma db push --force-reset && prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.3.0",

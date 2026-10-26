@@ -16,6 +16,7 @@
  * ============================================================
  */
 import { prisma } from '../db/prisma.js';
+import { flightTypeOf } from '../config/flightTypeCode.js';
 import { wallDayWhere } from '../utils/date.js';
 import { badRequest, notFound } from '../utils/http.js';
 import { cleanText, isUuid, pickColumns } from '../utils/values.js';
@@ -65,39 +66,140 @@ async function airportVariants() {
   );
 }
 
-/** 航司字典：IATA 二字码 → ICAO 三字码（航班号 ICAO 形态用，CZ3101 → CSN3101） */
-async function airlineIcaoMap() {
+/** 航司字典：IATA 二字码 → { icao, cn, en }
+ *  航班号 ICAO 形态（O3 → CSS）与航司中英文名都从这张表来 */
+async function airlineVariants() {
   const rows = await prisma.airplane_company_name_code.findMany();
   return new Map(
     rows
-      .filter((r) => r.airplane_company_iata_code && r.airplane_company_icao_code)
-      .map((r) => [r.airplane_company_iata_code, r.airplane_company_icao_code])
+      .filter((r) => r.airplane_company_iata_code)
+      .map((r) => [
+        r.airplane_company_iata_code.trim(),
+        {
+          icao: r.airplane_company_icao_code ?? null,
+          cn: String(r.chinese_airplane_company_name ?? '').trim() || null,
+          // ★ 码表目前**没有英文名列** → 恒 null；哪天 schema 加了这列，这里自动生效，不用改代码
+          en: String(r.english_airplane_company_name ?? '').trim() || null,
+        },
+      ])
   );
 }
 
-/** 航班号换航司 ICAO 三字码：取前两位查航司字典（IATA 二字码可能是字母+数字，如 O3），
- *  字典里查得到才替换，查不到原样返回 */
-function flightNoIcao(no, airlines) {
-  const s = String(no ?? '');
-  const icao = airlines.get(s.slice(0, 2));
-  return icao ? `${icao}${s.slice(2)}` : (no || null);
+/**
+ * 拆航班号：IATA 形态（原值）+ 前两位换航司 ICAO 三字码
+ *   O36961 → 航司 O3 → CSS → icao 形态 CSS6961
+ * ★ 航司查不到时 icao 退回 IATA 原值（沿用老口径，前端切 ICAO 形态也不会空）
+ * @returns {{ iata, icao, airline_iata, airline_icao, airline_cn, airline_en }}
+ */
+function flightNoVariants(no, airlines) {
+  const iata = String(no ?? '').trim();
+  if (!iata) {
+    return { iata: null, icao: null, airline_iata: null, airline_icao: null, airline_cn: null, airline_en: null };
+  }
+  const airlineIata = iata.slice(0, 2);
+  const hit = airlines.get(airlineIata) ?? null;
+  return {
+    iata,
+    icao: hit?.icao ? `${hit.icao}${iata.slice(2)}` : iata,
+    airline_iata: airlineIata,
+    airline_icao: hit?.icao ?? null,
+    airline_cn: hit?.cn ?? null,
+    airline_en: hit?.en ?? null,
+  };
 }
 
 /** 一行快照补字典变体：名称字段带英文名，IATA / ICAO 用字典现值（查不到退回已存的码） */
 function withVariants(row, airports, airlines) {
   const a = airports.get(String(row.a_name ?? '').trim()) ?? null;
   const d = airports.get(String(row.d_name ?? '').trim()) ?? null;
+  const aNo = flightNoVariants(row.a_flight_no_full, airlines);
+  const dNo = flightNoVariants(row.d_flight_no_full, airlines);
+  const aType = flightTypeOf(row.a_flight_type_code);
+  const dType = flightTypeOf(row.d_flight_type_code);
   return {
     ...row,
+    // —— 机场：英文名 / IATA / ICAO ——
     a_name_english: a?.english ?? row.a_name ?? null,
     d_name_english: d?.english ?? row.d_name ?? null,
     a_name_iata_code: a?.iata ?? row.a_name_iata_code ?? null,
     a_name_icao_code: a?.icao ?? row.a_name_icao_code ?? null,
     d_name_iata_code: d?.iata ?? row.d_name_iata_code ?? null,
     d_name_icao_code: d?.icao ?? row.d_name_icao_code ?? null,
-    a_flight_no_full_icao: flightNoIcao(row.a_flight_no_full, airlines),
-    d_flight_no_full_icao: flightNoIcao(row.d_flight_no_full, airlines),
+    // —— 航班号：ICAO 形态 + 航司二字码 / 三字码 / 中英文名 ——
+    a_flight_no_full_icao: aNo.icao,
+    d_flight_no_full_icao: dNo.icao,
+    a_airline_iata_code: aNo.airline_iata,
+    a_airline_icao_code: aNo.airline_icao,
+    a_airline_name_cn: aNo.airline_cn,
+    a_airline_name_en: aNo.airline_en,
+    d_airline_iata_code: dNo.airline_iata,
+    d_airline_icao_code: dNo.airline_icao,
+    d_airline_name_cn: dNo.airline_cn,
+    d_airline_name_en: dNo.airline_en,
+    // —— 任务性质：中英文（代码字典见 config/flightTypeCode.js） ——
+    a_flight_type_name_cn: aType.cn,
+    a_flight_type_name_en: aType.en,
+    d_flight_type_name_cn: dType.cn,
+    d_flight_type_name_en: dType.en,
   };
+}
+
+/**
+ * 字段「对象化」：一行快照里三类标量字段换成对象，前端直接挑值渲染
+ *
+ *   d_name             → { d_name, d_name_english, d_name_iata_code, d_name_icao_code }
+ *   d_flight_no_full   → { d_flight_no_full, d_flight_no_full_icao,
+ *                          d_airline_iata_code, d_airline_icao_code,
+ *                          d_airline_name_cn, d_airline_name_en }
+ *   d_flight_type_code → { d_flight_type_code, d_flight_type_name_cn, d_flight_type_name_en }
+ *   （a_ 侧同形）
+ *
+ * ★ 必须在 withVariants **之后**跑：对象里的英文名 / 码 / 中英文名直接取它补好的扁平值，
+ *   「字典改了立即生效」只有一处实现。
+ * ★ 对象里**第一条键 = 原字段名**，值就是原来的标量 → utils/ecyilangToFips 的 pick(key)
+ *   靠 value[key] 取回标量，翻 fips 形状那条路径不用改。
+ * ★ 整侧为空（该腿不存在）时返回 null 而不是全 null 的对象 —— 保留「空 = 无数据」语义，
+ *   否则前端 / ecyilangToFips 判「这一侧有没有航班」会把空对象当真值。
+ * ★ 扁平变体（d_name_english / d_flight_no_full_icao …）仍留在行上，老字段随时可退。
+ * @param {Object} row withVariants 之后的快照行
+ */
+function nestVariants(row) {
+  /** 组对象：全空 → null */
+  const pack = (obj) =>
+    Object.values(obj).every((v) => v === null || v === '') ? null : obj;
+
+  const airport = (s) =>
+    pack({
+      [`${s}_name`]: row[`${s}_name`] || null,
+      [`${s}_name_english`]: row[`${s}_name_english`] || null,
+      [`${s}_name_iata_code`]: row[`${s}_name_iata_code`] || null,
+      [`${s}_name_icao_code`]: row[`${s}_name_icao_code`] || null,
+    });
+
+  const flightNo = (s) =>
+    pack({
+      [`${s}_flight_no_full`]: row[`${s}_flight_no_full`] || null,
+      [`${s}_flight_no_full_icao`]: row[`${s}_flight_no_full_icao`] || null,
+      [`${s}_airline_iata_code`]: row[`${s}_airline_iata_code`] || null,
+      [`${s}_airline_icao_code`]: row[`${s}_airline_icao_code`] || null,
+      [`${s}_airline_name_cn`]: row[`${s}_airline_name_cn`] || null,
+      [`${s}_airline_name_en`]: row[`${s}_airline_name_en`] || null,
+    });
+
+  const task = (s) =>
+    pack({
+      [`${s}_flight_type_code`]: row[`${s}_flight_type_code`] || null,
+      [`${s}_flight_type_name_cn`]: row[`${s}_flight_type_name_cn`] || null,
+      [`${s}_flight_type_name_en`]: row[`${s}_flight_type_name_en`] || null,
+    });
+
+  const out = { ...row };
+  for (const s of ['d', 'a']) {
+    out[`${s}_name`] = airport(s);
+    out[`${s}_flight_no_full`] = flightNo(s);
+    out[`${s}_flight_type_code`] = task(s);
+  }
+  return out;
 }
 
 /** manual_fips 允许写入的列（= schema 里的标量字段，主键除外） */
@@ -160,7 +262,10 @@ function sourceOf(source) {
  * @param {string} source fips / ecyilang / manual_fips（必填）
  * @param {Object} [query] { date, from, to }
  * @param {Object} [opts] { raw } raw=true → **不做 fips 形状映射、不带关联计数**，
- *   原样返回快照行（含 changelog / flight_readable_id）—— 给 RawEcyilangTable 直接铺原始数据
+ *   原样返回快照行（含 changelog / flight_readable_id）—— 给 RawEcyilangTable 直接铺原始数据；
+ *   ecyilang 的 raw 行**一律**做字典变体 + 对象化（无开关）：
+ *   d_name / a_name = 机场四件套，d_flight_no_full / a_flight_no_full = 航班号对象（含航司中英文），
+ *   d_flight_type_code / a_flight_type_code = 任务性质对象（含中英文）
  */
 export async function list(source, query = {}, opts = {}) {
   const name = sourceOf(source);
@@ -169,11 +274,11 @@ export async function list(source, query = {}, opts = {}) {
 
   if (opts.raw) {
     let rows = await prisma[name].findMany({ where: where ?? undefined, orderBy: cfg.orderBy });
-    // 花湖翼览源：查询时补字典变体（英文名 / IATA / ICAO / 航班号 ICAO 形态）——
-    // 前端 fetchFlights 再按设置页的展示形态开关挑值，RawEcyilangTable / Dialog 不用感知
+    // 花湖翼览源：查询时补字典变体（英文名 / IATA / ICAO / 航班号 ICAO 形态 / 任务性质中英文）
+    // 再把三类字段对象化 —— 前端拿到就能直接挑值，不用自己拼
     if (name === 'ecyilang') {
-      const [airports, airlines] = await Promise.all([airportVariants(), airlineIcaoMap()]);
-      rows = rows.map((r) => withVariants(r, airports, airlines));
+      const [airports, airlines] = await Promise.all([airportVariants(), airlineVariants()]);
+      rows = rows.map((r) => nestVariants(withVariants(r, airports, airlines)));
     }
     // uuid = id 的别名：toApi 出来的行都有 uuid（Sidebar 建草稿 / URL flightUuid 都用它），
     // raw 行也对齐，前端两条路径的选中行为一致

@@ -21,10 +21,15 @@ import { asyncHandler } from "../utils/http.js";
  * @desc 航班列表（source 必填）
  *       source=ecyilang 时把快照行翻成 fips 形状（一行变一离一进两条腿）；
  *       raw=1 时**跳过转换**，原样返回快照行（含 changelog / flight_readable_id）
- *       —— 给 RawEcyilangTable 直接铺原始数据，不做 atot 等映射
+ *       —— 给 RawEcyilangTable 直接铺原始数据，不做 atot 等映射。
+ *       raw=1 且 source=ecyilang 时，机场 / 航班号 / 任务性质三类字段**固定**是对象
+ *       （机场 { cn,en,iata,icao } 四件套、航班号含 ICAO 形态与航司中英文、任务性质含中英文），
+ *       前端直接挑值渲染；开关已去掉，行为恒定。
  */
 export const listFlights = asyncHandler(async (req, res) => {
-    const data = await fipsService.list(req.query.source, req.query, { raw: req.query.raw === "1" });
+    const data = await fipsService.list(req.query.source, req.query, {
+        raw: req.query.raw === "1",
+    });
     if (!data.raw && data.source === "ecyilang") {
         data.items = ecyilangToFips(data.items);
         data.total = data.items.length; // 翻完 total 是「腿数」，跟 items 对齐

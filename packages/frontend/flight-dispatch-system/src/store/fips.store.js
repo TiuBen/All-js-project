@@ -497,3 +497,6 @@ export async function fetchFlightRows() {
     const d = await fipsApi.list();
     return d?.items || [];
 }
+
+
+C:\Users\HJW-AMD-PRP\Documents\GitHub\All-js-project\packages\frontend\flight-dispatch-system\src\store\fips.store.js  因为其实我前端的数据都是从fetchFlights 这里面获取的 ,在

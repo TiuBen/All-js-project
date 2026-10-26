@@ -38,27 +38,43 @@ bash import_flight_dispatch.sh
 2. 执行 SQL 导入（建表 + 数据）
 3. 打印三张表的行数验证是否导入成功
 
-## 如果服务器是 Windows
+## 在 Windows 上导入
 
-把 `flight_dispatch.sql` 放到任意目录，然后：
+`.sh` 在 Windows 上跑不了，同目录另配了两个等价文件：
+
+| 文件 | 用途 |
+|---|---|
+| `import_flight_dispatch.ps1` | Windows 主脚本（逻辑同 `.sh`，多了安全检查） |
+| `import_flight_dispatch.cmd` | 双击运行入口（内部调 `.ps1`） |
 
 ```powershell
-# 在 PG 的 bin 目录（如 C:\Program Files\PostgreSQL\18\bin）执行：
-$env:PGPASSWORD = "你的密码"
-$env:PGCLIENTENCODING = "UTF8"
+# 方式一：直接双击 import_flight_dispatch.cmd（会提示输入密码）
 
-# 建库（不存在才建）
-psql -U postgres -h 127.0.0.1 -p 5432 -d postgres -c "SELECT 1 FROM pg_database WHERE datname='flight_dispatch'" | findstr "1" || psql -U postgres -h 127.0.0.1 -p 5432 -d postgres -c "CREATE DATABASE flight_dispatch ENCODING 'UTF8'"
-
-# 导入（务必用 < 重定向方式，用 -f 会在中文编码上出错）
-psql -U postgres -h 127.0.0.1 -p 5432 -d flight_dispatch < D:\flight_dispatch.sql
+# 方式二：在 PowerShell 里指定参数（推荐导到新库，不动现有 flight_dispatch）
+cd "V5-dispatch\data\flight_dispatch_export"
+.\import_flight_dispatch.ps1 -DbName flight_dispatch_restore -PgPassword admin
 ```
 
-> ⚠️ 经验：Windows 下 `psql -f 文件` 会用系统 GBK 编码读 UTF-8 文件导致报错（`无效的 UTF8 编码字节顺序`），
-> 用 `<` 重定向 + `PGCLIENTENCODING=UTF8` 即可正常导入（已在本地完整验证：flights 10310 / fips 10300 / checklist_records 4）。
+参数：`-PgHost -PgPort -PgUser -PgPassword -DbName -SqlFile -Force`
+（密码留空时依次尝试 `$env:PGPASSWORD` → 后端 `.env` 的 `PG_PASSWORD` → 交互输入）
+
+脚本做了什么：
+1. 自动定位 `psql.exe`（PATH 里没有就去 `C:\Program Files\PostgreSQL\*\bin` 找）
+2. 库不存在则 `CREATE DATABASE ... ENCODING 'UTF8'`
+3. **目标库已有表时默认拒绝**（否则 `COPY` 会把 10300 行再追加一遍，fips 变两万行）→ 真要灌加 `-Force`
+4. `PGCLIENTENCODING=UTF8` + `ON_ERROR_STOP=1` 导入：避免 GBK 读文件报「无效的 UTF8 编码字节顺序」，且任何一条 SQL 出错立即中断
+5. 打印各表行数（`pg_stat` 估算 + `count(*)` 精确复核）
+
+实测结果（本地 PG 18.3）：`flights` 10310 / `fips` 10300 / `checklist_records` 4，中文无乱码，耗时 < 1 秒。
+
+> ⚠️ 已知坑：Windows PowerShell 5.1 把参数交给原生 exe 时按系统 ANSI(GBK) 转码，所以**不要**在 `psql -c "..."`
+> 的 SQL 里写中文列别名，会报「无效的 UTF8 编码字节顺序」。脚本里已全部改用英文别名。
 
 ## 注意事项
 
-- 服务器 PostgreSQL 版本建议 ≥ 12（导出自 18.3，向下兼容较好；若服务器版本过低，`CREATE TABLE`/`COPY` 语法依然兼容）
-- 如果服务器上 `psql` 命令不在 PATH：Ubuntu/Debian 用 `sudo apt install postgresql-client`，CentOS 用 `sudo yum install postgresql`，或直接用 PG 安装目录下的 bin
-- 导入后，后端 `.env` 连接配置需指向服务器数据库（如 `PG_HOST=服务器地址`、`PG_PASSWORD=实际密码`），并确认服务器安全组放通 5432 端口
+- PostgreSQL 版本建议 ≥ 12（导出自 18.3）
+- 若 `psql` 不在 PATH：装 PostgreSQL 客户端，或直接用安装目录下的 `bin`
+- 导入后，后端 `.env` 的 `PG_DATABASE` / `DATABASE_URL` 要改指向目标库；连云服务器还要放通 5432 端口
+- ⚠️ 本转储是**旧结构**：只有 `flights` / `fips` / `checklist_records` 三张表、整数主键（`checklist_records.flight_id` 为 `fips-10217` 这类字符串）。
+  现在后端 `prisma/schema.prisma` 已经是 uuid 主键 + `records_checklist` / `records_special` / `manual_fips` / `ecyilang` / `user` 等表，
+  **导入这份 SQL 并不能让当前后端跑起来**，只适合当作历史数据查看/迁移源。

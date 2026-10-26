@@ -282,7 +282,10 @@ export function ecyilangToFips(rows) {
          *   （见 utils/date.js），不转就差 8 小时；其余列（航班号 / 机场码 / created_at）原样返回。
          */
         const pick = (key) => {
-            const value = row[key]
+            let value = row[key]
+            // ★ raw 行已被 service 对象化：d_name / d_flight_no_full / d_flight_type_code
+            //   的值是对象，对象里第一条键就是原字段名 → value[key] 取回标量
+            if (value && typeof value === 'object') value = value[key] ?? null
             if (value === null || value === undefined || value === '') return null
             if (key.endsWith('_flight_date')) return wallDay(value) // → '2026-09-29'
             if (key.endsWith('_time')) return wallMinute(value) // → '2026-09-29 03:00'
