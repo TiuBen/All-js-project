@@ -21,11 +21,10 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { Card, CardContent } from "../../../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import FlightSearchCard from "../../../components/search/FlightSearchCard";
+import { Search, RefreshCw, X, Eye, Pencil, Trash2 } from "lucide-react";
 import Calendar from "../../../components/search/Calendar";
-import { Eye, Pencil, Trash2 } from "lucide-react";
 import { countAbnormal, useRecordsStore } from "../../../store/records.store";
 
 export default function RecordsSidebar() {
@@ -70,14 +69,44 @@ export default function RecordsSidebar() {
 
     return (
         <>
-            <FlightSearchCard
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                matchCount={visible.length}
-                dataSource="数据源：检查单填写记录"
-                placeholder="航班号 / 机型 / 检查人..."
-                onRefresh={refresh}
-            />
+            {/* 搜索卡（内联，直连 records.store）：筛的是检查单记录不是航班表，
+                所以不复用 fips 版 FlightSearchCard（那个绑定 fips.store） */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>航班搜索</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="relative">
+                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            className="input pl-8 text-xs"
+                            placeholder="航班号 / 机型 / 检查人..."
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                        />
+                        {keyword && (
+                            <button
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                onClick={() => setKeyword("")}
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
+                    </div>
+
+                    {keyword && (
+                        <div className="text-[11px] text-slate-500">
+                            匹配 <b className="text-primary-600">{visible.length}</b> 条
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                        <span className="text-[11px] text-slate-400">数据源：检查单填写记录</span>
+                        <Button size="sm" variant="outline" onClick={refresh}>
+                            <RefreshCw size={13} /> 刷新
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Calendar dayMarkers={dayMarkers} />
 

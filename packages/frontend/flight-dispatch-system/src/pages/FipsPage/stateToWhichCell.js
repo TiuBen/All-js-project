@@ -91,6 +91,24 @@ const timeCell = (iso, baseDay) => {
 };
 
 /**
+ * 关键词过滤（整条数据为单位：到 / 离任一格的任一值命中就整条保留）。
+ * ★ 表格（RawEcyilangTable）与搜索卡（FlightSearchCard 的「匹配 N 条」）共用，
+ *   两处口径必须一致；放在本文件是因为它只依赖 cellsOf。
+ * @param {Object} row 一行原始快照（已过 resolveObjectFields 的行也适用）
+ * @param {string} keyword
+ */
+export function matchKeyword(row, keyword) {
+    const kw = keyword.trim().toLowerCase();
+    if (!kw) return true;
+    const { a, d } = cellsOf(row);
+    // __search = resolveObjectFields 拼的「全部变体文本」（中文名 / 英文名 / IATA / ICAO）——
+    // 展示只显示一种形态，搜索仍要能命中任意形态
+    const extra = String(row?.__search ?? "").toLowerCase();
+    if (extra && extra.includes(kw)) return true;
+    return [a, d].some((cells) => Object.values(cells).some((v) => v != null && String(v).toLowerCase().includes(kw)));
+}
+
+/**
  * ★ 一行 ecyilang 快照 → 两腿的格子（到 = a，离 = d），每条腿都是 14 个格子的完整对象。
  *   一条快照在表里就是两行（到 / 离），所以这里一次把两行都算好，组件直接照着摆。
  *

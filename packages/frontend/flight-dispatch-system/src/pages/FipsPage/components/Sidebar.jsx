@@ -4,14 +4,12 @@ import { Card, CardContent } from "../../../components/ui/card";
 import FlightSearchCard from "../../../components/search/FlightSearchCard";
 import Calendar from "../../../components/search/Calendar";
 import { Plus, Pencil, Trash2, Leaf, Ban, Lock, FileText } from "lucide-react";
-import { useFipsStore } from "../../../store/fips.store";
 import { useSidebarStore } from "../../../store/sidebar.store";
 import { useChecklistStore, TYPE_ORDER } from "../../../store/checklistEditorPage.store";
 import { useDraftStore, draftFullHint } from "../../../store/checklistDraft.store";
 import { useAppStore } from "../../../store/app.store";
 import {
     isReadonlySource,
-    sourceLabelOf,
     sourceNameOf,
     templateKeyOf,
     TEMPLATE_TYPE_BY_KEY,
@@ -44,8 +42,7 @@ const SELECT_HINT = "请先点击表格中的一行选中航班";
 export default function Sidebar() {
     const navigate = useNavigate();
 
-    // 搜索 / 过滤 / 列表（搜索词与生鲜筛选住在 store，切页返回时还在）
-    const { keyword, setKeyword, flights, freshOnly, setFreshOnly, freshCount, fetchFlights } = useFipsStore();
+    // 搜索卡的筛选状态已经搬到 FlightSearchCard 内部（直连 fips.store），这里不再订阅
     // 选中行 + 行操作 + 对话框（动作都在 sidebar.store，这里只负责点按钮和确认框）
     const { selectedFlight, openAdd, openEdit, removeSelected, markSelectedFresh, unmarkSelectedFresh } =
         useSidebarStore();
@@ -143,16 +140,7 @@ export default function Sidebar() {
 
     return (
         <aside className="flex shrink-0 flex-col gap-2 overflow-y-auto" style={{ width: 320 }}>
-            <FlightSearchCard
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                matchCount={flights.length}
-                dataSource={sourceLabelOf(source)}
-                onRefresh={fetchFlights}
-                freshFilter={freshOnly}
-                freshCount={freshCount}
-                onFreshToggle={() => setFreshOnly(!freshOnly)}
-            />
+            <FlightSearchCard />
 
             <Calendar />
 

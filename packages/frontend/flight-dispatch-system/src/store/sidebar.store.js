@@ -100,7 +100,9 @@ export const useSidebarStore = create((set, get) => ({
         // 动态 import：断开与 specialStore 的静态互指环（见文件头注释）
         const { useSpecialStore } = await import("./specialStore");
         await useSpecialStore.getState().markFresh(selectedFlight);
-        await useFipsStore.getState().fetchFlights();
+        // bump 数据版本：store 重拉（FipsPage 的 effect 挂在 dataVersion 上）+ 原始快照表自拉都刷新，
+        // 否则「只看生鲜」筛的是标记前的旧行（is_fresh 还是 false）
+        useFipsStore.getState().bumpDataVersion();
     },
 
     /** 取消生鲜标记 */
@@ -109,6 +111,6 @@ export const useSidebarStore = create((set, get) => ({
         if (!selectedFlight) return;
         const { useSpecialStore } = await import("./specialStore");
         await useSpecialStore.getState().unmarkFresh(selectedFlight);
-        await useFipsStore.getState().fetchFlights();
+        useFipsStore.getState().bumpDataVersion();
     },
 }));

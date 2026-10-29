@@ -64,6 +64,10 @@ export function dateKeyOf(flight) {
     return (
         flight.createdDate ||
         flight.flightDate ||
+        // fips 形状的腿行：ecyilang 的 a/d_flight_date 映射到 mapped_date（'YYYY-MM-DD'）。
+        // ★ 缺了它腿行就没有日期 → 特殊页去重（同航班号+日期）匹配不上台账，一架飞机会渲染两列
+        flight.mapped_date ||
+        flight.flight_date ||
         (flight.created_at ? dayjs(flight.created_at).format('YYYY-MM-DD') : '') ||
         ''
     )
@@ -239,9 +243,15 @@ export function flightOfRecord(record) {
 export function mergePageRows(freshFlights = [], records = {}) {
     const rows = [...freshFlights]
     const seen = new Set(rows.map((f) => indexKeyOf(f.flight_no, dateKeyOf(f))))
+    // 航班源里**没有日期**的行（快照缺日期时）→ 只按航班号兜底，
+    // 否则同一条台账会被判成「航班源没有」再补一列，一架飞机渲染出两列
+    const noDay = new Set(
+        rows.filter((f) => !dateKeyOf(f)).map((f) => indexKeyOf(f.flight_no, ''))
+    )
     Object.values(records).forEach((r) => {
         const k = indexKeyOf(r.callsign, r.createdDate)
         if (!k || seen.has(k)) return
+        if (noDay.has(indexKeyOf(r.callsign, ''))) return
         seen.add(k)
         rows.push(flightOfRecord(r))
     })

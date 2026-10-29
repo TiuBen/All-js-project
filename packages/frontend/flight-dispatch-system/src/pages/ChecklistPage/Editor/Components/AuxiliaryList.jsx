@@ -299,7 +299,8 @@ export function AuxiliaryItem({ node, disabled = false, className = "", keyPrefi
                                     flushItem(itemKey);
                                 }
                             }}
-                            className="block w-full resize-y border-0 bg-transparent px-2.5 py-2 text-[12px] leading-relaxed text-slate-600 outline-none placeholder:text-slate-400 focus:ring-0 disabled:cursor-not-allowed disabled:text-slate-500"
+                            className="block w-full resize-y border-0 bg-transparent px-2.5 py-2 text-[12px] leading-relaxed text-slate-600 outline-none placeholder:text-slate-400 focus:ring-0 disabled:cursor-not-allowed disabled:text-slate-500 "
+                            style={{ fieldSizing: "content", minHeight: "2lh" }}
                         />
 
                         {/* ============ 图片预览区（点缩略图放大，× 删除） ============ */}

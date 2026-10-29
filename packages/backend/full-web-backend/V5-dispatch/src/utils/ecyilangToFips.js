@@ -285,7 +285,9 @@ export function ecyilangToFips(rows) {
             let value = row[key]
             // ★ raw 行已被 service 对象化：d_name / d_flight_no_full / d_flight_type_code
             //   的值是对象，对象里第一条键就是原字段名 → value[key] 取回标量
-            if (value && typeof value === 'object') value = value[key] ?? null
+            //   ⚠️ Date 也是 object —— 不能跟着剥！否则 *_flight_date / *_time / created_at
+            //   全被剥成 null，腿行永远没有日期（特殊页去重、日期过滤一起失效）
+            if (value && typeof value === 'object' && !(value instanceof Date)) value = value[key] ?? null
             if (value === null || value === undefined || value === '') return null
             if (key.endsWith('_flight_date')) return wallDay(value) // → '2026-09-29'
             if (key.endsWith('_time')) return wallMinute(value) // → '2026-09-29 03:00'
@@ -331,12 +333,38 @@ export function ecyilangToFips(rows) {
             out.uuid = row.id // 原始快照行 uuid（同行的两条腿相同）
             out.checklistCount = row.checklistCount ?? 0
             out.specialCount = row.specialCount ?? 0
-            out.is_fresh = Boolean(row.is_fresh)
-            out.fresh_content = row.fresh_content ?? null
+            // ★ 生鲜**按腿**：一条快照的进港 / 离港是两件事，只认该腿自己被标记。
+            //   台账 callsign 存的是库里原始航班号（O37078），历史也可能存过 ICAO 形态
+            //   （CSS37078）—— 两种形态都认，否则标记了却判不出来。
+            const legFresh = legIsFresh(row.fresh_callsigns, out[FIPS_KeyNames.flight_no])
+            out.is_fresh = legFresh
+            out.fresh_content = legFresh ? (row.fresh_content ?? null) : null
             // ★ id 要**按腿唯一**：两条腿共用一个 uuid，前端拿 id 当 key 与选中态，
             //   不拆开的话两行会同时高亮、React 还会告警重复 key
             out.id = `${row.id}:${side}`
             return out
         })
+    })
+}
+
+/** 航班号归一：去空格 + 大写（台账和快照两侧的空格 / 大小写都可能不一致） */
+const normNo = (value) => String(value ?? '').trim().toUpperCase()
+
+/**
+ * 这条腿是否被标了生鲜
+ * @param {string[]} callsigns 该快照已标生鲜的台账航班号（service 的 fresh_callsigns）
+ * @param {string} legNo 该腿的航班号（d_flight_no_full / a_flight_no_full）
+ * @returns {boolean}
+ */
+export function legIsFresh(callsigns, legNo) {
+    const leg = normNo(legNo)
+    if (!leg) return false
+    const legDigits = leg.replace(/^[A-Z]+/, '')
+    return (callsigns ?? []).some((c) => {
+        const k = normNo(c)
+        if (!k) return false
+        if (k === leg) return true
+        // 兜底：字母前缀不同但数字部分相同 = 同一班（ICAO 形态 CSS37078 ↔ IATA 形态 O37078）
+        return legDigits.length > 1 && k.replace(/^[A-Z]+/, '') === legDigits
     })
 }

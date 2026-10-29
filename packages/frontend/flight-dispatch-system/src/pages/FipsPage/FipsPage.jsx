@@ -9,6 +9,7 @@ import { useAppStore, dateFilterKeyOf } from "../../store/app.store";
 import { Loader2, Leaf, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { cn } from "../../utils/cn";
 import ContentLayout from "../../Layout/ContentLayout";
+import { API_BASE } from "../../api";
 
 /** 本场四字码 → 中文名（远端机场直接展示原值） */
 const STATION_LABEL = { [LOCAL_STATION]: "鄂州" };
@@ -47,7 +48,8 @@ const fmtTime = (t) => {
  */
 export default function FipsPage() {
     // ---- 分片 A：航班数据（已过滤 + 已排序，直接渲染）----
-    const { flights, depFlights, arrFlights, loading, error, fetchFlights } = useFipsStore();
+    const { flights, depFlights, arrFlights, loading, error, fetchFlights, dataVersion, bumpDataVersion } =
+        useFipsStore();
     // ---- 分片 B：视图 + 三套表头（{ source, columns }，列的显隐 / 顺序 / 排序都在里面）----
     const { viewMode, allHeader, depHeader, arrHeader, toggleSort } = useFipsStore();
     // ---- 分片 C：选中行 + 添加 / 修改对话框（与侧栏共用，动作在 sidebar.store）----
@@ -61,12 +63,35 @@ export default function FipsPage() {
     // 每张表当前要渲染的列 = 该表 columns 里没被隐藏的列（顺序沿用数组顺序）
     const columnsOf = (view) => visibleColumns({ all: allHeader, dep: depHeader, arr: arrHeader }[view]);
 
-    // 进页面 / 换数据源 / 换日期各拉一次（日期参数由 fetchFlights 从 app.store 自己拼）
-    // ★ source=ecyilang 时表格区换成 RawEcyilangTable（组件自己拉原始快照），这里不用再拉 fips 形状
+    // 进页面 / 换数据源 / 换日期 / 监控推来变化（dataVersion +1）各拉一次
+    //   日期参数由 fetchFlights 从 app.store 自己拼
+    // ★ source=ecyilang 也拉：表格区虽然由 RawEcyilangTable 自己渲染原始快照，但
+    //   搜索卡「匹配 N 条」与生鲜计数要用 store.rows（两条路径同一份后端数据）
     useEffect(() => {
-        if (source === "ecyilang") return;
         fetchFlights().catch(() => {});
-    }, [fetchFlights, source, dateKey]);
+    }, [fetchFlights, source, dateKey, dataVersion]);
+
+    /**
+     * 监控 SSE：后端每 15 分钟比对一次，**有新变化才推** diff 事件
+     *   { type: 'diff', added, removed, changed }   → 新增 / 减少 / 变更
+     *   { type: 'baseline', ... }                   → 当天 00:01 重灌 / 补建基线
+     *   { type: 'hello', ... }                      → 握手，不是变化，忽略
+     * 收到有变化的推送 → dataVersion +1 → 上面那个 effect 重拉，表格自动刷新。
+     * ★ 心跳是 SSE 注释行（": ping"），不会触发 onmessage。
+     */
+    useEffect(() => {
+        const es = new EventSource(`${API_BASE}/monitor/stream`);
+        es.onmessage = (ev) => {
+            let msg = null;
+            try {
+                msg = JSON.parse(ev.data);
+            } catch {
+                return; // 非 JSON 一律忽略
+            }
+            if (msg?.type === "diff" || msg?.type === "baseline") bumpDataVersion();
+        };
+        return () => es.close();
+    }, [bumpDataVersion]);
 
     // 日期或数据源变更后清空选中行：换了源再显示上一套航班号是不对的
     useEffect(() => {

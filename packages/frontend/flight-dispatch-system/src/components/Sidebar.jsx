@@ -1,7 +1,7 @@
-import { Card, CardContent } from "./ui/card";
-import FlightSearchCard from "./search/FlightSearchCard";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import Calendar from "./search/Calendar";
-import { Lock } from "lucide-react";
+import { Search, RefreshCw, X, Lock } from "lucide-react";
+import { Button } from "./ui/button";
 
 /**
  * ============================================================
@@ -9,7 +9,9 @@ import { Lock } from "lucide-react";
  * ------------------------------------------------------------
  * 形态取自航班列表页原有的私有 Sidebar，提到 components/ 下复用：
  *
- *   ┌ 航班搜索卡（FlightSearchCard，含数据源 / 刷新 / 生鲜筛选）
+ *   ┌ 搜索卡（内联输入框：吃本组件的 keyword / onKeywordChange props ——
+ *   │   数据对象由页面自定，如 SpecialPage 筛的是自己的生鲜列表，不走 fips.store；
+ *   │   航班列表页用的是 fips 版 Sidebar + 零 props 的 FlightSearchCard）
  *   ├ 日期选择卡（Calendar，可在每天右上角显示数量徽标）
  *   ├ 操作卡（actions 插槽）—— 或只读提示
  *   ├ 统计卡（stats 插槽，页面自备 Card）
@@ -22,9 +24,6 @@ import { Lock } from "lucide-react";
  * @param {()=>void} [onRefresh]                    刷新
  * @param {string}   [searchPlaceholder]            搜索框占位符
  * @param {string}   [dataSource]                   数据源说明（搜索卡左下角）
- * @param {boolean}  [freshFilter]                  生鲜筛选是否激活
- * @param {number}   [freshCount]                   生鲜航班数
- * @param {()=>void} [onFreshToggle]                点击生鲜 Badge（不传则不显示 Badge）
  * @param {Object}   [dayMarkers]                   日历每天的小数字：{ 'YYYY-MM-DD': { count, tone? } }
  * @param {string}   [calendarTitle]                日期卡标题
  * @param {string}   [notice]                       日期卡提示文案
@@ -42,9 +41,6 @@ export default function Sidebar({
     onRefresh,
     searchPlaceholder = "航班号 / 城市 / 机型...",
     dataSource,
-    freshFilter = false,
-    freshCount = 0,
-    onFreshToggle,
     dayMarkers,
     calendarTitle = "日期选择",
     notice,
@@ -56,17 +52,47 @@ export default function Sidebar({
 }) {
     return (
         <>
-            <FlightSearchCard
-                keyword={keyword}
-                onKeywordChange={onKeywordChange}
-                matchCount={matchCount}
-                placeholder={searchPlaceholder}
-                dataSource={dataSource}
-                onRefresh={onRefresh}
-                freshFilter={freshFilter}
-                freshCount={freshCount}
-                onFreshToggle={onFreshToggle}
-            />
+            {/* 搜索卡（内联：筛选对象由页面决定，不吃 fips.store —— 那是 FlightSearchCard 的事） */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>航班搜索</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="relative">
+                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            className="input pl-8 text-xs"
+                            placeholder={searchPlaceholder}
+                            value={keyword}
+                            onChange={(e) => onKeywordChange(e.target.value)}
+                        />
+                        {keyword && (
+                            <button
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                onClick={() => onKeywordChange('')}
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
+                    </div>
+
+                    {keyword && matchCount !== undefined && (
+                        <div className="text-[11px] text-slate-500">
+                            匹配 <b className="text-primary-600">{matchCount}</b> 条
+                        </div>
+                    )}
+                    {(dataSource || onRefresh) && (
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+                            <span className="text-[11px] text-slate-400">{dataSource}</span>
+                            {onRefresh && (
+                                <Button size="sm" variant="outline" onClick={onRefresh}>
+                                    <RefreshCw size={13} /> 刷新
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <Calendar title={calendarTitle} dayMarkers={dayMarkers} notice={notice} />
 

@@ -16,7 +16,6 @@
  * ============================================================
  */
 import { prisma } from '../db/prisma.js';
-import { flightTypeOf } from '../config/flightTypeCode.js';
 import { wallDayWhere } from '../utils/date.js';
 import { badRequest, notFound } from '../utils/http.js';
 import { cleanText, isUuid, pickColumns } from '../utils/values.js';
@@ -85,6 +84,31 @@ async function airlineVariants() {
   );
 }
 
+/** 任务性质字典：代码（short_en）→ 整行（short_en / short_cn / full_cn） */
+async function flightTypeVariants() {
+  const rows = await prisma.flight_type.findMany();
+  return new Map(rows.map((r) => [String(r.short_en ?? '').trim(), r]));
+}
+
+/**
+ * 任务性质查表（flight_type 表）
+ * 中文展示值 = full_cn 优先，缺失退 short_cn，再缺失**默认 short_en**（用户口径）。
+ * ★ 代码查不到不猜：中英文都退代码本身（= short_en），前端不会拿到 null 闪空。
+ * @param {string|null} code 快照里的原始代码（如 'H/Z'）
+ * @param {Map} flightTypes flightTypeVariants() 建好的字典
+ * @returns {{ cn: string|null, en: string|null }}
+ */
+function flightTypeOf(code, flightTypes) {
+  const key = String(code ?? '').trim();
+  if (!key) return { cn: null, en: null };
+  const hit = flightTypes.get(key);
+  const shortEn = hit?.short_en ?? key;
+  return {
+    cn: hit?.full_cn || hit?.short_cn || shortEn,
+    en: shortEn,
+  };
+}
+
 /**
  * 拆航班号：IATA 形态（原值）+ 前两位换航司 ICAO 三字码
  *   O36961 → 航司 O3 → CSS → icao 形态 CSS6961
@@ -109,13 +133,13 @@ function flightNoVariants(no, airlines) {
 }
 
 /** 一行快照补字典变体：名称字段带英文名，IATA / ICAO 用字典现值（查不到退回已存的码） */
-function withVariants(row, airports, airlines) {
+function withVariants(row, airports, airlines, flightTypes) {
   const a = airports.get(String(row.a_name ?? '').trim()) ?? null;
   const d = airports.get(String(row.d_name ?? '').trim()) ?? null;
   const aNo = flightNoVariants(row.a_flight_no_full, airlines);
   const dNo = flightNoVariants(row.d_flight_no_full, airlines);
-  const aType = flightTypeOf(row.a_flight_type_code);
-  const dType = flightTypeOf(row.d_flight_type_code);
+  const aType = flightTypeOf(row.a_flight_type_code, flightTypes);
+  const dType = flightTypeOf(row.d_flight_type_code, flightTypes);
   return {
     ...row,
     // —— 机场：英文名 / IATA / ICAO ——
@@ -136,7 +160,7 @@ function withVariants(row, airports, airlines) {
     d_airline_icao_code: dNo.airline_icao,
     d_airline_name_cn: dNo.airline_cn,
     d_airline_name_en: dNo.airline_en,
-    // —— 任务性质：中英文（代码字典见 config/flightTypeCode.js） ——
+    // —— 任务性质：中文全称（缺失退简称再退代码）+ 代码本身（flight_type 表） ——
     a_flight_type_name_cn: aType.cn,
     a_flight_type_name_en: aType.en,
     d_flight_type_name_cn: dType.cn,
@@ -231,13 +255,18 @@ const FK_COLUMNS = MODELS.map((model) => `${model}_uuid`);
 /** 读操作统一带的关联投影：检查单数 / 台账数 / 最新一条台账（取生鲜标记） */
 const LINK_INCLUDE = {
   _count: { select: { checklists: true, specials: true } },
-  specials: { select: { nodes: true }, orderBy: { createTime: 'desc' }, take: 1 },
+  // ★ 取该航班的**全部**台账行（不是只取最新一条）：生鲜是「按腿」的 ——
+  //   一条 ecyilang 快照有进港 / 离港两条腿，必须知道每条腿自己的 callsign 有没有被标，
+  //   才能交给 ecyilangToFips 算腿级生鲜（一个航班台账行本来就个位数，不心疼）
+  specials: { select: { callsign: true, nodes: true }, orderBy: { createTime: 'desc' } },
 };
 
 /** 行 → API 对象：拍平 _count，把最新台账的生鲜标记提到顶层 */
 function toApi(source, row) {
   const { _count, specials, ...rest } = row;
-  const fresh = specials?.[0]?.nodes?.freshMark ?? null;
+  const ledger = specials ?? [];
+  // 快照级口径（fips / manual_fips 直接用；ecyilang 由 ecyilangToFips 再按腿细分）
+  const fresh = ledger[0]?.nodes?.freshMark ?? null;
   return {
     ...rest,
     source,
@@ -246,6 +275,8 @@ function toApi(source, row) {
     specialCount: _count?.specials ?? 0,
     is_fresh: Boolean(fresh),
     fresh_content: fresh,
+    // 已标生鲜的航班号清单 —— ecyilangToFips 拿它逐腿比对（腿级 is_fresh 的唯一依据）
+    fresh_callsigns: ledger.filter((s) => s.nodes?.freshMark).map((s) => s.callsign).filter(Boolean),
   };
 }
 
@@ -273,12 +304,60 @@ export async function list(source, query = {}, opts = {}) {
   const where = wallDayWhere(cfg.days, query);
 
   if (opts.raw) {
-    let rows = await prisma[name].findMany({ where: where ?? undefined, orderBy: cfg.orderBy });
+    let rows = await prisma[name].findMany({
+      where: where ?? undefined,
+      orderBy: cfg.orderBy,
+      // 生鲜标记：取该航班的台账行（要 callsign 才能分清是「到」还是「离」那条腿）
+      ...(name === 'ecyilang'
+        ? {
+            include: {
+              specials: {
+                select: { nodes: true, callsign: true },
+                orderBy: { createTime: 'desc' },
+              },
+            },
+          }
+        : {}),
+    });
     // 花湖翼览源：查询时补字典变体（英文名 / IATA / ICAO / 航班号 ICAO 形态 / 任务性质中英文）
     // 再把三类字段对象化 —— 前端拿到就能直接挑值，不用自己拼
     if (name === 'ecyilang') {
-      const [airports, airlines] = await Promise.all([airportVariants(), airlineVariants()]);
-      rows = rows.map((r) => nestVariants(withVariants(r, airports, airlines)));
+      const [airports, airlines, flightTypes] = await Promise.all([
+        airportVariants(),
+        airlineVariants(),
+        flightTypeVariants(),
+      ]);
+      rows = rows.map(({ specials, ...r }) => {
+        // ★ 生鲜是「按腿」的：一条快照有 a / d 两条航班，靠台账的
+        //   （该快照 uuid 已由 include 限定）**callsign 匹配哪条腿的航班号**来定。
+        //   callsign 存的是**当时页面显示的形态**（IATA 原值或 ICAO 形态都可能，
+        //   比如 CSS7404 / O37338）→ 两边都按「IATA + ICAO，忽略大小写」比。
+        const v = withVariants(r, airports, airlines, flightTypes);
+        const forms = (iata, icao) =>
+          new Set(
+            [iata, icao]
+              .filter(Boolean)
+              .map((x) => String(x).trim().toUpperCase())
+          );
+        const aForms = forms(v.a_flight_no_full, v.a_flight_no_full_icao);
+        const dForms = forms(v.d_flight_no_full, v.d_flight_no_full_icao);
+        const freshRows = (specials ?? []).filter((s) => s.nodes?.freshMark);
+        const same = (set, callsign) => set.size > 0 && set.has(String(callsign ?? '').trim().toUpperCase());
+        const aFresh = freshRows.some((s) => same(aForms, s.callsign));
+        const dFresh = freshRows.some((s) => same(dForms, s.callsign));
+        return {
+          ...nestVariants(v),
+          // ★ 原始航班号（库里的大写值，如 O37404）单独透出：
+          //   页面上的航班号可能是 ICAO 形态（CSS7404），但写台账（records_special.callsign）
+          //   必须用原始值 —— 前端标记 / 取消都取这两个字段
+          a_flight_no_raw: v.a_flight_no_full ?? null,
+          d_flight_no_raw: v.d_flight_no_full ?? null,
+          a_is_fresh: aFresh,
+          d_is_fresh: dFresh,
+          is_fresh: aFresh || dFresh,
+          fresh_content: freshRows[0]?.nodes?.freshMark ?? null,
+        };
+      });
     }
     // uuid = id 的别名：toApi 出来的行都有 uuid（Sidebar 建草稿 / URL flightUuid 都用它），
     // raw 行也对齐，前端两条路径的选中行为一致

@@ -33,6 +33,7 @@ import { persist } from "zustand/middleware";
 import { fipsApi } from "../api";
 import { useAppStore, dateFilterParamsOf } from "./app.store";
 import { ALL_HEADER, DEP_HEADER, ARR_HEADER, ECYILANG_ALL_HEADER } from "../config/fipsHeaders";
+import { resolveObjectFields } from "../utils/displayFields";
 
 /* ============================================================
  * 一、表头 —— 纯函数
@@ -104,40 +105,9 @@ export function buildHeaders(defaultHeader, saved) {
     return { source: defaultHeader?.source ?? "", columns: out };
 }
 
-/**
- * 花湖翼览行 → 按设置页的展示形态开关**就地替换**名称 / 航班号（fetchFlights 的 raw 分支用）：
- *   - dep_station 列的开关管 a_name（到港腿起飞机场），arr_station 列的开关管 d_name（离港腿目的地机场）
- *   - 口径：ICAO 开 → ICAO 码优先；关但英文开 → 英文名（缺失退中文名）；都关 → 原中文名
- *   - 航班号列 ICAO 开 → 换航司 ICAO 三字码（后端已算好 *_flight_no_full_icao）
- * ★ 只替换 store 里这份行副本 —— RawEcyilangTable / RawEcyilangTableDialog 的取数完全不用动。
- * @param {Array} rows 后端 raw 行（已带 *_english / *_icao_code / *_flight_no_full_icao 变体）
- * @param {Object} ecyilangHeader 花湖翼览表头设置（columns 里每列带 english / icao 开关）
- */
-function applyDisplayFlags(rows, ecyilangHeader) {
-    const cols = ecyilangHeader?.columns ?? [];
-    const flagOf = (key) => {
-        const col = cols.find((c) => c.keyName === key);
-        return { english: col?.english === true, icao: col?.icao === true };
-    };
-    const depFlag = flagOf("dep_station"); // 到港腿起飞机场（a_name）
-    const arrFlag = flagOf("arr_station"); // 离港腿目的地机场（d_name）
-    const noFlag = flagOf("flight_no_full"); // 航班号
-
-    // 名称取值：ICAO 开 → ICAO 码；英文开 → 英文名；都关 → 中文（缺失逐级回退中文名）
-    const nameOf = (chinese, english, icaoCode, flag) => {
-        if (flag.icao) return icaoCode || chinese;
-        if (flag.english) return english || chinese;
-        return chinese;
-    };
-
-    return rows.map((r) => ({
-        ...r,
-        a_name: nameOf(r.a_name, r.a_name_english, r.a_name_icao_code, depFlag),
-        d_name: nameOf(r.d_name, r.d_name_english, r.d_name_icao_code, arrFlag),
-        a_flight_no_full: noFlag.icao ? r.a_flight_no_full_icao || r.a_flight_no_full : r.a_flight_no_full,
-        d_flight_no_full: noFlag.icao ? r.d_flight_no_full_icao || r.d_flight_no_full : r.d_flight_no_full,
-    }));
-}
+/* 对象字段（后端 nestVariants 打包的三类：*_name / *_flight_no_full /
+ * *_flight_type_code）→ 按表头设置的展示形态取值的实现在 utils/displayFields.js：
+ * fetchFlights / fetchFlightRows 两个数据入口和 RawEcyilangTable 共用同一份。 */
 
 /* ============================================================
  * 二、拆表 / 筛选 / 排序 —— 纯函数
@@ -359,11 +329,15 @@ export const useFipsStore = create(
             /** 后端实际返回数据的日期（fips / ecyilang 源有，manual_fips 源为 null） */
             dataDate: null,
 
-            /** 改关键词（过滤 + 排序在这一个 set 里算完） */
-            setKeyword: (keyword) => set((s) => deriveLists({ ...s, keyword })),
+            /**
+             * 改关键词（过滤 + 排序在这一个 set 里算完）
+             * ⚠️ deriveLists 只返回三张派生表 —— 筛选条件必须在这里**显式写回**，
+             *    否则 keyword 永远进不了 store（受控输入框 value 恒为空、打字没反应）
+             */
+            setKeyword: (keyword) => set((s) => ({ keyword, ...deriveLists({ ...s, keyword }) })),
 
-            /** 只看生鲜 */
-            setFreshOnly: (freshOnly) => set((s) => deriveLists({ ...s, freshOnly })),
+            /** 只看生鲜（同上：freshOnly 要显式写回，否则 Badge 点不动） */
+            setFreshOnly: (freshOnly) => set((s) => ({ freshOnly, ...deriveLists({ ...s, freshOnly }) })),
 
             /**
              * 拉取航班列表
@@ -376,18 +350,25 @@ export const useFipsStore = create(
                 set({ loading: true, error: null });
                 try {
                     const params = dateFilterParamsOf(useAppStore.getState());
-                    const d = await fipsApi.list(params);
+                    // ★ 花湖翼览源按**原始快照**拉（与 RawEcyilangTable 同形）：
+                    //   搜索卡「匹配 N 条」按原始行的格子匹配、生鲜计数要看 is_fresh；
+                    //   不传 raw 拿到的是 fips 映射后的腿（124 条、没有 d_name / a_name）
+                    const rawSource = useAppStore.getState().source === "ecyilang";
+                    const d = await fipsApi.list({ ...params, ...(rawSource ? { raw: 1 } : {}) });
+                    // 名称类字段后端是「对象携带变体」形状，按表头设置的展示形态
+                    // （中文/英文/IATA/ICAO）挑一个值写回原字段名 —— 对象不进 store
+                    const displayHeaders = [get().ecyilangHeader, get().allHeader, get().depHeader, get().arrHeader];
+                    let rows = (d?.items || []).map((r) => resolveObjectFields(r, displayHeaders));
                     // raw 模式（ecyilang 原始快照，RawEcyilangTable 用）：行上没有 flight_no，
                     // 补一个（离港号优先、进港号兜底）—— 侧栏创建检查单的
                     // templateKeyOf(flight_no) 和草稿显示都靠它
                     const raw = Boolean(d?.raw);
-                    let rows = (d?.items || []).map((r) =>
-                        raw ? { ...r, flight_no: r.d_flight_no_full || r.a_flight_no_full || null } : r
-                    );
-                    // 花湖翼览源：按设置页的展示形态开关（英文/中文、ICAO/IATA）就地替换
-                    // 名称 / 航班号 —— 必须在 flight_no 派生**之后**（检查单类型推断吃的是
-                    // 原始航司二字码），替换只影响表格显示
-                    if (raw) rows = applyDisplayFlags(rows, get().ecyilangHeader);
+                    if (raw) {
+                        rows = rows.map((r) => ({
+                            ...r,
+                            flight_no: r.d_flight_no_full || r.a_flight_no_full || null,
+                        }));
+                    }
                     set((s) => ({
                         ...deriveLists({ ...s, rows }),
                         rows,
@@ -420,6 +401,14 @@ export const useFipsStore = create(
             /* ================= C. 视图三态（不落盘） ================= */
 
             viewMode: VIEW_MODES[0],
+
+            /**
+             * 数据版本号：后端监控 SSE 推来「新增 / 变更 / 减少」（或当天基线重灌）时 +1。
+             * 页面与原始快照表都把它放进拉数据的 effect 依赖里 → 一变就重拉重渲染。
+             * ★ 不落盘：刷新页面后靠正常首次拉取对齐，不需要记历史版本。
+             */
+            dataVersion: 0,
+            bumpDataVersion: () => set((s) => ({ dataVersion: s.dataVersion + 1 })),
 
             /** 切到指定视图（设置页的 radio 调它） */
             setViewMode: (mode) => {
@@ -495,8 +484,8 @@ export const useFipsStore = create(
  */
 export async function fetchFlightRows() {
     const d = await fipsApi.list();
-    return d?.items || [];
+    // 与 fetchFlights 同一入口约定：对象字段先按表头设置的展示形态取值再出门
+    const s = useFipsStore.getState();
+    const displayHeaders = [s.ecyilangHeader, s.allHeader, s.depHeader, s.arrHeader];
+    return (d?.items || []).map((r) => resolveObjectFields(r, displayHeaders));
 }
-
-
-C:\Users\HJW-AMD-PRP\Documents\GitHub\All-js-project\packages\frontend\flight-dispatch-system\src\store\fips.store.js  因为其实我前端的数据都是从fetchFlights 这里面获取的 ,在

@@ -156,13 +156,13 @@ model records_checklist {
 }
 
 model records_special {
-  id         Int       @id @default(autoincrement())
-  callsign   String    @db.VarChar(32)
-  nodes      Json?     @default("{}") @db.JsonB
+  id           Int       @id @default(autoincrement())
+  callsign     String    @db.VarChar(32)
+  nodes        Json?     @default("{}") @db.JsonB
   /// 检查人 = user 表外键（谁登记的这份生鲜台账）
   inspector_id Int?
-  createTime DateTime? @default(now()) @db.Timestamptz(6)
-  updateTime DateTime? @default(now()) @db.Timestamptz(6)
+  createTime   DateTime? @default(now()) @db.Timestamptz(6)
+  updateTime   DateTime? @default(now()) @db.Timestamptz(6)
 
   // 外键字段（改名后）
   ecyilang_uuid    String? @db.Uuid
@@ -199,6 +199,15 @@ model airport_name_code {
   english_airport_name String? @db.VarChar(96)
   airport_iata_code    String? @unique(map: "airport_name_code_iata_key") @db.VarChar(8)
   airport_icao_code    String? @unique(map: "airport_name_code_icao_key") @db.VarChar(8)
+}
+
+/// flight_type —— 任务性质代码表（short_en = 民航任务性质代码，如 'A/V' / 'W/Z' / 'VIP'）
+/// 中文展示口径：full_cn 优先，缺失退 short_cn，再缺失退 short_en（见 fipsService.flightTypeOf）
+model flight_type {
+  id       Int     @id @default(autoincrement())
+  short_en String  @unique(map: "flight_type_short_en_key") @db.VarChar(16)
+  short_cn String? @db.VarChar(32)
+  full_cn  String? @db.VarChar(64)
 }
 
 // ============================================================

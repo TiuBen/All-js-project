@@ -18,23 +18,16 @@
  *      原始快照，不拉数据、不带标题条、不响应双击（Dialog 里渲染每份 changelog 用）
  * ============================================================
  */
-import { Fragment, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { Leaf, Loader2 } from "lucide-react";
 import { fipsApi } from "../../../api";
 import { useAppStore, dateFilterKeyOf, dateFilterParamsOf } from "../../../store/app.store";
 import { useFipsStore } from "../../../store/fips.store";
 import { useSidebarStore } from "../../../store/sidebar.store";
+import { resolveObjectFields } from "../../../utils/displayFields";
 import { cn } from "../../../utils/cn";
-import { COLUMNS, GROUPS, cellsOf } from "../stateToWhichCell";
+import { COLUMNS, GROUPS, cellsOf, matchKeyword } from "../stateToWhichCell";
 import RawEcyilangTableDialog from "./RawEcyilangTableDialog";
-
-/** 关键词过滤（整条数据为单位：到 / 离任一格的任一值命中就整条保留） */
-function matchKeyword(row, keyword) {
-    const kw = keyword.trim().toLowerCase();
-    if (!kw) return true;
-    const { a, d } = cellsOf(row);
-    return [a, d].some((cells) => Object.values(cells).some((v) => v != null && String(v).toLowerCase().includes(kw)));
-}
 
 export default function RawEcyilangTable({ rows: controlledRows, bare = false } = {}) {
     const [fetchedRows, setFetchedRows] = useState([]);
@@ -46,6 +39,15 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
     const source = useAppStore((s) => s.source);
     const dateKey = useAppStore(dateFilterKeyOf);
     const keyword = useFipsStore((s) => s.keyword);
+    // 监控 SSE 推来变化时 +1 → 本表也重拉（它自己拉数据，不走 store.fetchFlights）
+    const dataVersion = useFipsStore((s) => s.dataVersion);
+    // 生鲜筛选（搜索卡的 Badge 切它）—— 原始快照行也带 is_fresh（后端 raw 分支补的）
+    const freshOnly = useFipsStore((s) => s.freshOnly);
+    // 展示形态开关所在的四份表头设置（列上的 english / icao radio）
+    const ecyilangHeader = useFipsStore((s) => s.ecyilangHeader);
+    const allHeader = useFipsStore((s) => s.allHeader);
+    const depHeader = useFipsStore((s) => s.depHeader);
+    const arrHeader = useFipsStore((s) => s.arrHeader);
     // 选中行（与 Sidebar 共用 sidebar.store）：选中后侧栏「创建检查单 / 生鲜标记」才能用
     const { selectedFlight, setSelectedFlight } = useSidebarStore();
 
@@ -71,10 +73,29 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
         return () => {
             alive = false;
         };
-    }, [controlled, source, dateKey]);
+    }, [controlled, source, dateKey, dataVersion]);
 
     const rows = controlled ? controlledRows : fetchedRows;
-    const visible = controlled ? rows : rows.filter((r) => matchKeyword(r, keyword));
+    // 名称类字段后端是「对象携带变体」形状 → 渲染前统一按表头设置的展示形态
+    // （中文/英文/IATA/ICAO）挑一个字符串写回原字段名。自拉的 raw 行和受控模式
+    // 喂进来的 changelog 快照都可能是嵌套形状，在这里过一遍才不会漏对象进 <td>。
+    const displayRows = useMemo(
+        () =>
+            rows.map((r) => {
+                const shown = resolveObjectFields(r, [ecyilangHeader, allHeader, depHeader, arrHeader]);
+                // 补 flight_no（离港号优先、进港号兜底）：侧栏「创建检查单 / 生鲜标记」都要它
+                // （和 store.fetchFlights 的 raw 分支同一口径；对象变体已在上一步解析成字符串）
+                return {
+                    ...shown,
+                    flight_no: shown.flight_no ?? shown.d_flight_no_full ?? shown.a_flight_no_full ?? null,
+                };
+            }),
+        [rows, ecyilangHeader, allHeader, depHeader, arrHeader]
+    );
+    const visible = controlled
+        ? displayRows
+        : displayRows.filter((r) => (!freshOnly || r.is_fresh) && matchKeyword(r, keyword));
+
     // 空状态 colSpan 用全列数（航段 + 14 列 + 客货）
     const colCount = COLUMNS.length + 2;
 
@@ -115,9 +136,14 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
                     // 单击 = 选中该行（与 FipsPage 的行为一致）：写 sidebar.store 的
                     // selectedFlight —— 侧栏「创建检查单 / 生鲜标记」随之可用。
                     // 双击 = 看变更历史。bare 模式（Dialog 里渲染单份快照）都不响应。
-                    const onPick = () => {
+                    const onPick = (leg) => {
                         if (bare) return;
-                        setSelectedFlight(row);
+                        // ★ 生鲜是「按腿」的：选到就选 a 腿、选离就选 d 腿 ——
+                        //   flight_no 换成那条腿的航班号，台账按（快照 uuid + callsign）定位到腿
+                        // ★ 台账 callsign 用**库里的原始值**（a/d_flight_no_raw，如 O37404），
+                        //   不用页面上的显示形态（切了 ICAO 会显示成 CSS7404）
+                        const legNo = leg === "a" ? row.a_flight_no_raw : row.d_flight_no_raw;
+                        setSelectedFlight({ ...row, leg, flight_no: legNo ?? row.flight_no ?? null });
                     };
                     const onOpenHistory = () => {
                         if (bare) return;
@@ -129,7 +155,7 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
                         <Fragment key={row.id ?? "snap"}>
                             {/* ========== 第 1 行：到港（本场 = 目的地） ========== */}
                             <tr
-                                onClick={onPick}
+                                onClick={() => onPick("a")}
                                 onDoubleClick={onOpenHistory}
                                 className={cn(
                                     "border-b border-slate-100 transition-colors hover:bg-primary-50/40",
@@ -152,6 +178,14 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
                                             )}
                                         >
                                             {v ?? "-"}
+                                            {/* 生鲜标记跟在该腿的航班号后面（只标这条腿） */}
+                                            {c.key === "flight_no_full" && row.a_is_fresh && (
+                                                <Leaf
+                                                    size={11}
+                                                    className="ml-1 inline-block align-[-1px] text-emerald-600"
+                                                    title="该进港航班标记为生鲜"
+                                                />
+                                            )}
                                         </td>
                                     );
                                 })}
@@ -166,7 +200,7 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
 
                             {/* ========== 第 2 行：离港（本场 = 起飞） ========== */}
                             <tr
-                                onClick={onPick}
+                                onClick={() => onPick("d")}
                                 onDoubleClick={onOpenHistory}
                                 className={cn(
                                     "border-b-2 border-b-slate-200 transition-colors hover:bg-primary-50/40",
@@ -188,6 +222,14 @@ export default function RawEcyilangTable({ rows: controlledRows, bare = false } 
                                             )}
                                         >
                                             {v ?? "-"}
+                                            {/* 生鲜标记跟在该腿的航班号后面（只标这条腿） */}
+                                            {c.key === "flight_no_full" && row.d_is_fresh && (
+                                                <Leaf
+                                                    size={11}
+                                                    className="ml-1 inline-block align-[-1px] text-emerald-600"
+                                                    title="该离港航班标记为生鲜"
+                                                />
+                                            )}
                                         </td>
                                     );
                                 })}
