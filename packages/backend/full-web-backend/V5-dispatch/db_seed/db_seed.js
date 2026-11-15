@@ -202,6 +202,10 @@ async function main() {
     console.log(`\n⚠️ 有 ${missedNames.size} 个机场名在 airport_name_code 里没匹配上（对应的码列留 NULL）：`)
     console.log('   ' + [...missedNames].sort().join('、'))
   }
+  if (stats.unknown.size > 0) {
+    console.log(`\n⚠️ 快照里有 ${stats.unknown.size} 个 ecyilang 表没有的字段，已忽略：${[...stats.unknown].join('、')}`)
+    console.log('   （要落库就先给 ecyilang 建列，再补 db_seed/ecyilangRow.js 的 DB_COLUMNS）')
+  }
 
   // 只用于复核的分布统计
   const noD = ecyilangRows.filter((r) => r.d_flight_date === null).length

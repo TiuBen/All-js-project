@@ -307,8 +307,19 @@ async function airportMap() {
  * ★ 导出给 db_seed/replayEcyilangSnapshots.js 复用 —— 回放脚本灌库必须与监控同口径，
  *   两处各写一份迟早漂移。
  */
+/** 已经提示过的「远程多余字段」，避免每轮比对都重复警告 */
+const reportedUnknownKeys = new Set();
+
 export function toDbRow(raw, airports) {
-    const row = toEcyilangRow(raw, airports, newStats());
+    const stats = newStats();
+    const row = toEcyilangRow(raw, airports, stats);
+    // 远程多出来的字段（表里没有）会被白名单丢掉 —— 报一次就够，别每 15 分钟刷屏。
+    // 真出现新字段时看这里就知道「远程加了什么」，再决定要不要建列。
+    for (const key of stats.unknown) {
+        if (reportedUnknownKeys.has(key)) continue;
+        reportedUnknownKeys.add(key);
+        warn(`远程多了表里没有的字段「${key}」，灌库时已忽略（要落库就往 ecyilang 建列 + 补 DB_COLUMNS）`);
+    }
     row.flight_readable_id = flightReadableIdOf(raw);
     row.changelog = [];
     return row;

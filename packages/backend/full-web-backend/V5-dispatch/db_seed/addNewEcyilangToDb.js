@@ -127,6 +127,10 @@ async function importOne(file, airportMap) {
   console.log(`  删除旧行 ${removed.count} 行（表里落在这几天的）→ 插入新行 ${created.count} 行`)
 
   /* ---------- 异常提示（都是「留 NULL」级别，不影响这次导入） ---------- */
+  if (stats.unknown.size > 0) {
+    console.log(`  ⚠️ 快照里有 ${stats.unknown.size} 个 ecyilang 表没有的字段，已忽略：${[...stats.unknown].join('、')}`)
+    console.log('     （要落库就先给 ecyilang 建列，再补 db_seed/ecyilangRow.js 的 DB_COLUMNS）')
+  }
   const shiftedTotal = Object.values(stats.shifted).reduce((a, b) => a + b, 0)
   if (shiftedTotal > 0) {
     const detail = Object.entries(stats.shifted).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n} 条`).join(' / ')

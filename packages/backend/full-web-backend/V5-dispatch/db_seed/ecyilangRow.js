@@ -119,8 +119,54 @@ export function newStats() {
     orphan: [],
     /** 压根解析不了的原始值 */
     unparsable: [],
+    /** 原始行里出现、但 ecyilang 表里没有的键（详见 DB_COLUMNS） */
+    unknown: new Set(),
   }
 }
+
+/**
+ * ecyilang 表的**真实列**（灌库白名单，与 prisma/schema.prisma 的 model ecyilang 对齐）
+ * ------------------------------------------------------------
+ * ★ 为什么必须白名单：远程接口的字段会变 —— 2026-11 远程多出一个 `a_plane`，
+ *   而 toEcyilangRow 原本是「raw 有什么键就搬什么键」，多一个键 Prisma 直接
+ *   报 `Unknown argument 'a_plane'. Did you mean 'a_name'?`，整轮灌库全废。
+ * ★ 以后 schema 加列，这里同步加一行；漏了不会静默丢数据 —— 会被记进 stats.unknown 并打印。
+ * ★ 四个 *_name_iata_code / *_name_icao_code 是导入时回填的（raw 里通常没有），
+ *   列入白名单是为了 raw 万一自带码时也不炸。
+ */
+export const DB_COLUMNS = [
+  // 离港侧
+  'd_flight_type_code',
+  'd_flight_date',
+  'd_plan_time',
+  'd_time',
+  'd_jx',
+  'd_name',
+  'd_flight_no_full',
+  'd_country_type',
+  'd_craft_seat_code',
+  'd_state_name',
+  'd_abnormal_state',
+  // 进港侧
+  'a_flight_type_code',
+  'a_flight_date',
+  'a_plan_time',
+  'a_time',
+  'a_jx',
+  'a_flight_no_full',
+  'a_country_type',
+  'a_name',
+  'a_craft_seat_code',
+  'a_state_name',
+  'a_abnormal_state',
+  // 其它
+  'k_h',
+  'created_at',
+  'd_name_iata_code',
+  'd_name_icao_code',
+  'a_name_iata_code',
+  'a_name_icao_code',
+]
 
 /**
  * 机场码表行 → Map<机场中文名, {iata, icao}>
@@ -146,6 +192,11 @@ export function airportMapOf(rows) {
 export function toEcyilangRow(raw, airportMap, stats) {
   const row = {}
   for (const [k, v] of Object.entries(raw)) {
+    // 白名单外的一律不搬（远程接口随时可能加字段，透传会让 Prisma 整批报错）
+    if (!DB_COLUMNS.includes(k)) {
+      stats.unknown.add(k)
+      continue
+    }
     if (DATE_COLUMNS.includes(k)) {
       row[k] = toDate(v)
     } else if (TIME_COLUMNS[k]) {

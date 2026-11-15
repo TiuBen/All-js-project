@@ -1,0 +1,6 @@
+{
+    "name": "v6-e-train",
+    "version": "1.0.0",
+    "description": "模拟机培训/考核微服务（Express + SQLite3）",
+    "main": "app.js"
+}

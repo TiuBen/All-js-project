@@ -1,0 +1,15 @@
+/* src/index.css - Tailwind 入口 + 全局基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-[#f5f6f8] text-[15px] text-gray-800 antialiased;
+}
+
+/* 通用卡片 */
+@layer components {
+  .card {
+    @apply bg-white rounded-lg border border-gray-100;
+  }
+}

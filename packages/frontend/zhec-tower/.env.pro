@@ -1,2 +1,0 @@
-NODE_ENV=production
-REACT_APP_SERVER_URL=http://47.97.223.233:3104

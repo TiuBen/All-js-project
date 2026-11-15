@@ -97,6 +97,8 @@ model ecyilang {
   d_craft_seat_code  String?   @db.VarChar(16)
   d_state_name       String?   @db.VarChar(32)
   d_abnormal_state   String?   @db.VarChar(16)
+  d_plane            String?   @db.VarChar(16) //2026-11-14添加
+
   // ---- 进港侧 ----
   a_flight_type_code String?   @db.VarChar(16)
   a_flight_date      DateTime? @db.Date
@@ -109,6 +111,7 @@ model ecyilang {
   a_craft_seat_code  String?   @db.VarChar(16)
   a_state_name       String?   @db.VarChar(32)
   a_abnormal_state   String?   @db.VarChar(16)
+  a_plane            String?   @db.VarChar(16) //2026-11-14添加
   // ---- 其它 ----
   k_h                String?   @db.VarChar(8)
   created_at         DateTime? @default(now()) @db.Timestamptz(6)
