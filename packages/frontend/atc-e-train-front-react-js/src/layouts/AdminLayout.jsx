@@ -2,14 +2,14 @@
 // 顶栏角标数量来自 taskStore.stats，侧边栏高亮当前路由
 import { NavLink, Outlet, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { LayoutDashboard, CalendarDays, BookOpen, FolderOpen, User } from "lucide-react";
+import { LayoutDashboard, CalendarDays, BookOpen, FolderOpen, User, Library } from "lucide-react";
 import useTaskStore from "../store/taskStore";
 
 const MENU = [
     { to: "/workbench", label: "工作台", Icon: LayoutDashboard },
-    { to: "/simulator-form", label: "模拟机培训/考核", Icon: CalendarDays, dotKey: "todo" },
-    { to: "/theory-form", label: "理论培训", Icon: BookOpen },
-    { to: "/training-items", label: "训练项目库", Icon: FolderOpen },
+    { to: "/simulator", label: "模拟机培训", Icon: CalendarDays, dotKey: "todo" },
+    { to: "/theory", label: "理论培训", Icon: BookOpen },
+    { to: "/library", label: "培训资料库", Icon: FolderOpen },
     { to: "/profile", label: "个人信息", Icon: User },
 ];
 

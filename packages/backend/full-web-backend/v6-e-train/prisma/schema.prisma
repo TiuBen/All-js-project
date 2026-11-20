@@ -1,0 +1,139 @@
+// ============================================================
+// e-train 培训系统 Prisma Schema（PostgreSQL）
+// 数据库名称：e_train
+//
+// 连接串示例（.env 中配置 DATABASE_URL）：
+// DATABASE_URL="postgresql://用户名:密码@localhost:5432/e_train?schema=public"
+//
+// 表清单（按业务命名，@@map 对齐）：
+//   user                 用户（教员/学员共用，角色由业务层区分）
+//   simulator-exercise   模拟机练习题题库
+//   theory-exercise      理论考试（试卷），source 引用 theory-db 的 uuid 数组
+//   theory-db            理论题库（单选/多选/填空/问答）
+//   simulator-exam       模拟机考试（学员/教员/分数）
+//   theory-exam          理论考试（学员/教员/分数）
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 理论题题型：单选 / 多选 / 填空 / 问答
+enum QuestionType {
+  SINGLE_CHOICE // 单选
+  MULTIPLE_CHOICE // 多选
+  FILL_BLANK // 填空
+  SHORT_ANSWER // 问答
+}
+
+/// 用户表：教员与学员共用一张表，靠业务关系区分角色
+model User {
+  id      String  @id @default(uuid()) @db.Uuid // 主键 uuid
+  name    String // 姓名
+  gender  String? // 性别：男 / 女
+  phone   String? @unique // 电话
+  email   String? @unique // 邮箱
+  profile Json? // 个人扩展信息（头像、简介等，JSON 自由结构）
+
+  // ---- 关联关系 ----
+  createdSimulatorExercises SimulatorExercise[] @relation("SimulatorExerciseCreater") // 我创建的模拟机练习题
+  createdTheoryExercises    TheoryExercise[]    @relation("TheoryExerciseCreater") // 我创建的理论考试
+  simulatorExamsAsTrainee   SimulatorExam[]     @relation("SimulatorExamTrainee") // 我作为学员参加的模拟机考试
+  simulatorExamsAsTeacher   SimulatorExam[]     @relation("SimulatorExamTeacher") // 我作为教员监考/评分的模拟机考试
+  theoryExamsAsTrainee      TheoryExam[]        @relation("TheoryExamTrainee") // 我作为学员参加的理论考试
+  theoryExamsAsTeacher      TheoryExam[]        @relation("TheoryExamTeacher") // 我作为教员监考/评分的理论考试
+
+  createdAt DateTime @default(now()) @map("created_at") // 创建时间
+  updatedAt DateTime @updatedAt @map("updated_at") // 更新时间
+
+  @@map("user")
+}
+
+/// 模拟机练习题题库：content 为 JSON，结构由业务层定义（练习步骤、科目、评分点等）
+model SimulatorExercise {
+  id      String @id @default(uuid()) @db.Uuid // 主键 uuid
+  content Json // 练习题内容（JSON 自由结构）
+
+  // ---- 创建人 ----
+  createrId String @map("creater_id") @db.Uuid // 创建人（user 表 uuid）
+  creater   User   @relation("SimulatorExerciseCreater", fields: [createrId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("simulator-exercise")
+}
+
+/// 理论题库：单选/多选/填空/问答，带标准答案与解析
+model TheoryDb {
+  id      String       @id @default(uuid()) @db.Uuid // 主键 uuid
+  content String // 题干内容
+  type    QuestionType // 题型：单选/多选/填空/问答
+  answer  String // 标准答案（多选可存 "A,B,C"，填空/问答存文本）
+  explain String? // 答案解析
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("theory-db")
+}
+
+/// 理论考试（试卷）：由若干 theory-db 题目组成，source 保存题库 uuid 数组
+model TheoryExercise {
+  id     String   @id @default(uuid()) @db.Uuid // 主键 uuid
+  source String[] @db.Uuid // 题目来源：theory-db 表的 uuid 数组
+  // 注意：PG 的 uuid 数组无法加外键约束，
+  // 引用有效性由应用层保证（增删题时同步维护）
+
+  // ---- 创建人 ----
+  createrId String @map("creater_id") @db.Uuid // 创建人（user 表 uuid）
+  creater   User   @relation("TheoryExerciseCreater", fields: [createrId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("theory-exercise")
+}
+
+/// 模拟机考试记录：学员 + 监考教员 + 分数
+model SimulatorExam {
+  id    String @id @default(uuid()) @db.Uuid // 主键 uuid
+  score Float? // 分数（未考试时为空）
+
+  // ---- 学员 ----
+  traineeId String @map("trainee_id") @db.Uuid // 学员（user 表 uuid）
+  trainee   User   @relation("SimulatorExamTrainee", fields: [traineeId], references: [id])
+
+  // ---- 教员 ----
+  instructorId String @map("instructor_id") @db.Uuid // 教员（user 表 uuid）
+  instructor   User   @relation("SimulatorExamTeacher", fields: [instructorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("simulator-exam")
+}
+
+/// 理论考试记录：学员 + 监考教员 + 分数
+model TheoryExam {
+  id    String @id @default(uuid()) @db.Uuid // 主键 uuid
+  score Float? // 分数（未考试时为空）
+
+  // ---- 学员 ----
+  traineeId String @map("trainee_id") @db.Uuid // 学员（user 表 uuid）
+  trainee   User   @relation("TheoryExamTrainee", fields: [traineeId], references: [id])
+
+  // ---- 教员 ----
+  instructorId String @map("instructor_id") @db.Uuid // 教员（user 表 uuid）
+  instructor   User   @relation("TheoryExamTeacher", fields: [instructorId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("theory-exam")
+}

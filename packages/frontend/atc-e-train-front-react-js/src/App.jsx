@@ -4,6 +4,9 @@ import AdminLayout from './layouts/AdminLayout';
 import WorkbenchPage from './pages/workbench/WorkbenchPage';
 import SimulatorForm from './pages/SimulatorForm';
 import TheoryForm from './pages/TheoryForm';
+import TrainSimulator from './pages/train-simulator';
+import TrainTheory from './pages/train-theory';
+import TrainLibrary from './pages/train-library';
 import TaskDetail from './pages/TaskDetail';
 import ScorePage from './pages/ScorePage';
 import TrainingItemsPage from './pages/TrainingItemsPage';
@@ -16,11 +19,14 @@ export default function App() {
         <Route element={<AdminLayout />}>
           <Route path="/" element={<Navigate to="/workbench" replace />} />
           <Route path="/workbench" element={<WorkbenchPage />} />
+          <Route path="/simulator" element={<TrainSimulator />} />
+          <Route path="/theory" element={<TrainTheory />} />
           <Route path="/simulator-form" element={<SimulatorForm />} />
           <Route path="/theory-form" element={<TheoryForm />} />
           <Route path="/tasks/:id" element={<TaskDetail />} />
           <Route path="/tasks/:id/score" element={<ScorePage />} />
           <Route path="/training-items" element={<TrainingItemsPage />} />
+          <Route path="/library" element={<TrainLibrary />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/workbench" replace />} />
         </Route>
