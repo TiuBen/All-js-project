@@ -1,0 +1,107 @@
+{
+  "time": "2026-11-25T16:24:17.571Z",
+  "inserted": 5612,
+  "skippedExisting": 24,
+  "answerMapSize": 7507,
+  "byFile": [
+    {
+      "file": "第一部分 基础知识/人为因素.txt",
+      "category": "人为因素",
+      "total": 88,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/空中交通管制一般规定.txt",
+      "category": "空中交通管制一般规定",
+      "total": 323,
+      "parseErrors": 2
+    },
+    {
+      "file": "第一部分 基础知识/空中导航.txt",
+      "category": "空中导航",
+      "total": 370,
+      "parseErrors": 1
+    },
+    {
+      "file": "第一部分 基础知识/空域.txt",
+      "category": "空域",
+      "total": 90,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/第1部分.txt",
+      "category": "第1部分",
+      "total": 25,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/航空器及应用.txt",
+      "category": "航空器及应用",
+      "total": 264,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/航空情报.txt",
+      "category": "航空情报",
+      "total": 355,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/航空气象.txt",
+      "category": "航空气象",
+      "total": 504,
+      "parseErrors": 2
+    },
+    {
+      "file": "第一部分 基础知识/通信_导航和监视设备.txt",
+      "category": "通信、导航和监视设备",
+      "total": 479,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/通用航空.txt",
+      "category": "通用航空",
+      "total": 27,
+      "parseErrors": 0
+    },
+    {
+      "file": "第一部分 基础知识/飞行原理.txt",
+      "category": "飞行原理",
+      "total": 262,
+      "parseErrors": 0
+    },
+    {
+      "file": "第三部分 英语知识/英语单选.txt",
+      "category": "英语单选",
+      "total": 1388,
+      "parseErrors": 0
+    },
+    {
+      "file": "第二部分 专业基础知识/机场管制.txt",
+      "category": "机场管制",
+      "total": 793,
+      "parseErrors": 0
+    },
+    {
+      "file": "第二部分 专业基础知识/进近管制.txt",
+      "category": "进近管制",
+      "total": 324,
+      "parseErrors": 0
+    },
+    {
+      "file": "第二部分 专业基础知识/进近雷达管制.txt",
+      "category": "进近雷达管制",
+      "total": 353,
+      "parseErrors": 0
+    }
+  ],
+  "counts": {
+    "noAnswer": 2,
+    "badQuestion": 2,
+    "dupExamNo": 24,
+    "parseErrors": 5,
+    "categoryMiss": 0,
+    "orphanAnswers": 1893,
+    "answerConflicts": 0
+  }
+}

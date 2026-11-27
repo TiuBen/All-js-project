@@ -5,7 +5,8 @@
   "description": "模拟机培训/考核网页版（React 后台风格）",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
+    "dev:vite": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },

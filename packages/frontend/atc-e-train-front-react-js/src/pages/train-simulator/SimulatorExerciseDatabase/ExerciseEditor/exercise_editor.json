@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "title": "塔台模拟机练习说明",
+
+  "fields": [
+    {
+      "key": "exerciseNo",
+      "label": "练习编号",
+      "type": "text",
+      "value": "FX-261101",
+      "layout": { "row": 1, "labelCols": 1, "valueCols": 3 }
+    },
+    {
+      "key": "totalSorties",
+      "label": "总架次",
+      "type": "number",
+      "value": 33,
+      "layout": { "row": 1, "labelCols": 1, "valueCols": 1 }
+    },
+
+    {
+      "key": "difficulty",
+      "label": "练习难度",
+      "type": "select",
+      "value": "中等",
+      "options": ["简单", "中等", "困难"],
+      "layout": { "row": 2, "labelCols": 1, "valueCols": 1 }
+    },
+    {
+      "key": "purpose",
+      "label": "练习用途",
+      "type": "select",
+      "value": "考核",
+      "options": ["训练", "考核", "检查"],
+      "layout": { "row": 2, "labelCols": 1, "valueCols": 1 }
+    },
+    {
+      "key": "sectorMode",
+      "label": "扇区模式",
+      "type": "select",
+      "value": "塔台",
+      "options": ["塔台", "进近", "塔进合一"],
+      "layout": { "row": 2, "labelCols": 1, "valueCols": 1 }
+    },
+
+    {
+      "key": "runway",
+      "label": "起降跑道",
+      "type": "text",
+      "value": "01L",
+      "layout": { "row": 3, "labelCols": 1, "valueCols": 1 }
+    },
+    {
+      "key": "runMode",
+      "label": "运行模式",
+      "type": "select",
+      "value": "单跑道",
+      "options": ["单跑道", "双跑道隔离", "双跑道相关"],
+      "layout": { "row": 3, "labelCols": 1, "valueCols": 1 }
+    },
+    {
+      "key": "duration",
+      "label": "练习时长",
+      "type": "text",
+      "value": "60 分钟",
+      "layout": { "row": 3, "labelCols": 1, "valueCols": 1 }
+    },
+
+    {
+      "key": "airspaceRestriction",
+      "label": "其他空域活动/限制",
+      "type": "textarea",
+      "value": "无",
+      "fullWidth": true
+    },
+    {
+      "key": "weather",
+      "label": "气象条件",
+      "type": "textarea",
+      "value": "CAVOK",
+      "fullWidth": true
+    },
+    {
+      "key": "trainingContent",
+      "label": "培训内容",
+      "type": "textarea",
+      "value": "跑道侵入的防控、相似航班号处置、复诵监听、告警合理处置、紧急油量应急处置程序、爆炸物威胁。",
+      "fullWidth": true
+    },
+
+    {
+      "key": "trainingGoals",
+      "label": "培训目的及考察要点",
+      "type": "numberedSection",
+      "fullWidth": true,
+      "indexStyle": { "top": "、", "child": "paren" },
+      "value": [
+        {
+          "text": "管制习惯",
+          "children": [
+            "有无根据气象条件正确配置相关设备参数；",
+            "有无目视目送及扫视跑道；",
+            "特情发生时是否拿出应急检查单并对照操作；",
+            "当出现航空器复飞时，有无执行复飞按钮以及复飞直通电话；",
+            "对讲机同意飞行区作业时，有无执行跑道巡查检查单以及交叉喊话制、有无在电子进程单上标注等。"
+          ]
+        }
+      ]
+    },
+
+    {
+      "key": "captainRequirements",
+      "label": "机长要求",
+      "type": "numberedSection",
+      "fullWidth": true,
+      "indexStyle": { "top": "、", "child": "parenClose" },
+      "value": [
+        {
+          "text": "练习中不少于 3 次口误或复诵错误，也可以有意识地模拟机组复诵不清晰、有地方口音等情况，主要包括以下几种情形：",
+          "children": [
+            "频率复诵错误：如 121.2 复诵为 119.8；",
+            "冲突热点区域道口错误、滑错或者复诵错误；",
+            "跑道号复诵错误：如 01L 复诵为 01R；",
+            "QNH 复诵错误：如 1031 复诵为 1013；",
+            "相似航班号回错错误。"
+          ]
+        },
+        { "text": "择机选择航空器跑道侵入。" },
+        {
+          "text": "武汉进近通知 xxx 宣布紧急油量，需要优先落地。首次联系时，机组宣布 MAYDAY。POB5 人，剩余油量 30 分钟，没有危险品。"
+        },
+        {
+          "text": "AOC 通知接到匿名电话，地面上 xxx 飞机有爆炸物。机组选择紧急撤离。"
+        }
+      ]
+    }
+  ]
+}

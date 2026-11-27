@@ -10,6 +10,7 @@
 //   simulator-exercise   模拟机练习题题库
 //   theory-exercise      理论考试（试卷），source 引用 theory-db 的 uuid 数组
 //   theory-db            理论题库（单选/多选/填空/问答）
+//   theory-category      理论题库目录树（执照题库/地方题库 → 部分 → 大类，自引用层级）
 //   simulator-exam       模拟机考试（学员/教员/分数）
 //   theory-exam          理论考试（学员/教员/分数）
 // ============================================================
@@ -23,22 +24,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// 理论题题型：单选 / 多选 / 填空 / 问答
+/// 理论题题型：单选 / 多选 / 填空 / 问答 / 判断
 enum QuestionType {
   SINGLE_CHOICE // 单选
   MULTIPLE_CHOICE // 多选
   FILL_BLANK // 填空
   SHORT_ANSWER // 问答
+  TRUE_FALSE // 判断（原题库 T/F 题，答案存 T / F）
 }
 
 /// 用户表：教员与学员共用一张表，靠业务关系区分角色
 model User {
-  id      String  @id @default(uuid()) @db.Uuid // 主键 uuid
-  name    String // 姓名
-  gender  String? // 性别：男 / 女
-  phone   String? @unique // 电话
-  email   String? @unique // 邮箱
-  profile Json? // 个人扩展信息（头像、简介等，JSON 自由结构）
+  id           String  @id @default(uuid()) @db.Uuid // 主键 uuid
+  name         String // 姓名
+  gender       String? // 性别：男 / 女
+  phone        String? @unique // 电话
+  email        String? @unique // 邮箱
+  profile      Json? // 个人扩展信息（头像、简介等，JSON 自由结构）
+  isInstructor Boolean @default(false) @map("is_instructor") // 是否具备教员资格（来自 v4-tower-duty user-face.db 席位 roleType=教员）
 
   // ---- 关联关系 ----
   createdSimulatorExercises SimulatorExercise[] @relation("SimulatorExerciseCreater") // 我创建的模拟机练习题
@@ -69,13 +72,91 @@ model SimulatorExercise {
   @@map("simulator-exercise")
 }
 
-/// 理论题库：单选/多选/填空/问答，带标准答案与解析
+/// 题库目录类型
+enum CategoryTreeType {
+  LICENSE // 执照题库
+  LOCAL // 地方题库
+}
+
+/// 理论题库目录树：自引用邻接表，顶层（parent_id 为空）= 执照题库 / 地方题库
+/// 执照题库第二层 = 三大部分（第一部分 基础知识 / 第二部分 专业基础知识 / 第三部分 英语知识）
+/// 第三层 = 大类（题目 txt 文件名，如 机场管制、人为因素…），题目（theory-db）挂在第三层
+
+model TheoryCategory {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // 父节点
+  parentId String?          @map("parent_id") @db.Uuid
+  parent   TheoryCategory?  @relation("TheoryCategoryTree", fields: [parentId], references: [id])
+  children TheoryCategory[] @relation("TheoryCategoryTree")
+
+  // 所属题库类型：执照题库 / 地方题库
+  treeType CategoryTreeType @default(LOCAL) @map("tree_type")
+
+  // 同级排序
+  sortOrder Int @default(0) @map("sort_order")
+
+  // 该目录下的理论题目（关系名与 TheoryDb.category 两侧对齐）
+  theoryItems TheoryDb[] @relation("TheoryCategoryItems")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, sortOrder])
+  @@index([treeType])
+  @@map("theory-category")
+}
+
+/// 模拟机培训目录树：自引用邻接表（结构模仿 TheoryCategory）
+/// 一级 = 年份（2025 年 / 2026 年），二级 = 月份（1 月 - 12 月）
+/// 模拟机练习记录等业务数据后续挂在月份节点下
+
+/// 模拟机目录类型：仿 CategoryTreeType
+/// YEAR = 系统固定骨架（2025/2026 年 + 12 个月，只读）；CUSTOM = 用户自建节点（可增删改）
+enum SimulatorTreeType {
+  YEAR // 年份/月份固定骨架
+  CUSTOM // 用户自建节点
+}
+
+model SimulatorCategory {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // 父节点
+  parentId String?             @map("parent_id") @db.Uuid
+  parent   SimulatorCategory?  @relation("SimulatorCategoryTree", fields: [parentId], references: [id])
+  children SimulatorCategory[] @relation("SimulatorCategoryTree")
+
+  // 节点类型：年份/月份骨架（YEAR，只读）/ 用户自建（CUSTOM，可编辑）
+  // 新建的节点一律由后端强制写 CUSTOM，前端传什么都被忽略
+  treeType SimulatorTreeType @default(CUSTOM) @map("tree_type")
+
+  // 同级排序（年份：2025=0 / 2026=1；月份：1-12）
+  sortOrder Int @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parentId, sortOrder])
+  @@map("simulator-category")
+}
+
+/// 理论题库：单选/多选/填空/问答/判断，带标准答案与解析
 model TheoryDb {
   id      String       @id @default(uuid()) @db.Uuid // 主键 uuid
-  content String // 题干内容
-  type    QuestionType // 题型：单选/多选/填空/问答
-  answer  String // 标准答案（多选可存 "A,B,C"，填空/问答存文本）
+  content String // 题干内容（单选/多选题干后拼选项行，判断题仅题干）
+  type    QuestionType // 题型：单选/多选/填空/问答/判断
+  answer  String // 标准答案（多选可存 "A,B,C"，填空/问答存文本，判断存 T/F）
   explain String? // 答案解析
+
+  // ---- 原题库试题编号 ----
+  examNo String? @map("exam_no") // V0-atctiku 原题库的试题编号（导入去重与答案对应用）
+
+  // ---- 所属目录（大类）----
+  // onDelete: Restrict —— 数据库层面兜底：目录仍被题目引用时禁止删除
+  categoryId String?         @map("category_id") @db.Uuid // 目录节点（theory-category 表 uuid，允许先建题后归类）
+  category   TheoryCategory? @relation("TheoryCategoryItems", fields: [categoryId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
